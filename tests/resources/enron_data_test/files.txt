@@ -1,0 +1,7 @@
+/home/neerbek/jan/phd/DLP/paraphrase/python/enron_data_test/emails/edrm-enron-v2_kean-s_xml_1of8.zip/text_000/3.922767.IBI0MS320MRSHVJDNPA4IDIH00ZB2E24A.1.txt
+
+/home/neerbek/jan/phd/DLP/paraphrase/python/enron_data_test/emails/edrm-enron-v2_kean-s_xml_7of8.zip/text_013/3.1042627.PHWXPNGVEWJDVZE4OHDV2Z0GNLRJVO5SA.txt
+
+/home/neerbek/jan/phd/DLP/paraphrase/python/enron_data_test/emails/edrm-enron-v2_shapiro-r_xml.zip/text_000/3.1155290.OFOJWQIRREEAX32BFOU15QLS531X5FNKA.txt
+
+/home/neerbek/jan/phd/DLP/paraphrase/python/enron_data_test/emails/edrm-enron-v2_kean-s_xml_1of8.zip/text_001/3.920913.OZVSEO5HGBVW3JO2V4APMH0CX0CBUQMXA.txt

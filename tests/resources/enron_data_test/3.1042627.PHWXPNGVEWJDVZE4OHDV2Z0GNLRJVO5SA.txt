@@ -1,0 +1,11 @@
+Date: Fri, 19 Nov 1999 07:30:00 -0800 (PST)
+From: Outlook Migration Team
+Subject: Li Doyle
+X-SDOC: 608437
+X-ZLID: zl-edrm-enron-v2-kean-s-126360.eml
+
+
+
+***********
+EDRM Enron Email Data Set has been produced in EML, PST and NSF format by ZL Technologies, Inc. This Data Set is licensed under a Creative Commons Attribution 3.0 United States License <http://creativecommons.org/licenses/by/3.0/us/> . To provide attribution, please cite to "ZL Technologies, Inc. (http://www.zlti.com)."
+***********

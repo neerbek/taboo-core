@@ -1,0 +1,496 @@
+ Succeeding in a Restructured Energy Market
+May 15, 2001
+Notes for Presentation
+The presentation is designed to provide an international perspective to the liberalization of electricity markets, in the context of the Japanese emerging markets.
+The conference coincides with the public release of the Brattle paper.
+The audience is broad, including utilities, large-lot customers, ministry officials, consultants, and other interested parties.
+THE PRESS WILL BE ATTENDING
+Key Themes
+A measure of deregulated markets is the number of consumers that have switched suppliers – no switching no competition
+New entrants have secured less than .2% of generation
+Less than 20 eligible consumers changed (total of 8300)
+A deregulated market needs a strong and independent regulator with the authority and willingness to enforce market rules
+Regulated third party access where costs and contractual terms are consistent, transparent and affordable is required. Negotiated third party access is no access.      
+
+
+
+Benefits of Liberalization
+
+Achieving a Competitive Market
+
+Strategies for Success
+
+
+
+
+
+
+ Not a “zero sum game”
+Net benefits created
+Better solutions to    transition issues
+ Cost savings
+ Improved reliability
+ Improved product choice
+ Improved allocation of capital
+ Improved allocation of risk to those best able to manage
+ Environmental benefits
+Improved
+speed
+flexibility
+solutions
+to problems in the market
+Benefits of Liberalization
+Industrial Electricity Prices 1998 (PPP basis) 
+Japan  16.81 yen/kWh
+OECD Ave. 13.55 yen/kWh
+(IEA, Energy Policies of IEA Countries, Japan 1999 Review)
+
+Japan introduced wholesale competition in 1995 and partial retail competition in March 2000. 
+Phase I (1995): Introduction of bidding system for supply to electricity companies from IPPs. 
+Phase II (2000): Partial liberalization of retail supply. Customers which take electric service at 20kV or higher able to choose their supplier.
+
+High electricity prices are harming Japanese industry’s international competitiveness. The Japanese Ministry of Economic and Industry (METI) White Paper on International Trade 2000 states that a significant contributor to Japan's loss in global market share is the inefficiency in Japan's energy sector - specifically low productivity and high prices. It says that these inefficiencies are a result of the absence of market competition.
+
+
+
+Benefits - Cost Savings
+Price Decrease from Deregulation in Five U.S. Industries
+Source: Brookings Institution/George Mason University
+0
+10
+20
+30
+40
+50
+2 years
+5 years
+10 years
+40%
+Percent Decrease
+Railroads
+Trucking
+Airlines
+Long Distance
+Telecom
+Natural Gas
+ Trucking Rail Air Telec. Gas
+2 yrs 0% 4 13 11 24
+5 yrs 10 20 12 32 34
+10 yrs 42 44 29 44 42
+
+Japanese consumers have also benefited from deregulation. The Japanese Economic Planning Agency estimated in a January 2000 report that 8.6 trillion yen of “consumer benefit” (a function of lower prices and increased demand) was achieved between 1995 and 1998 in eight key industries through deregulation (telecoms, domestic airlines, car insurance, electricity, gasoline, gas, brokering).
+
+80
+85
+90
+95
+100
+105
+110
+1995
+1996
+1997
+1998
+1999
+Japan
+Europe
+USA
+Benefits – Cost Savings
+Source: IEA
+Indices of Real Industrial Electricity Prices (%)
+  Real Price Comparisons
+ 1995 1996 1997 1998 1999
+Japan 100 100 102.3 103.7 105.3
+Europe 100 98.8 95.5 94.3 94.8
+USA 100 95.2 90.7 83.9 80.9
+“Real” price indices are the current price indices divided by the country specific Producer Price Index. 
+(Source: IEA, Electricity Information 2000)
+
+Small Reductions in Japan’s electricity prices. Prices for electricity consumers in Japan have reduced by between 3.78 - 6.90 per cent (average 5.42 per cent) since the introduction of the second phase of deregulation. However, these price reductions were unilateral reductions made by the utilities in the expectation of competition, rather than as a result of competition. Further, the price reductions were partially negated by increases in electricity charges introduced as a result of rising fuel prices.
+
+
+
+Reliability improves in an open market
+
+Merchants find new paths between supplies and markets, effective reserve margins increase
+
+Information provided by system users is better than predictions
+
+Customers can choose their level of service
+
+Investment decisions become more rational, bringing supply and demand into better balance
+
+
+Benefits – Improved Reliability
+
+The Brattle report makes three recommendations in order to ensure system reliability:
+Ensure that incentives exist to expand generation and transmission capacity before reserve margins fall too low. Regulator should provide as much regulatory certainty as possible regarding the process for liberalizing the market. Utilities should continue to hedge risks through long-term financial contracts.
+ Implement liberalization as rapidly as possible to avoid problems with transition periods, to send real-time price signals to consumers, and to deter market power abuse.
+ Monitor demand growth, capacity requirements, and new investments, and ensure that appropriate incentives exist for cost effective energy efficiency programs.
+
+Reliability is not achieved at least cost in a regulated market. The US EIA noted that the reserve margin in 1982 was 33% and concluded that “Utilities had planned and built more capacity than was actually needed by the time the capacity was created.” (Performance Issues for a Changing Electric Power Industry, DOE/EIA, Jan. 1995, p.vii)
+
+Japanese Reliability Figures. In 1998 Japanese utilities quoted reliability figures of 99.995 per cent as being significantly better than their US or European counterparts. Yet Japan's largest utility and New York's largest utility, which have similar network configurations, have similar reliability performances - 99.999 per cent, according to 1995 figures. However, the Japanese company's transmission prices are more than twice New York's and estimates of costs for the New York company's constant supply to a 1MW load are approximately a third of those in Japan
+
+Benefits – Improved Reliability
+Source: Ofgem
+0
+50
+100
+150
+200
+250
+90/91
+92/93
+94/95
+96/97
+98/99
+Supply Failures for UK Electricity Suppliers
+(minutes/year)
+Supply Failures for UK Electricity Suppliers
+(minutes/year)
+  227mins    1995   98mins
+  104mins  1996   87mins  
+  107mins  1997   88mins
+    96mins  1998   81mins
+    98mins   1999  71mins
+All companies reported figures for 1999/00 which were better than their 10 year average performance. 
+(Source: Ofgem)
+
+Examples of market forces responding most effectively to supply/demand imbalances.
+1996: 100 year drought in Norway
+1998: US Mid-West
+
+Benefits – What Went Wrong in California?
+California’s reliability problems are due to a badly designed framework for liberalization, regulatory barriers and economic fundamentals, not deregulation
+ Supply has not kept pace with demand
+
+ Regulatory requirements for siting and wholesale price caps have hindered new supply
+
+No new plants were built for 10 years despite rapid load growth
+
+Instead of trying to address the problem by sourcing more supply and reducing demand the Government focused on allocating blame
+
+Utilities were prohibited from signing long term agreements and mitigating their exposure
+Should also reference potential issues in New York and Florida
+
+Regulatory requirements for new plants in Japan.
+Japan base-load plant development cycle is 10-15 years
+Permitting is sequential not concurrent.
+Environmental assessment process takes 3 years.
+
+Japan is not factoring in the impact of the Internet on electricity demand.
+The Japanese government through its E-Japan initiative wants to be at the forefront of e-business development by the end of the decade. Under the initiative, the Government is aiming to increase household Internet penetration from the current 19% to 60% by 2005.
+Over the last decade electricity demand in Japan has increased at an average rate of 2-3%, and Japan is not anticipating a significant change in demand over the next decade.
+
+The solution is to implement full liberalization
+ Create a competitive market. Buyers and sellers should be free to set mutually beneficial terms, and buyers are able to react to market signals by moderating consumption
+
+ Open access. All parties should have open access to the entire transmission grid under the same rules
+
+ Provide choices for customers. In California’s regulated retail environment, less than 1% of customers are served by competing suppliers
+
+ Streamline regulations. Streamline California’s burdensome siting and regulatory laws
+Benefits – What Went Wrong in California?
+
+ Efficiency in capital investment
+ Open market produces forward price signalssignals producers when investment in new facilities will be supported by the market
+  Forces producers to find lowest cost solutions
+ More efficient allocation of risk
+  In an open market risk is allocated to those in the best position to manage it, rather than end consumers
+ Environmental Benefits
+ Environmental goals achieved at least cost
+ Provides an opportunity for firms to reduce costs and find new sources of profit through innovative approaches to carbon emissions
+
+
+Other Benefits
+Approaches to carbon emissions. In the Brattle paper tradable carbon permits are suggested as a way for Japan to achieve its targets at least cost. Japan’s Kyoto protocol commitment is to reduce its greenhouse gas emissions to 6% below 1990 levels over the period 2008-12. This will be difficult to achieve.
+
+Benefits of Liberalization
+
+Achieving a Competitive Market
+
+Strategies for Success
+
+
+
+
+
+
+ Every country’s circumstances are unique - tailored approach is required
+
+ Typical concerns
+reliability and security of supply
+disruption to existing firms (employees, existing investments and institutions)
+environmental concerns 
+Successful Transition to Deregulation
+Japan’s key public energy goals are:
+Reliability 
+Energy security. Japan traditionally sees itself as a resource poor country and energy security is a key concern of long-term energy policy. This is currently pursued through an active nuclear generation program and promotion of energy efficiency.
+Environmental protection
+
+Promoting efficiency...
+Non-discriminatory regulated access to transmission and distribution
+ Deregulation of sales terms and prices
+ Choice of supplier for all customers
+Strong and independent regulator with a clear charter
+ Transparent rules for information disclosure
+…while reducing disruption
+Market based determination of stranded costs, with recovery through a neutral levy
+
+ Measures to support programs aimed at ensuring system reliability and energy security, and other public goals
+
+ Carbon emissions regulation through market based mechanisms
+Successful Transition to Deregulation
+Measures to support programs aimed at ensuring system reliability, energy security and other public goals. The Japanese government remains committed to nuclear power as a tool for ensuring energy security, one of the key public goals of Japanese energy planning.
+
+Brattle Proposals for Public Policy Issues:
+System Reliability: Reliance on market. (If more required politically - adoption of a competitively neutral mechanism for providing reliability, such as: Tenders for Capacity or Reserve Requirements – PJM)
+Nuclear Power: “Franchise auction” for nuclear investment. Government subsidizes nuclear plant construction. Plant built and operated by firm willing to accept the least subsidy or, tendering for plant construction with regulated nuclear power rates.
+Carbon Emissions: Tradable carbon permits.
+Stranded Costs: Incumbents who de-merger or sell assets get stranded cost compensation. Stranded cost recovery through competitively neutral levy on the pool price.
+
+ Existing utilities given superior access to transmission and distribution service
+higher rates to new entrants
+ Failure to separate competitive and monopoly businesses in existing utilities
+ US power market (FERC Order 888)
+
+ Allocation of all available savings to existing utilities (high charges to third parties)
+ California power market
+
+ Failure to divide existing assets among numerous owners
+ UK power market
+
+ Lack of a strong and independent regulator
+ Netherlands
+Transition Issues and Solutions
+-Unsuccessful Approaches-
+The Brattle paper makes the following recommendations:
+Implement Virtual Independent Power Producer auctions (VIPP) – France, Ireland
+Vertical and horizontal de-merger of generation (Stage One)
+Vertical Separation of transmission, distribution, and retail supply (Stage Two)
+Privatization of EPDC assets
+Limiting capacity expansion by incumbents
+Review of technical regulations for power plants
+Liberalization of the natural gas industry
+Full market opening, with aim of achieving full eligibility within the next 3 years
+A Japanese Pool with bilateral financial trading
+Establishment of an independent regulator
+
+Benefits of Liberalization
+
+Achieving a Competitive Market
+
+Strategies for Success
+
+
+
+
+
+
+“We’ve reached the limits of incrementalism…The goal is to transform industries, not just organizations…To be a leader, a company must take charge of the process of industry transformation.”
+Gary Hamel and C.K. Prahalad,
+ Competing for the Future
+The New Management Philosophy
+
+
+20th Century Energy Company
+21st Century Energy Company
+Capital-intensive
+Vertically integrated
+Geographically dominant
+Commodity price dependent
+Hierarchical
+Intellectual capital intensive
+Network integrator
+Differentiation dependent
+Entrepreneurial culture
+Two Energy Models
+
+  New Economy Business Model is Fundamentally Different than the Old Economy Model
+Successful Companies are Increasingly Knowledge-Based Businesses (with Increasing Incremental Returns)
+Network-Based Businesses Lead to Market Share Gains and Continued Scale Advantages
+  Technology, Innovation and Intellectual Capital are Critical
+Metcalfe’s Law
+  Internet is Changing Everything
+Today’s New Economy
+
+Enron Online Statistics (as of April 27th, 2001)
+Total Life to Date Transactions > 900,000
+Average Daily Transactions > 4,500
+Life to Date Notional Value of Transactions > $540 billion
+Daily Notional Value Approximately $2.6 billion
+Number of Products Offered: Approximately 1,500
+Number of Currencies Traded in = 13
+
+Online Transactions as a % of Total Transactions
+1999 4Q   Trad. 77%  EOL 23%
+2000 1Q Trad. 46%  EOL 54%
+2000 2Q Trad. 61%  EOL 39%
+2000 3Q Trad. 67%  EOL 33%
+2000 4Q Trad. 74%  EOL 26%
+
+The Japanese government is publicly committed to making Japan a leading IT nation within the next 5 years. Energy companies in Japan must therefore also embrace these lessons.
+
+Natural Gas
+North America and UK
+
+Power
+North America, Australia,   Europe
+
+Global Coal
+
+Non-Ferrous Metals
+
+Agricultural Products
+
+Pulp and Paper
+
+ 
+ 
+Define
+Product
+Standards
+and Contracts
+Market Making
+Establishes
+Liquidity
+Obtain Access
+to Physical
+Product
+Develop
+Physical
+Distribution
+Innovative
+Structured
+Products
+Risk
+Management
+Transformed Markets
+
+LNG
+
+Broadband
+
+Emissions Credits
+
+Weather
+
+
+Transformation in Process
+Components of Transformation Process
+
+
+Create multi-commodity merchant business with flexibility to capitalize on opportunities in newly opened electricity market, developing capital markets, rapidly expanding e-commerce, internet-based and broadband markets and other Enron-specialized capabilities in metals, pulp and paper, weather, credit, gas, coal, petroleum products and foreign exchange.
+Enron and the Japanese Market
+
+Enron Japan Reactive Statement Para. 1 (May 8 2001) 
+“Enron has taken the decision to temporarily suspend all further activities in power marketing in Japan. Though Japan continues to make progress towards a liberalized electricity market, significant barriers to electricity sales by new entrants remain under the arrangements introduced in March of last year. Those barriers include the absence of fair and non-discriminatory regulated access to the transmission network and the absence of an independent regulator with the power to regulate the market. “
+
+ü
+Commodity
+linked
+financing
+ü
+Vendor
+finance
+ü
+Structured
+finance
+solutions
+ü
+Distressed
+debt
+restructuring
+ü
+M & A
+Capital Markets
+ü
+Extension of
+Enron
+platforms to
+Japan
+ e-Commerce
+ü
+Trading &
+marketing
+non
+-
+ferrous
+metals
+ü
+Structured,
+customized
+solutions
+ü
+Finance
+structures
+Metals
+ü
+Weather risk
+management
+product
+ü
+Alternative
+risk transfer
+Weather
+Enron Japan
+ü
+ Power
+Development   
+ü
+Electricity
+Management
+Electricity
+ü
+Petrochemicals
+ü
+Crude/Liquids
+ü
+Coal
+Global Markets
+Enron and the Japanese Market
+ü
+Agricultural Products
+ü
+Trading & marketing
+ü
+Content delivery
+Broadband
+Enron Japan Reactive Statement Para. 2 (May 8 2001) 
+“Enron remains committed to Japan. We have established several businesses here including metals, coal, LNG, weather derivatives, power plant development (via EPower) and electricity sales, and we have closed transactions with Japanese companies in each of those businesses. Significant additional opportunities exist in our non-electricity businesses and, if energy deregulation in Japan proceeds as expected, significant opportunities will exist in future in our power marketing businesses.”
+
+Enron Japan Website
+
+Strategies for Success for Consumers
+
+
+ If your company is supplied power at Extra High Voltage (20,000V or higher) , you may be able to obtain a more competitive price for your electricity.
+ Consider how your electricity costs could be reduced by varying your contract structure to better fit your load pattern.
+ Ask for pricing information from your supplier to find out how your electricity costs are constructed. 
+Request more pricing options from your current electricity supplier.
+If you have excess generation then consider selling it competitively in order to maximize profits.
+ Use regulatory and competition authorities to your best advantage.
+ Think about how your electricity costs could be reduced through utilizing risk management instruments.
+ Be inventive in thinking about reducing costs. Contract structures can be designed to fit virtually any customer need.
+Currently there exists no formal notification from the Ministry of Economy and Trade (METI) to contestable customers.
+Nearly one-third of Japan’s electricity market is open to competition by allowing eligible customers to choose their supplier.
+
+
+
+
+
+Succeeding in a Restructured Energy Market - Conclusion
+ Liberalization is not a “zero-sum game”
+- net benefits created
+ better solutions to transition issues
+
+ Successful transition achieved by promoting efficiency while reducing disruption
+
+ Energy industry is being transformed in the new economy – energy companies must adapt to this change
+
+ All stakeholders need to be involved in the shaping of deregulation
+
+®
+This presentation is intended only to facilitate discussion, which may later result in the negotiation and execution of binding definitive written agreements. The transactions described are not intended to create a binding or enforceable contract nor do they constitute an offer by Enron Japan Corp. or any parent or affiliate thereof.  The validity, effectiveness and enforceability of any transactions described herein are subject to further review and approval of  Enron Japan Corp.’s Board of Directors, execution of definitive agreements containing all appropriate provisions, including those relating to credit, limitation of damages, remedies and Enron Japan Corp.’s satisfaction as to all economic, regulatory, tax, legal and other matters.
+

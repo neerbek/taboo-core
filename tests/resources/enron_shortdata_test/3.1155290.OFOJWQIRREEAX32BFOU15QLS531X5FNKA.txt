@@ -1,0 +1,43 @@
+Date: Sat, 16 Dec 2000 03:16:00 -0800 (PST)
+From: Chris Long
+To: Jeff Skilling, Kenneth Lay, Steven J Kean, Louise Kitchen, Greg Whalley, David
+	 W Delainey, John J Lavorato, Mark E Haedicke, Mark Taylor, Jeffrey A Shankman,
+	 Richard Shapiro, Mike McConnell, James D Steffes, Mark Schroeder, Lisa Yoho,
+	 Mark Tawney, Gary Hickerson, Linda Robertson, Joe Hillings, Cynthia Sandherr,
+	 Tom Briggs, Stephen D Burns, Allison Navin, Amy Fabian, Carolyn Cooney, Jeffrey
+	 Keeler
+Subject: Commodity Exchange Act Passes Congress
+X-SDOC: 233647
+X-ZLID: zl-edrm-enron-v2-shapiro-r-5571.eml
+
+Multilateral Transactions
+
+In addition, the Act creates a broad exemption for any agreement, contract or 
+transaction in commodities (other than agriculture commodities) so long as 
+they the transactions are between "eligible commercial participants", are 
+entered into on a "principle-to-principle basis" and that take place on a 
+multi-party "electronic facility".  This exemption could facilitate expansion 
+of EnronOnline to allow for multi-party transactions, however certain legal 
+requirements will have to be met.
+
+Other Transactions
+
+The Act also creates a broad exclusion for a number of commodities that are 
+of interest to Enron, including "credit risk measure" commodities and weather 
+derivatives .  Again, the derivative transaction exclusion will have to meet 
+certain legal thresholds.
+
+This legislation has been over six years in the making and the collective 
+support of many Enron employees has been crucial.  Thank you to all that have 
+contributed to the passage on this important legislation.  We will have a 
+more through legal summary of this legislation in the near future. Do not 
+hesitate to contact me at (202) 466- 9158 of Mark Taylor at (713) 853-7459 
+with any questions.
+
+
+
+
+
+***********
+EDRM Enron Email Data Set has been produced in EML, PST and NSF format by ZL Technologies, Inc. This Data Set is licensed under a Creative Commons Attribution 3.0 United States License <http://creativecommons.org/licenses/by/3.0/us/> . To provide attribution, please cite to "ZL Technologies, Inc. (http://www.zlti.com)."
+***********
