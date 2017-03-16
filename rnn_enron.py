@@ -19,9 +19,6 @@ from numpy.random import RandomState
 import theano
 import theano.tensor as T
 
-if __name__ == "__main__":
-    os.chdir('/home/neerbek/jan/phd/DLP/paraphrase/python')
-
 import similarity.load_trees as load_trees
 import deeplearning_tutorial.rnn4 as rnn
 #reload(rnn)
@@ -180,7 +177,7 @@ def get_nltk_parsed_trees_from_list(lines):
     print(fn + " done. Count={}".format(count))
     return trees
 
-file = "../code/deep-recursive/trees/train.txt"
+file = "trees/train.txt"
 def get_nltk_parsed_trees_from_file(file, start_from = -1, max_count=-1):
     lines =[]
     #f = io.open(file,'r',encoding='utf8')
@@ -887,13 +884,13 @@ if __name__ == "__main__":
     os.chdir('/home/neerbek/jan/phd/DLP/paraphrase/python')
     #enron_dir = "F:/AIProjectsData/TREC2010/data/corpora/trec"
     
-    #train_trees = get_nltk_parsed_trees_from_file('../code/deep-recursive/trees/train.txt')
-    #valid_trees = get_nltk_parsed_trees_from_file('../code/deep-recursive/trees/dev.txt')
-    #test_trees = get_nltk_parsed_trees_from_file('../code/deep-recursive/trees/test.txt')
+    #train_trees = get_nltk_parsed_trees_from_file('trees/train.txt')
+    #valid_trees = get_nltk_parsed_trees_from_file('trees/dev.txt')
+    #test_trees = get_nltk_parsed_trees_from_file('trees/test.txt')
     
-    train_trees = load_trees.get_trees('../code/deep-recursive/trees/train.txt')
-    valid_trees = load_trees.get_trees('../code/deep-recursive/trees/dev.txt')
-    test_trees = load_trees.get_trees('../code/deep-recursive/trees/test.txt')
+    train_trees = load_trees.get_trees('trees/train.txt')
+    valid_trees = load_trees.get_trees('trees/dev.txt')
+    test_trees = load_trees.get_trees('trees/test.txt')
     
     
     nx = 50

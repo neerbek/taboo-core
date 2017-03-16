@@ -173,7 +173,7 @@ class ServiceTest(unittest.TestCase):
     def test_load_model3(self):
         initialize_model()
         req = Request() 
-        req.args.args['data_file'] = os.path.join(os.getcwd(), '../code/deep-recursive/trees/train.txt')
+        req.args.args['data_file'] = os.path.join(os.getcwd(), 'trees/train.txt')
         req.args.args['total_ratio'] = '1'
         req.args.args['train_ratio'] = '0.6'
         req.args.args['dev_ratio'] = '0.75'

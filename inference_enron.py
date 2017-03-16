@@ -16,8 +16,6 @@ if __name__ == "__main__":
 import similarity.load_trees as load_trees
 from server_rnn_helper import IndexSentence
 
-#file = "../code/deep-recursive/trees/train.txt"
-#file = "../code/deep-recursive/trees/data_400_400_2.txt"
     
 #t = trees[3]
 #print(load_trees.output(t))
@@ -200,7 +198,7 @@ def get_predictions(text, indicators):
 # 0.6875 | 0.7461
 # 0.676 | 0.7476
 # 0.674 | 0.7476
-def save_report(output, filename="../code/deep-recursive/report_inference.txt"):
+def save_report(output, filename="report_inference.txt"):
     with io.open(filename,'w',encoding='utf8') as f:
         for t in output:
             f.write(t + "\n")
@@ -216,7 +214,7 @@ def list_best_non_sensitive_keywords(no_weights, word_counts):
 
 
 if __name__ == "__main__":
-    trees = load_trees.get_trees("../code/deep-recursive/trees/train.txt")
+    trees = load_trees.get_trees("trees/train.txt")
     word_counts = get_word_counts(trees)
     print(len(word_counts.keys()))    #9260 (normalized) 10463 (lowercase), 13083
     (yes_weights, no_weights)    = get_weights(word_counts)
@@ -248,7 +246,6 @@ if __name__ == "__main__":
     
     print("average: ", total_weight/count)
     
-    #testfile = "../code/deep-recursive/trees/dev.txt"
-    ttrees = load_trees.get_trees("../code/deep-recursive/trees/test.txt")
+    ttrees = load_trees.get_trees("trees/test.txt")
     indicators = get_indicators(0.675, yes_weights)
     print("accuracy: " , get_accuracy(ttrees, indicators))

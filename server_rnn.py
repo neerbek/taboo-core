@@ -13,10 +13,6 @@ import theano
 import theano.tensor as T
 from datetime import datetime
 
-if __name__ == "__main__":
-    #os.chdir('/Users/neerbek/jan/phd/DLP/paraphrase/python')
-    os.chdir('/home/neerbek/jan/phd/DLP/paraphrase/python')
-
 import similarity.load_trees as load_trees
 
 import deeplearning_tutorial.rnn4 as nn_model
@@ -49,9 +45,9 @@ def initialize_state(max_count=-1):
         state.is_initialized = True
 
 def load_model(trainer, max_count=-1):
-    state.train_trees = load_trees.get_trees('../code/deep-recursive/trees/train.txt', max_count)
-    state.valid_trees = load_trees.get_trees('../code/deep-recursive/trees/dev.txt', max_count)
-    state.test_trees = load_trees.get_trees('../code/deep-recursive/trees/test.txt', max_count)
+    state.train_trees = load_trees.get_trees('trees/train.txt', max_count)
+    state.valid_trees = load_trees.get_trees('trees/dev.txt', max_count)
+    state.test_trees = load_trees.get_trees('trees/test.txt', max_count)
     rnn_enron.initializeTrees(state.train_trees, state.LT)
     rnn_enron.initializeTrees(state.valid_trees, state.LT)
     rnn_enron.initializeTrees(state.test_trees, state.LT)
@@ -179,7 +175,7 @@ class RNNWrapper:
         nn_model.load(self.rnn, filename)
 
 
-#train = load_trees.get_trees('../code/deep-recursive/trees/train.txt')
+#train = load_trees.get_trees('trees/train.txt')
 #rnn_enron.initializeTrees(train, state.LT)
 #train_trees = train[100:200]
 #(list_root_indexes, x_val, y_val) = rnn_enron.getInputArrays(rnn.rnn, train_trees, evaluator)
