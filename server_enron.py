@@ -13,14 +13,7 @@ import json
 app = Flask(__name__)
 
 import numpy as np
-#import os
 import sys
-
-#os.chdir('/Users/neerbek/jan/phd/DLP/paraphrase/python')
-#if __name__ == "__main__":
-#    os.chdir('/Users/neerbek/jan/phd/DLP/paraphrase/python')
-#    #os.chdir('/home/neerbek/jan/phd/DLP/paraphrase/python')
-
 
 import rnn_enron
 import server_rnn

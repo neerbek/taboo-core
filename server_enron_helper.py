@@ -13,9 +13,6 @@ import time
 import re
 from collections import defaultdict
 
-if __name__ == "__main__":
-    os.chdir('/home/neerbek/jan/phd/DLP/paraphrase/python')
-
 import server_rnn
 import inference_enron
 import EnronDocument
@@ -238,6 +235,10 @@ def remove_unfound_files(doclist, l):
         emailid = EnronDocument.EnronDocument.get_parent_id(d.fileid)
         if emailid in doclist and d.fileid in doclist[emailid].docs:
             new_label_list.append(d)
+    if len(l)!=len(new_label_list):
+        print("removed {} unfound documents!".format(len(l)-len(new_label_list)))
+    else:
+        print("All labeled files found!")
     return new_label_list
 
 
@@ -251,7 +252,6 @@ def load_labeled_documents(labelfile, document_root, problem_label):
     pos,neg,not_rated = labels.get_labels(problem_label)
     doclist = load_doclist(document_root)
 
-    #TODO: remove this
     #removing unknown emails (because we are working on a debug subset)
     pos = remove_unfound_files(doclist, pos)
     neg = remove_unfound_files(doclist, neg)
@@ -264,11 +264,12 @@ def load_labeled_documents(labelfile, document_root, problem_label):
     for d in doc2:
         d.text = clean_text(d.text)
 
+    i=0
     for i in range(len(doc2)):
         d = doc2[i]
         if d.enron_label.relevance==0:
             d.enron_label.relevance="0"
-        elif d.enron_label.relevance==4:
+        elif d.enron_label.relevance==1:
             d.enron_label.relevance="4"
         else:
             raise Exception("unknown label encountered {}".format(d.enron_label.relevance))
