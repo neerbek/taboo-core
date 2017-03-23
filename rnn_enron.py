@@ -86,6 +86,7 @@ def get_nltk_parsed_tree_from_sentence(l2, parser, timers, parserStatistics):
         print("failed to join w: {}".format(w))
         raise
     l2_copy = l2_copy.replace(' . ','. ').replace(' , ',', ').replace(' ; ','; ').replace(' : ',': ')
+    l2_copy = l2_copy.replace(' :; ',':; ')
     l2_copy = l2_copy.replace(' .\n','.\n').replace(' ,\n',',\n').replace(' ;\n',';\n').replace(' :\n',':\n')
     if len(l2_copy)>1 and l2_copy[-2] == ' ':
         if l2_copy[-1]=='.' or l2_copy[-1]==',' or l2_copy[-1]==';' or l2_copy[-1]==':':
