@@ -230,8 +230,6 @@ def get_word_embeddings(file, rng, max_count=-1):
                 splitcount = len(e)
             if splitcount!=len(e):
                 raise Exception(fn + "Wrong number of splits was: {}, expected: {}".format(len(e), splitcount))
-            #TODO: use .lower()
-            #w = e[0].lower()
             if e[0].lower() != e[0]:  #islower fails for ","
                 raise Exception("word embedding was expected to lower case: " + e[0])
             w = e[0]            
@@ -788,7 +786,6 @@ def run(n_epochs):
 #without eval timer full calc
 #loop timer: Number of updates: 3. Total time: 33.70. Average time: 11.2329 sec
 #eval timer: Number of updates: 3. Total time: 0.00. Average time: 0.0000 sec
-#TODO: split W in W_upper and W_lower and see if this is farster
 #concat is approx 1.5 secs
 #max is approx 1.7-1.9 secs
 #dot is approx 3.6 secs
@@ -891,11 +888,6 @@ def run(n_epochs):
 #input timer: Number of updates: 50. Total time: 1519.39. Average time: 30.3877 sec
 #eval timer: Number of updates: 50. Total time: 0.00. Average time: 0.0000 sec
 #append timer: Number of updates: 50. Total time: 0.00. Average time: 0.0000 sec
-
-#TODO: adagrad
-#TODO: monemtum
-#DODO: output training val and cost
-#TODO: check dropout output
 
 #print("W[5,10] ", reg.reluLayer.W.get_value()[5,10])
 #load(reg)
