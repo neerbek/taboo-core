@@ -6,6 +6,8 @@ Created on Thu Sep  1 12:36:32 2016
 """
 import io;
 
+DEBUG_PRINT = False
+
 class Node:
     def __init__(self, parent):
         self.parent = parent
@@ -163,7 +165,7 @@ def parse_line(l, index, node):
         if (c==' '):
             break
         syntaxname += c
-    if len(syntaxname)==0:
+    if DEBUG_PRINT and len(syntaxname)==0:
         print("found node with no syntax name. Assuming leaf node.")
     #sep =syntaxname.find(":")
     #    if sep!=-1:
