@@ -274,6 +274,8 @@ def load_labeled_documents(labelfile, document_root, problem_label):
     load_text(documents)
     l = [[],[]]
     doc2 = [d for i,d in enumerate(documents) if keep_doc2(i,d, l)]
+    if len(documents)!=len(doc2):
+        print("Removed {} documents from original list of size {}. Removed documents were very short".format(len(documents)-len(doc2), len(documents)))
     for d in doc2:
         d.text = clean_text(d.text)
 
