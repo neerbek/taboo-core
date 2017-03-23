@@ -38,7 +38,8 @@ class ParserTest(unittest.TestCase):
         if DEBUG_PRINT: 
             for s in sentences:
                 print("***SENTENCE: " + s.sentence)
-        ttrees = server_rnn_helper.get_nltk_trees(0, sentences)
+        parserStatistics = rnn_enron.ParserStatistics()
+        ttrees = server_rnn_helper.get_nltk_trees(0, sentences, parserStatistics)
         #rnn_enron.initializeTrees(ttrees, state.LT)
         if ttrees is None:
             self.assertTrue(False, "document was empty")
@@ -73,7 +74,7 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(d.filepath, os.path.join(os.getcwd(), 'tests/resources/enron_data_test', '3.1042627.PHWXPNGVEWJDVZE4OHDV2Z0GNLRJVO5SA.txt'))
         self.assertEqual(d.text.strip(), "Li Doyle")
         d = docmap[fileids[0]]
-        t = self.get_trees_from_doc(d, 22)
+        t = self.get_trees_from_doc(d, 24)
         self.assertIsNotNone(t, "expected tree")
         
     def test_header_line_break(self):

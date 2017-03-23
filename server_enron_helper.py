@@ -148,7 +148,12 @@ def keep_doc2(i, d, l):
         return False
     return True
 
-
+def replace(text, key, value):
+    text = text.replace(" "+key+" ", " " + value + " ")
+    text = text.replace("\n"+key+" ", "\n" + value + " ")
+    text = text.replace(" "+key+"\n", " " + value + "\n")
+    return text
+    
 def clean_text(text, look_for_header=None):
     ###don't include footer
     pattern = "***********"
@@ -206,6 +211,17 @@ def clean_text(text, look_for_header=None):
         if include:
             s2.append(l)
     text = "\n".join(s2)
+    #nltk has problems with appreviations with dot, so we remove
+    text = replace(text, "Mr.", "Mr")
+    text = replace(text, "Mrs.", "Mrs")
+    text = replace(text, "Ms.", "Ms")
+    text = replace(text, "i.e.", "ie")
+    text = replace(text, "Inc.", "Inc")
+    text = replace(text, "U.S.", "US")
+    text = replace(text, "P.O.", "PO")
+    text = replace(text, "No.", "No")
+    text = replace(text, "A.", "A:")
+    text = replace(text, "B.", "B:")
     ###add punctuation in emails where \n is used as punctuation. E.g.
     ###if we have newline and last char was not punctuation and
     ###next char isuppper -> then add '.'
@@ -221,9 +237,6 @@ def clean_text(text, look_for_header=None):
                 length += 1
                 index += 1
         index = text.find("\n", index+1)
-    #nltk has problems with appreviations with dot, so we remove
-    text = text.replace("Mr. ", "Mr ").replace("Mrs. ", "Mrs ").replace("Ms. ", "Ms ")
-    text = text.replace("i.e. ", "ie ")
     return text
 
 
@@ -264,7 +277,6 @@ def load_labeled_documents(labelfile, document_root, problem_label):
     for d in doc2:
         d.text = clean_text(d.text)
 
-    i=0
     for i in range(len(doc2)):
         d = doc2[i]
         if d.enron_label.relevance==0:

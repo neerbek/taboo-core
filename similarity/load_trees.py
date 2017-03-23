@@ -241,6 +241,16 @@ def get_trees(file, max_count=-1):
     #shared_nodes = theano.shared(numpy.asarray(nodes))
     return trees
             
+def put_trees(file, trees):
+    count = 0
+    fn = "put_trees "   #function name
+    with io.open(file,'w',encoding='utf8') as f:
+        for t in trees:
+            l = output(t)
+            f.write(l+"\n")
+            count += 1
+    print(fn + "done. Count={}".format(count))
+
 def escape_sentence(l2):
     "removes parenteses and other stuff from sentence"
     l2 = l2.replace('(', '-LRB- ').replace(')', ' -RRB-')

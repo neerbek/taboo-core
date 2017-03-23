@@ -6,7 +6,6 @@ Created on Thu Feb 23 15:11:21 2017
 """
 
 
-import os
 import numpy
 from numpy.random import RandomState
 import theano
@@ -36,10 +35,8 @@ def setWordSize(wordSize):
 def initialize_state(max_count=-1):
     if not state.is_initialized:
         setWordSize(50)
-        state.LT = rnn_enron.get_word_embeddings("../code/glove/glove.6B.{}d.txt".format(state.nx), max_count)
-        prng = RandomState(1234)
-        unknown = prng.uniform(-1, 1, size=state.nx)
-        state.LT[rnn_enron.UNKNOWN_WORD] = unknown
+        rng = RandomState(1234)
+        state.LT = rnn_enron.get_word_embeddings("../code/glove/glove.6B.{}d.txt".format(state.nx), rng, max_count)
         rnn_enron.Ctxt.evaltimer = TrainTimer("eval timer")
         rnn_enron.Ctxt.appendtimer = TrainTimer("append timer")
         state.is_initialized = True

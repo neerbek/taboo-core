@@ -49,8 +49,10 @@ class Timers:
         if (t-self.lastReport <min_seconds):
             return False
         self.lastReport = t
-        for t in self.timers:
-            t.report()
+        self.ckyTimer.report()
+        self.totalTimer.report()
+        #for t in self.timers:
+        #    t.report()
         return True
         
 def add_node(tree, child):
@@ -65,8 +67,15 @@ def add_node(tree, child):
     t.parent=tree
     return t
     
-def get_nltk_parsed_tree_from_sentence(l2, parser, timers):
+class ParserStatistics:
+    def __init__(self):
+        self.sentences = 0
+        self.splits = 0
+        self.empties = 0
+
+def get_nltk_parsed_tree_from_sentence(l2, parser, timers, parserStatistics):
     fn = "nltk_parser_single_sentence"   #function name
+    parserStatistics.sentences += 1
     l2 = load_trees.escape_sentence(l2)
     w = parser.tokenizer.tokenize(l2)
     l2_copy = None
@@ -90,6 +99,7 @@ def get_nltk_parsed_tree_from_sentence(l2, parser, timers):
         if len(l2)>MAX_SENTENCE_LENGTH:
             index = l2.find(' ', int(MAX_SENTENCE_LENGTH/2))
             if index!=-1:
+                parserStatistics.splits += 1
                 if DEBUG_PRINT:
                     print("Splitting long sentence: {}".format(len(l2)))
                 tmp = l2[:index]
@@ -109,8 +119,9 @@ def get_nltk_parsed_tree_from_sentence(l2, parser, timers):
         if tree is not None:
             trees.append(tree)
         else:
+            parserStatistics.empties += 1
             print("Warning: No tree obtained from parser. Sentence was: " + tmp)
-            return None
+            continue
     if len(trees)==0:
         return None
     root = None
@@ -143,6 +154,7 @@ def get_nltk_parsed_trees_from_list(lines):
     parser = StatisticTextParser()
     fn = "nltk_parser"   #function name
     #f = io.open(file,'r',encoding='utf8')
+    parserStatistics = ParserStatistics()
     for line in lines:
         timers.totalTimer.begin()
         line = line[:-1]   #strips newline. But consider: http://stackoverflow.com/questions/509446/python-reading-lines-w-o-n
@@ -156,7 +168,7 @@ def get_nltk_parsed_trees_from_list(lines):
         l2 = l2.replace('\xa0',' ')   #some leftover non ascii codes xa0=line feed
         tree=None
         try:
-            tree = get_nltk_parsed_tree_from_sentence(l2, parser, timers)
+            tree = get_nltk_parsed_tree_from_sentence(l2, parser, timers, parserStatistics)
         except Exception:
             timers.end()
             print("error for line " + l2)
@@ -175,7 +187,7 @@ def get_nltk_parsed_trees_from_list(lines):
             timers.report()
             sys.stdout.flush()
     print(fn + " done. Count={}".format(count))
-    return trees
+    return (parserStatistics, trees)
 
 file = "trees/train.txt"
 def get_nltk_parsed_trees_from_file(file, start_from = -1, max_count=-1):
@@ -191,9 +203,10 @@ def get_nltk_parsed_trees_from_file(file, start_from = -1, max_count=-1):
         lines = lines[start_from:]
     if max_count>-1:
         lines = lines[:max_count]
-    return get_nltk_parsed_trees_from_list(lines)
+    (parserStatistics, trees) = get_nltk_parsed_trees_from_list(lines)
+    return trees
 
-def get_word_embeddings(file, max_count=-1):
+def get_word_embeddings(file, rng, max_count=-1):
     count = 0
     fn = "EmbeddingReader "   #function name
     res = {}
@@ -210,12 +223,19 @@ def get_word_embeddings(file, max_count=-1):
                 raise Exception(fn + "Wrong number of splits was: {}, expected: {}".format(len(e), splitcount))
             #TODO: use .lower()
             #w = e[0].lower()
+            if e[0].lower() != e[0]:  #islower fails for ","
+                raise Exception("word embedding was expected to lower case: " + e[0])
             w = e[0]            
             arr = numpy.array([float(it) for it in e[1:]])   #.reshape(1,50)
             res[w] = arr
             count +=1
             if count%60000 == 0:
                 print(fn + "extracted: ", count)
+    if len(res)>0:
+        arr = next(iter(res.values()))  #get "random" element
+        nx = len(arr)
+        unknown = rng.uniform(-1, 1, size=nx)
+        res[UNKNOWN_WORD] = unknown
     print(fn + "done. Count={}".format(count))
     return res
 
@@ -895,12 +915,7 @@ if __name__ == "__main__":
     
     nx = 50
     Evaluator.set_size(nx)
-    LT = get_word_embeddings("../code/glove/glove.6B.{}d.txt".format(nx))
-    
-    prng = RandomState(1234)
-    unknown = prng.uniform(-1, 1, size=nx)   #.reshape(1,nx)
-    unknown.shape
-    LT[UNKNOWN_WORD] = unknown
+    LT = get_word_embeddings("../code/glove/glove.6B.{}d.txt".format(nx), RandomState(1234))
     len(LT)
     
     LT[UNKNOWN_WORD]

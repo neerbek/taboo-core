@@ -65,7 +65,8 @@ def run_rnn():
     else: 
         print("parsing text")
         indexed_sentences = server_rnn_helper.get_indexed_sentences(text)
-        trees = server_rnn_helper.get_nltk_trees(0, indexed_sentences)
+        parserStatistics = rnn_enron.ParserStatistics()
+        trees = server_rnn_helper.get_nltk_trees(0, indexed_sentences, parserStatistics)
         for t in trees:
             t.replace_nodenames("0")
         rnn_enron.initializeTrees(trees, server_rnn.state.LT)
@@ -113,9 +114,10 @@ def load_model_data():
     train_index = int(total_index*train_ratio)
     dev_index = int(len(doc2)*dev_ratio)
     print("***totalindex:", total_index, train_index, dev_index)
-    train_trees = server_rnn_helper.get_trees(doc2[:train_index], server_rnn.state.LT)
-    dev_trees = server_rnn_helper.get_trees(doc2[train_index:dev_index], server_rnn.state.LT)
-    test_trees = server_rnn_helper.get_trees(doc2[dev_index:], server_rnn.state.LT)
+    parserStatistics = rnn_enron.ParserStatistics()
+    train_trees = server_rnn_helper.get_trees(doc2[:train_index], server_rnn.state.LT, parserStatistics)
+    dev_trees = server_rnn_helper.get_trees(doc2[train_index:dev_index], server_rnn.state.LT, parserStatistics)
+    test_trees = server_rnn_helper.get_trees(doc2[dev_index:], server_rnn.state.LT, parserStatistics)
     print("***trees loaded")
     serverState.train_trees = train_trees
     serverState.valid_trees = dev_trees
@@ -216,7 +218,8 @@ def get_examples():
         sent.endIndex = len(txt)
         res.append(sent)
     res = res[:10]
-    trees = server_rnn_helper.get_nltk_trees(0, res)
+    parserStatistics = rnn_enron.ParserStatistics()
+    trees = server_rnn_helper.get_nltk_trees(0, res, parserStatistics)
     for t in trees:
         t.replace_nodenames("0")
     rnn_enron.initializeTrees(trees, server_rnn.state.LT)
