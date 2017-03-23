@@ -71,10 +71,11 @@ class ParserStatistics:
     def __init__(self):
         self.sentences = 0
         self.splits = 0
-        self.empties = 0
+        self.emptySubTrees = 0
+        self.emptySentenceTrees = 0
 
 def get_nltk_parsed_tree_from_sentence(l2, parser, timers, parserStatistics):
-    fn = "nltk_parser_single_sentence"   #function name
+    fn = "get_nltk_parsed_tree_from_sentence"   #function name
     parserStatistics.sentences += 1
     l2 = load_trees.escape_sentence(l2)
     w = parser.tokenizer.tokenize(l2)
@@ -86,7 +87,7 @@ def get_nltk_parsed_tree_from_sentence(l2, parser, timers, parserStatistics):
         raise
     l2_copy = l2_copy.replace(' . ','. ').replace(' , ',', ').replace(' ; ','; ').replace(' : ',': ')
     l2_copy = l2_copy.replace(' .\n','.\n').replace(' ,\n',',\n').replace(' ;\n',';\n').replace(' :\n',':\n')
-    if len(l2)>1 and l2_copy[-2] == ' ':
+    if len(l2_copy)>1 and l2_copy[-2] == ' ':
         if l2_copy[-1]=='.' or l2_copy[-1]==',' or l2_copy[-1]==';' or l2_copy[-1]==':':
             l2_copy = l2_copy[:-2] + l2_copy[-1]
     l2 = l2.strip()
@@ -94,6 +95,7 @@ def get_nltk_parsed_tree_from_sentence(l2, parser, timers, parserStatistics):
     if len(l2)>MAX_SENTENCE_LENGTH and DEBUG_PRINT_VERBOSE:
         print("Going to split long sentence: {}".format(len(l2)))
         print(l2)
+    subsentence_skipped=False
     while len(l2)>0:
         tmp = None
         if len(l2)>MAX_SENTENCE_LENGTH:
@@ -119,10 +121,13 @@ def get_nltk_parsed_tree_from_sentence(l2, parser, timers, parserStatistics):
         if tree is not None:
             trees.append(tree)
         else:
-            parserStatistics.empties += 1
+            parserStatistics.emptySubTrees += 1
             print("Warning: No tree obtained from parser. Sentence was: " + tmp)
+            #continue here yields problems as the final tree will generate a different tree
+            subsentence_skipped=True
             continue
     if len(trees)==0:
+        parserStatistics.emptySentenceTrees += 1
         return None
     root = None
     if len(trees)==1:
@@ -140,10 +145,14 @@ def get_nltk_parsed_tree_from_sentence(l2, parser, timers, parserStatistics):
                 tree.right = trees[i]
                 trees[i].parent=tree
             i += 1
-    l3 = load_trees.output_sentence(root)    
-    l3 = l3.strip()
-    if l2_copy!=l3: #final sentence must be the same
-        raise Exception(fn + " marshall and unmarshalling differs" + "\n" + l2_copy + "\n" + l3)
+    if not subsentence_skipped:
+        #we can only compare if we have skipped no subsentences
+        l3 = load_trees.output_sentence(root)    
+        l3 = l3.strip()
+        if l2_copy!=l3: #final sentence must be the same
+            raise Exception(fn + " marshall and unmarshalling differs" + "\n" + l2_copy + "\n" + l3)
+    if root==None:
+        parserStatistics.emptySentenceTrees += 1
     return root
 
 def get_nltk_parsed_trees_from_list(lines):
