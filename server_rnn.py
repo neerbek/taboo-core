@@ -16,7 +16,7 @@ import similarity.load_trees as load_trees
 
 import deeplearning_tutorial.rnn4 as nn_model
 import rnn_enron
-from ai_util import TrainTimer
+from ai_util import Timer
 
 class State:
     def __init__(self):
@@ -37,8 +37,8 @@ def initialize_state(max_count=-1):
         setWordSize(50)
         rng = RandomState(1234)
         state.LT = rnn_enron.get_word_embeddings("../code/glove/glove.6B.{}d.txt".format(state.nx), rng, max_count)
-        rnn_enron.Ctxt.evaltimer = TrainTimer("eval timer")
-        rnn_enron.Ctxt.appendtimer = TrainTimer("append timer")
+        rnn_enron.Ctxt.evaltimer = Timer("eval timer")
+        rnn_enron.Ctxt.appendtimer = Timer("append timer")
         state.is_initialized = True
 
 def load_model(trainer, max_count=-1):

@@ -22,7 +22,7 @@ import theano.tensor as T
 import similarity.load_trees as load_trees
 import deeplearning_tutorial.rnn4 as rnn
 #reload(rnn)
-from ai_util import TrainTimer
+from ai_util import Timer
 from StatisticTextParser import StatisticTextParser
 
 MAX_SENTENCE_LENGTH=600      #set lower if you need parsing to happen faster
@@ -32,11 +32,11 @@ DEBUG_PRINT = True
 
 class Timers:
     def __init__(self):
-        self.totalTimer = TrainTimer("total time")
-        self.gettreeTimer = TrainTimer("gettree time")
-        self.nltkTimer = TrainTimer("nltk time")
-        self.normTimer = TrainTimer("norm parse time")
-        self.ckyTimer = TrainTimer("CKY time")
+        self.totalTimer = Timer("total time")
+        self.gettreeTimer = Timer("gettree time")
+        self.nltkTimer = Timer("nltk time")
+        self.normTimer = Timer("norm parse time")
+        self.ckyTimer = Timer("CKY time")
         self.timers = [self.totalTimer, self.gettreeTimer, self.nltkTimer, self.normTimer, self.ckyTimer]
         self.lastReport = time.time()
     def end(self):
@@ -470,8 +470,8 @@ class Evaluator:
             
 
 class Ctxt:
-    evaltimer = TrainTimer("eval timer")
-    appendtimer = TrainTimer("append timer")
+    evaltimer = Timer("eval timer")
+    appendtimer = Timer("append timer")
 
 def addNodeRepresentations(reg, node, x_val, y_val, evaluator):
     if node == None:
@@ -584,12 +584,12 @@ def run(n_epochs):
     validation_frequency = n_train_batches/2
     epoch = 0
     it = 0
-    totaltimer = TrainTimer("loop timer")
-    traintimer = TrainTimer("train timer")
-    validtimer = TrainTimer("validation timer")
-    inputtimer = TrainTimer("input timer")
-    Ctxt.evaltimer = TrainTimer("eval timer")
-    Ctxt.appendtimer = TrainTimer("append timer")
+    totaltimer = Timer("loop timer")
+    traintimer = Timer("train timer")
+    validtimer = Timer("validation timer")
+    inputtimer = Timer("input timer")
+    Ctxt.evaltimer = Timer("eval timer")
+    Ctxt.appendtimer = Timer("append timer")
     while (n_epochs==-1 or epoch < n_epochs):
         totaltimer.begin()
         epoch += 1

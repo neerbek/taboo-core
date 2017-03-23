@@ -8,7 +8,7 @@ import nltk
 
 import rnn_enron
 from StatisticTextParser import StatisticTextParser
-from ai_util import TrainTimer
+from ai_util import Timer
 
 
 class IndexSentence:
@@ -67,7 +67,7 @@ def get_nltk_trees(doc_number, indexed_sentences, parserStatistics):
     
 def get_trees(docs, lookupTable, parserStatistics):
     trees = []
-    timer = TrainTimer("****Parsed document")
+    timer = Timer("****Parsed document")
     timer.begin()
     for i, d in enumerate(docs):
         text = d.text

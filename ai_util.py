@@ -6,12 +6,8 @@ Created on Sat Jan  7 08:16:27 2017
 """
 import time
 
-from importlib import reload
-reload(time)  #to get rid of warning from reload being unused :)
-
-
-class TrainTimer:
-    def __init__(self, name = "TrainTimer"):
+class Timer:
+    def __init__(self, name = "Timer"):
         self.elapsed = 0
         self.start = None
         self.count = 0
@@ -24,7 +20,7 @@ class TrainTimer:
             self.elapsed += end -self.start
             self.count += count
         else:
-            print("TrainTimer {} end() called, but timer is not started".format(self.name))
+            print("{} end() called, but timer is not started".format(self.name))
         return self
     def ratio(self):
         "seconds per count"

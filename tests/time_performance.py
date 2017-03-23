@@ -13,10 +13,10 @@ from numpy.random import RandomState
 
 import ai_util
 ai_util.reload(ai_util)
-from ai_util import TrainTimer
+from ai_util import Timer
 
 def timeAppend(): 
-    totaltimer = TrainTimer("totaltimer")
+    totaltimer = Timer("totaltimer")
     totaltimer.begin()
     nx = 50
     ny=5
@@ -38,7 +38,7 @@ def timeAppend():
         y_in[index] = ry_in[i]
     x_val=[empty for i in range(count)]
     y_val=[empty for i in range(count)]
-    appendtimer = TrainTimer("appendtimer")
+    appendtimer = Timer("appendtimer")
     appendtimer.begin()
     for i in range(count):
         #appendtimer.begin()
@@ -48,7 +48,7 @@ def timeAppend():
     appendtimer.end()
     x2_val=[empty for i in range(count)]
     y2_val=[empty for i in range(count)]
-    appendtimer2 = TrainTimer("appendtimer2")  
+    appendtimer2 = Timer("appendtimer2")  
     appendtimer2.begin()
     for i in range(count):
         #appendtimer2.begin()
@@ -58,7 +58,7 @@ def timeAppend():
     appendtimer2.end()
     x3_val=[empty for i in range(count)]
     y3_val=[empty for i in range(count)]
-    appendtimer3 = TrainTimer("appendtimer3_copy")  
+    appendtimer3 = Timer("appendtimer3_copy")  
     appendtimer3.begin()
     for i in range(count):
         #appendtimer2.begin()
