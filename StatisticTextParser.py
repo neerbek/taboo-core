@@ -58,11 +58,12 @@ class StatisticTextParser:
         ntree = self.nltk_tree(tree)
         timers.nltkTimer.end()
         line = " " + ntree.__str__()  #serialize ntree and add ' ' at start
-        line = line.replace("\n","")     #remove newlines
-        line2 = line.replace("  "," ")
-        while (line2!=line):             #remove extra spaces
-            line = line2
-            line2 = line.replace("  "," ")        
+        line = " " + ntree._pformat_flat(nodesep='', parens='()', quotes=False)
+#        line = line.replace("\n","")     #remove newlines
+#        line2 = line.replace("  "," ")
+#        while (line2!=line):             #remove extra spaces
+#            line = line2
+#            line2 = line.replace("  "," ")        
         if not line.startswith(" ("):
             raise Exception("train parser" + " line does not start with \" (\"")
         t = load_trees.Node(None)
