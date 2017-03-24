@@ -79,18 +79,38 @@ def get_nltk_parsed_tree_from_sentence(l2, parser, timers, parserStatistics):
     parserStatistics.sentences += 1
     l2 = load_trees.escape_sentence(l2)
     w = parser.tokenizer.tokenize(l2)
-    l2_copy = None
-    try:
-        l2_copy = ' '.join(w)   #normalize whitespaces
-    except TypeError:
-        print("failed to join w: {}".format(w))
-        raise
-    l2_copy = l2_copy.replace(' . ','. ').replace(' , ',', ').replace(' ; ','; ').replace(' : ',': ')
-    l2_copy = l2_copy.replace(' :; ',':; ')
-    l2_copy = l2_copy.replace(' .\n','.\n').replace(' ,\n',',\n').replace(' ;\n',';\n').replace(' :\n',':\n')
-    if len(l2_copy)>1 and l2_copy[-2] == ' ':
-        if l2_copy[-1]=='.' or l2_copy[-1]==',' or l2_copy[-1]==';' or l2_copy[-1]==':':
-            l2_copy = l2_copy[:-2] + l2_copy[-1]
+    #we generate a copy of l2 to test the final string from the parser (they should be the same)
+    l2_copy = ""
+    i = 0
+    if i<len(w):
+        l2_copy = w[0]
+        i += 1
+        while i<len(w):
+            add_space=True
+            e = w[i]
+            if len(e)>1:
+                pre = e[0:2]
+                if pre=='.\n' or pre==',\n' or pre==':\n' or pre==';\n':
+                    add_space=False
+#                elif e=="'s":
+#                    add_space=False
+            elif e=='.' or e==',' or e==';' or e==':':
+                add_space=False
+            if add_space:
+                l2_copy += " "            
+            l2_copy += e        
+            i += 1
+#    try:
+#        l2_copy = ' '.join(w)   #normalize whitespaces
+#    except TypeError:
+#        print("failed to join w: {}".format(w))
+#        raise
+#    l2_copy = l2_copy.replace(' . ','. ').replace(' , ',', ').replace(' ; ','; ').replace(' : ',': ')
+#    l2_copy = l2_copy.replace(' :; ',':; ')
+#    l2_copy = l2_copy.replace(' .\n','.\n').replace(' ,\n',',\n').replace(' ;\n',';\n').replace(' :\n',':\n')
+#    if len(l2_copy)>1 and l2_copy[-2] == ' ':
+#        if l2_copy[-1]=='.' or l2_copy[-1]==',' or l2_copy[-1]==';' or l2_copy[-1]==':':
+#            l2_copy = l2_copy[:-2] + l2_copy[-1]
     l2 = l2.strip()
     trees=[]
     if len(l2)>MAX_SENTENCE_LENGTH and DEBUG_PRINT_VERBOSE:
