@@ -5,6 +5,7 @@ https://class.coursera.org/nlangp-001/class
 from collections import defaultdict
 from pprint import pprint
 
+MAX_TIME_FORWARD = 120 #wait max 2 minutes on forward pass
 try:
     from nltk import Tree
     
@@ -81,7 +82,10 @@ def CKY(pcfg, norm_words):
                 if score > 0.0:
                     bp[i, j, X], pi[i, j, X] = back, score
             timerList.forwardTimer.end()
-            timerList.report(min_seconds=5, update_timers=True)
+            if timerList.report(min_seconds=5, update_timers=True):
+                if timerList.forwardTimer.elapsed > MAX_TIME_FORWARD:
+                    print("Forward pass is taking too long. Aborting")
+                    return None
     _, top = max([(pi[1, n, X], bp[1, n, X]) for X in pcfg.N])
     timerList.backwardTimer.begin()
     return backtrace(top, bp, timerList)
