@@ -113,38 +113,23 @@ def load_doclist(dirname):  #TODO: does not work for relative paths...
     return db
 
 
-def get_enron_documents(documents, label_list, doclist):
-    for d in label_list:
-        emailid = EnronDocument.EnronDocument.get_parent_id(d.fileid)
-        filepath = doclist[emailid].docs[d.fileid]
-        documents.append(EnronDocument.EnronText(d, filepath))
+def get_enron_documents(documents, label_list, enronDocuments):
+    for enronLabel in label_list:
+        emailid = EnronDocument.EnronDocument.get_parent_id(enronLabel.fileid)
+        filepath = enronDocuments[emailid].docs[enronLabel.fileid]
+        documents.append(EnronDocument.EnronText(enronLabel, filepath))
 
 
-def load_text(documents):
-    start = time.time()
-    for i, d in enumerate(documents):
-        d.load_text()
-        d.text = re.sub(r'[^\x09-\x7f]', r'', d.text) #remove non-ascii
-        if i % 200 == 0:
-            print(i, "time elapsed is: {}".format(time.time() - start))
-            #load_time = 0
-            #split_time=0
-    done = time.time()
-    print("Docs read. time elapsed is:", done - start)
 
 def get_indexes(text, char):
     indexes = [i for i,c in enumerate(text) if c==char]
     return indexes
 
-def keep_doc2(i, d, l): 
+def keep_doc2(i, d): 
     # keep documents that only contain header as subject or person might be tricker for labeling
     if len(d.text)<10:
-        l[0].append(d.enron_label.relevance)
-        l[1].append(i)
         return False
     if len(get_indexes(d.text, "\n"))<= 3 and (d.text.startswith("URL") or d.text.startswith("Attachment") or d.text.startswith("[InternetShort")):
-        l[0].append(d.enron_label.relevance)
-        l[1].append(i)
         return False
     return True
 
@@ -222,6 +207,9 @@ def clean_text(text, look_for_header=None):
     text = replace(text, "No.", "No")
     text = replace(text, "A.", "A:")
     text = replace(text, "B.", "B:")
+    #nltk has problems with '
+    text = text.replace("'", "")
+
     ###add punctuation in emails where \n is used as punctuation. E.g.
     ###if we have newline and last char was not punctuation and
     ###next char isuppper -> then add '.'
@@ -239,7 +227,20 @@ def clean_text(text, look_for_header=None):
         index = text.find("\n", index+1)
     return text
 
-
+def load_text(enronTexts):
+    start = time.time()
+    for i, d in enumerate(enronTexts):
+        d.load_text()
+        d.text = re.sub(r'[^\x09-\x7f]', r'', d.text) #remove non-ascii
+        if i % 200 == 0:
+            print(i, "time elapsed is: {}".format(time.time() - start))
+            #load_time = 0
+            #split_time=0
+    doc2 = [d for i,d in enumerate(enronTexts) if keep_doc2(i,d)]
+    for d in doc2:
+        d.text = clean_text(d.text)
+    print("EnronTexts read. time elapsed is:", time.time() - start)
+    return doc2
 
 def remove_unfound_files(doclist, l):
     #removing unknown emails (because we are working on a debug subset)
@@ -271,13 +272,9 @@ def load_labeled_documents(labelfile, document_root, problem_label):
     documents = []
     get_enron_documents(documents, pos, doclist)        
     get_enron_documents(documents, neg, doclist)       
-    load_text(documents)
-    l = [[],[]]
-    doc2 = [d for i,d in enumerate(documents) if keep_doc2(i,d, l)]
+    doc2 = load_text(documents)
     if len(documents)!=len(doc2):
         print("Removed {} documents from original list of size {}. Removed documents were very short".format(len(documents)-len(doc2), len(documents)))
-    for d in doc2:
-        d.text = clean_text(d.text)
 
     for i in range(len(doc2)):
         d = doc2[i]

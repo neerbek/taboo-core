@@ -11,6 +11,8 @@ from StatisticTextParser import StatisticTextParser
 from ai_util import Timer
 
 
+DEBUG_PRINT=True
+
 class IndexSentence:
     def __init__(self, index, sentence):
         self.beginIndex = index
@@ -39,7 +41,7 @@ def get_indexed_sentences(text):
         index = i + len(s)
     return res
     
-def get_nltk_trees(doc_number, indexed_sentences, parserStatistics):    
+def get_nltk_trees(doc_number, indexed_sentences, parserStatistics=rnn_enron.ParserStatistics()):    
     parser = StatisticTextParser()
     timers = rnn_enron.Timers()
     prev_sent_number = -2
@@ -52,7 +54,9 @@ def get_nltk_trees(doc_number, indexed_sentences, parserStatistics):
             if timers.report(min_seconds=5):
                 print("Doc: {}, Completed sentence {} (of {})".format(doc_number, sent_number+1, len(indexed_sentences)))
                 if sent_number==prev_sent_number+1:
-                    print("Long parse of sent: " + s.sentence)
+                    print("Long parse of sent")
+                    if rnn_enron.DEBUG_PRINT_VERBOSE:
+                        print(s.sentence)
                 prev_sent_number = sent_number
     if rnn_enron.DEBUG_PRINT:
         timers.report()
@@ -65,15 +69,20 @@ def get_nltk_trees(doc_number, indexed_sentences, parserStatistics):
             print("get_nltk_trees: got empty tree")
     return trees
     
-def get_trees(docs, lookupTable, parserStatistics):
+def get_trees(enronTexts, lookupTable, parserStatistics):
     trees = []
     timer = Timer("****Parsed document")
     timer.begin()
-    for i, d in enumerate(docs):
+    for i, d in enumerate(enronTexts):
         text = d.text
         label = d.enron_label.relevance
         sentences = get_indexed_sentences(text)
-        ttrees = get_nltk_trees(i, sentences, parserStatistics)
+        ttrees = None
+        try:
+            ttrees = get_nltk_trees(i, sentences, parserStatistics)
+        except:
+            print("Failed on " + d.filepath)
+            raise
         if ttrees is None:
             print("Got empty result on length {} indexed sentences".format(len(sentences)))
             continue
@@ -81,9 +90,10 @@ def get_trees(docs, lookupTable, parserStatistics):
             t.replace_nodenames(label)
         rnn_enron.initializeTrees(ttrees, lookupTable)
         trees.extend(ttrees)
-        if rnn_enron.DEBUG_PRINT:
+        if DEBUG_PRINT:
             timer.end()
             timer.report(i+1)
+            print(d.filepath)
             timer.begin()
     return trees
 

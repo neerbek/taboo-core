@@ -21,23 +21,34 @@ from stat_parser.tokenizer import PennTreebankTokenizer
 from stat_parser.treebanks.normalize import un_chomsky_normal_form
 from stat_parser.word_classes import is_cap_word
 
+from ai_util import Timer, TimerList
+
 def argmax(lst):
     return max(lst) if lst else (0.0, None)
 
 
-def backtrace(back, bp):
+def backtrace(back, bp, timerList):
+    timerList.report(min_seconds=5, update_timers=True)
     # Extract the tree from the backpointers
     if not back: return None
     if len(back) == 6:
         (X, Y, Z, i, s, j) = back
-        return [X, backtrace(bp[i  , s, Y], bp),
-                   backtrace(bp[s+1, j, Z], bp)]
+        return [X, backtrace(bp[i  , s, Y], bp, timerList),
+                   backtrace(bp[s+1, j, Z], bp, timerList)]
     else:
         (X, Y, i, i) = back
         return [X, Y]
 
 
 def CKY(pcfg, norm_words):
+    timerList = TimerList()
+    timerList.totalTimer = Timer("total CKY time")
+    timerList.addTimer(timerList.totalTimer)
+    timerList.forwardTimer = Timer("forward pass")
+    timerList.addTimer(timerList.forwardTimer)
+    timerList.backwardTimer = Timer("backward pass")
+    timerList.addTimer(timerList.backwardTimer)
+    timerList.totalTimer.begin()
     x, n = [("", "")] + norm_words, len(norm_words)
     
     # Charts
@@ -53,6 +64,7 @@ def CKY(pcfg, norm_words):
     # Dynamic program
     for l in range(1, n):
         for i in range(1, n-l+1):
+            timerList.forwardTimer.begin()
             j = i+l
             for X in pcfg.N:
                 # Note that we only check rules that exist in training
@@ -68,9 +80,11 @@ def CKY(pcfg, norm_words):
                 
                 if score > 0.0:
                     bp[i, j, X], pi[i, j, X] = back, score
-    
+            timerList.forwardTimer.end()
+            timerList.report(min_seconds=5, update_timers=True)
     _, top = max([(pi[1, n, X], bp[1, n, X]) for X in pcfg.N])
-    return backtrace(top, bp)
+    timerList.backwardTimer.begin()
+    return backtrace(top, bp, timerList)
 #len(parser.pcfg.N)
 #parser.pcfg.N
 class Parser:

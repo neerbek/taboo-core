@@ -19,6 +19,7 @@ class Timer:
             end = time.time()
             self.elapsed += end -self.start
             self.count += count
+            self.start = None
         else:
             print("{} end() called, but timer is not started".format(self.name))
         return self
@@ -31,3 +32,35 @@ class Timer:
         if count!=None:
             self.count = count
         print("{}: Number of updates: {}. Total time: {:.2f}. Average time: {:.4f} sec".format(self.name, self.count, self.elapsed, self.ratio()))
+
+class TimerList:
+    def __init__(self):
+        self.timers = []
+        self.lastReport = time.time()
+    def addTimer(self, timer):
+        self.timers.append(timer)
+    
+    def end(self):
+        for t in self.timers:
+            if t.start!=None:
+                t.end()
+    def update(self):
+        end = time.time()
+        for t in self.timers:
+            if t.start!=None:
+                t.elapsed += end-t.start
+                t.start = end
+    def do_report(self, min_seconds=-1, t = time.time()):
+        if (t-self.lastReport <min_seconds):
+            return False
+        return True
+    def report(self, min_seconds=-1, update_timers=False):
+        t = time.time()
+        if not self.do_report(min_seconds, t):
+            return False
+        if update_timers:
+            self.update()
+        self.lastReport = t
+        for t in self.timers:
+            t.report()
+        return True

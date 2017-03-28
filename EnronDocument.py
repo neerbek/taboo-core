@@ -5,6 +5,7 @@ Created on Sun Sep  4 19:45:58 2016
 @author: neerbek
 """
 
+import os
 import io
 import nltk
 
@@ -27,8 +28,16 @@ class EnronDocument:
         return count
         
     def add_doc(self, emailid, docid, docpath):
+        if self.emailid!=None and emailid != self.emailid:
+            raise Exception("Emailid does not match! {} != {}".format(emailid, self.emailid))
         self.emailid = emailid #overwritten everytime - a bit ugly
         self.docs[docid] = docpath
+
+    def add_doc_from_path(self, docpath):
+        d, fname = os.path.spilt(docpath)
+        fileid = fname[:fname.index(".txt")]
+        emailid = EnronDocument.EnronDocument.get_parent_id(fileid)
+        self.add_doc(emailid, fileid, docpath)
 
 class EnronText:
     def __init__(self, enron_label, filepath):

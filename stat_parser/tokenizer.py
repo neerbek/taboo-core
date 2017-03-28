@@ -98,12 +98,13 @@ class PennTreebankTokenizer:
                 skip = False
             
             # Tokenization Exceptions
-            elif t == '&' and len(tokens[i+1]) == 1:
+            elif t == '&' and i+1<len(tokens) and len(tokens[i+1]) == 1:
                 if len(words)>0:
                     words[-1] += '&' + tokens[i+1]
                 skip = True
             elif t == '#':
-                words.append('#' + tokens[i+1])
+                if  i+1<len(tokens):
+                    words.append('#' + tokens[i+1])
                 skip = True
             elif t == "'s" and words[-1].isdigit():
                 words[-1] += t

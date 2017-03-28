@@ -14,6 +14,7 @@ import unittest
 import server_enron_helper
 import server_rnn_helper
 import rnn_enron
+import EnronDocument
 
 DEBUG_PRINT = False
 rnn_enron.MAX_SENTENCE_LENGTH=80
@@ -27,6 +28,7 @@ def get_id(filepath):
 
 class ParserTest(unittest.TestCase):
     #modified copy of server_enron_helper.get_trees
+
     def get_trees_from_doc(self, d, expected_count=-1):
         text = d.text
         label = d.enron_label.relevance
@@ -132,5 +134,34 @@ By:  Phillip Keith Allen
         sentences = server_rnn_helper.get_indexed_sentences(s)
         self.assertEqual(8, len(sentences), "Expected sentences count was wrong")
         
+        
+    def test_whitespace(self):
+        s ="""-LRB- B -RRB- Threshold means, with respect to a party -LRB- a -RRB- the amount set forth opposite the lowest Credit Rating for the party -LRB- or in the case of Party A, its Credit Support Provider -RRB- on the relevant date of determination; or -LRB- b -RRB- zero if on the relevant date of determination -LRB- i -RRB- the entity referred to in clause -LRB- a -RRB- above does not have a Credit Rating from either S-AMP-P or Moody's, or -LRB- ii -RRB- an Event of Default or Potential Event of Default with respect to such party has occurred and is continuing: THRESHOLD."""
+        indexedSentences = server_rnn_helper.get_indexed_sentences(s)
+        t = server_rnn_helper.get_nltk_trees(0, indexedSentences)
+        self.assertTrue(len(t)>0)
+
+    def test_whitespace2(self):
+        s ="\"Credit Rating\" means with respect to a party (or its Credit Support Provider, as the case may be) or entity, on any date of determination, the respective ratings then assigned to such party’s (or its Credit Support Provider's, as the case may be) or entity’s unsecured, senior long-term debt (not supported by third party credit enhancement) by S&P, Moody’s or the other specified rating agency or agencies."
+        indexedSentences = server_rnn_helper.get_indexed_sentences(s)
+        t = server_rnn_helper.get_nltk_trees(0, indexedSentences)
+        self.assertTrue(len(t)>0)
+
+
+    def test_whitespace_from_file2(self):
+        file="tests/resources/textExample2.txt"
+        #small/selective copy of
+        #file="/home/neerbek/jan/AIProjectsData/TREC2010/data/corpora/trec/legal10/emails/edrm-enron-v2_shackleton-s_xml.zip/text_000/3.556787.HRYCGJJUVARPMD1XCNR4OWP3T1ZWV5NWA.2.txt"        
+        enronText = EnronDocument.EnronText(0, file)        
+        enronTexts = []
+            enronTexts = server_enron_helper.load_text([enronText])
+        self.assertEqual(1, len(enronTexts), "Expected doc to not be cleaned")
+        text = enronText.text
+        sentences = server_rnn_helper.get_indexed_sentences(text)
+        trees = server_rnn_helper.get_nltk_trees(0, sentences)
+        print("got", len(trees), "trees")
+
+        
+
 if __name__ == "__main__":
     unittest.main()

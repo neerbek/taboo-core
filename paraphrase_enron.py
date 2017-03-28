@@ -19,7 +19,7 @@ print(process.memory_info().rss)
 os.chdir('/Users/neerbek/jan/phd/DLP/paraphrase/python')
 
 import similarity.load_trees as load_trees
-from server_enron_helper import clean_text, keep_doc2, get_indexes, load_labels, load_doclist
+from server_enron_helper import load_labels, load_doclist
 from server_enron_helper import load_text, get_enron_documents
 
 import util
@@ -185,72 +185,8 @@ hist = np.histogram(l)
 print(hist)
 len(documents)
 
-load_text(documents)
-
-#lengths = [len(d.text) for d in documents]
-#hist = np.histogram(lengths, bins=[0,10,20,40,80,160,500,1000,5000,10000,20000,200000])
-#print(hist)
-#
-#l = [l.enron_label.relevance for l in documents]
-#hist = np.histogram(l)
-#print(hist)
-#
-#indexes = [i for i,e in enumerate(lengths) if len(documents[i].text)>80 and len(documents[i].text)<160]
-#indexes
-#for i in indexes:
-#    print(i, documents[i].text)
-
-#indexes= []
-#for i, d in enumerate(documents):
-#    if d.text.find("Treasury")!=-1 and d.text.find("discussed")!=-1:
-#        indexes.append(i)
-#len(indexes)
-#indexes
-#documents[609].filepath.replace("\\", "/")    
-
-def keep_doc(i, d, l):
-    if len(d.text)<10:
-        l[0].append(d.enron_label.relevance)
-        l[1].append(i)
-        return False
-    if len(get_indexes(d.text, "\n"))<= 3 and (d.text.startswith("URL") or d.text.startswith("Attachment") or d.text.startswith("[InternetShort")):
-        l[0].append(d.enron_label.relevance)
-        l[1].append(i)
-        return False
-    if len(d.text)<700:
-        s = d.text.split("\nX-ZLID:")
-        if len(s)!=2:
-            return True
-        y = s[1].split("***********")
-        if len(y)!=3:
-            return True
-        if len(y[0])<60 and len(y[2])<20:
-            l[0].append(d.enron_label.relevance)
-            l[1].append(i)
-            return False
-    return True
-
-
 len(documents)
-
-#load_text()
-l = [[],[]]
-doc2 = [d for i,d in enumerate(documents) if keep_doc2(i,d, l)]
-
-
-#lengths = [len(d.text) for d in doc2]
-#hist = np.histogram(lengths, bins=[0,10,20,40,80,160,500,1000,5000,10000,20000,200000])
-#print(hist)
-
-
-#d = doc2[0]
-#len(s)
-#len(s2)
-#s2
-#l = s[1]
-
-for d in doc2:
-    d.text = clean_text(d.text)
+doc2 = load_text(documents)
 
 len(doc2)
 

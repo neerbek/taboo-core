@@ -28,6 +28,7 @@ from StatisticTextParser import StatisticTextParser
 MAX_SENTENCE_LENGTH=600      #set lower if you need parsing to happen faster
 DEBUG_PRINT_VERBOSE=False
 DEBUG_PRINT = True
+DEBUG_PRINT_ON_SPLIT = False
 
 
 class Timers:
@@ -92,25 +93,12 @@ def get_nltk_parsed_tree_from_sentence(l2, parser, timers, parserStatistics):
                 pre = e[0:2]
                 if pre=='.\n' or pre==',\n' or pre==':\n' or pre==';\n':
                     add_space=False
-#                elif e=="'s":
-#                    add_space=False
             elif e=='.' or e==',' or e==';' or e==':':
                 add_space=False
             if add_space:
                 l2_copy += " "            
             l2_copy += e        
             i += 1
-#    try:
-#        l2_copy = ' '.join(w)   #normalize whitespaces
-#    except TypeError:
-#        print("failed to join w: {}".format(w))
-#        raise
-#    l2_copy = l2_copy.replace(' . ','. ').replace(' , ',', ').replace(' ; ','; ').replace(' : ',': ')
-#    l2_copy = l2_copy.replace(' :; ',':; ')
-#    l2_copy = l2_copy.replace(' .\n','.\n').replace(' ,\n',',\n').replace(' ;\n',';\n').replace(' :\n',':\n')
-#    if len(l2_copy)>1 and l2_copy[-2] == ' ':
-#        if l2_copy[-1]=='.' or l2_copy[-1]==',' or l2_copy[-1]==';' or l2_copy[-1]==':':
-#            l2_copy = l2_copy[:-2] + l2_copy[-1]
     l2 = l2.strip()
     trees=[]
     if len(l2)>MAX_SENTENCE_LENGTH and DEBUG_PRINT_VERBOSE:
@@ -123,13 +111,15 @@ def get_nltk_parsed_tree_from_sentence(l2, parser, timers, parserStatistics):
             index = l2.find(' ', int(MAX_SENTENCE_LENGTH/2))
             if index!=-1:
                 parserStatistics.splits += 1
-                if DEBUG_PRINT:
+                if DEBUG_PRINT_ON_SPLIT:
                     print("Splitting long sentence: {}".format(len(l2)))
                 tmp = l2[:index]
                 l2 = l2[index+1:]
         if tmp is None:
             tmp = l2
             l2 = ""
+        if DEBUG_PRINT_VERBOSE:
+            print("subsentence is: " + tmp)
         tmp = tmp.strip()
         tree = None
         try:
