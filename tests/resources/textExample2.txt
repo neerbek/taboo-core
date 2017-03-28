@@ -1,0 +1,10 @@
+(i)  Paragraph 12 of this Annex is hereby amended by adding the following:
+
+“Credit Rating” means with respect to a party (or its Credit Support Provider, as the case may be) or entity, on any date of determination, the respective ratings then assigned to such party’s (or its Credit Support Provider's, as the case may be) or entity’s unsecured, senior long-term debt (not supported by third party credit enhancement) by S&P, Moody’s or the other specified rating agency or agencies. 
+
+“Federal Funds Effective Rate” means, for the relevant determination date the rate opposite the caption “Federal Funds (Effective)” as set forth in the weekly statistical release designated as H.15 (519), or any successor publication, published by the Board of Governors of the Federal Reserve System.
+
+“Letter of Credit” means an irrevocable, transferable, standby letter of credit, issued by a major U.S. commercial bank or foreign bank with a U.S. branch office with a Credit Rating of at least “A-” by S&P and “A3” by Moody’s, utilizing the form set forth in Schedule 1 attached hereto, with such changes to the terms in that form as the issuing bank may require and as may be acceptable to the party in whose favor the letter of credit is issued.  Each Letter of Credit shall be a Credit Support Document.
+
+“Moody’s” means Moody’s Investors Service, Inc. or its successor.
+

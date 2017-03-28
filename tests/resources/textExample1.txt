@@ -1,0 +1,353 @@
+Letters of Credit
+[X]
+[X]
+100% unless either (i) a Letter of Credit Default shall apply with respect to such Letter of Credit or (ii) twenty (20) or fewer Local Business Days remain prior to the expiration of such Letter of Credit, in which case the Valuation Percentage shall be 0.
+
+(iv)  Thresholds.
+
+(A)  “Independent Amount” shall not apply for purposes of this Annex.
+
+(B) “Threshold” means, with respect to a party (a) the amount set forth opposite the lowest Credit Rating for the party (or in the case of Party A, its Credit Support Provider) on the relevant date of determination; or (b) zero if on the relevant date of determination (i) the entity referred to in clause (a) above does not have a Credit Rating from either S&P or Moody's, or (ii) an Event of Default or Potential Event of Default with respect to such party has occurred and is continuing:
+
+
+
+
+THRESHOLD
+S&P CREDIT RATING
+
+MOODY'S CREDIT RATING
+
+
+
+
+No Collateral Required
+AAA
+Aaa
+
+
+
+U.S. $ 25,000,000
+AA+ or AA
+Aa1 or Aa2
+U.S. $ 20,000,000
+AA- to A-
+Aa3 to A3
+U.S. $ 15,000,000
+BBB+ or BBB
+Baa1 or Baa2
+U.S. $  10,000,000
+BBB-
+Baa3
+U.S. $ 0
+Below BBB-
+Below Baa3
+
+(C)  “Minimum Transfer Amount” means with respect to Party A:  U.S. $100,000; provided, however, that if an Event of Default or Potential Event of Default has occurred and is continuing with respect to Party A, the Minimum Transfer Amount with respect to Party A shall be $0.
+
+“Minimum Transfer Amount” means with respect to Party B:  U.S. $100,000; provided, however, that if an Event of Default or Potential Event of Default has occurred and is continuing with respect to Party B, the Minimum Transfer Amount with respect to Party B shall be $0.
+
+(D)  Rounding.  The Delivery Amount will be rounded up to the nearest integral multiple of U.S. $10,000 and the Return Amount will be rounded down to the nearest integral multiple of U.S. $10,000.
+
+
+c)  Valuation and Timing.
+(i)  “Valuation Agent” means, for purposes of Paragraph 3, the party making the demand under Paragraph 3; for purposes of Paragraph 4(d), the Secured Party for purposes of calculating the Value of the Substitute Credit Support and Posted Credit Support involved in the substitution; for purposes of Paragraph 5, the Secured Party; and for purposes of Paragraph 6(d), the Secured Party receiving or deemed to receive the Distributions or the Interest Amount, as applicable; provided, however, that in all cases, if an Event of Default or Potential Event of Default or Specified Condition has occurred and is continuing with respect to the party designated as the Valuation Agent, then in such case, and for so long as the Event of Default or Potential Event of Default or Specified Condition continues, the other party shall be the Valuation Agent.
+
+(ii)  “Valuation Date” means any Local Business Day.
+
+(iii)  “Valuation Time” means:
+
+[X]  the close of business in the city of the Valuation Agent on the Valuation Date or date of calculation, as applicable;
+
+[  ]  the close of business in the city of the Valuation Agent on the Local Business Day before the Valuation Date or date of calculation, as applicable;
+
+provided that the calculations of Value and Exposure will be made as of approximately the same time on the same date.
+
+(iv)  “Notification Time” means 10:00 a.m., New York time, on a Local Business Day:
+
+(d) Conditions Precedent and Secured Party’s Rights and Remedies.  The following Termination Event(s) will be a “Specified Condition” for the party specified (that party being the Affected Party if the Termination Event occurs with respect to that party):
+
+
+Specified Condition
+Party A
+Party B
+
+Illegality
+
+[X]
+[X]
+Tax Event
+
+[X]
+[X]
+Tax Event Upon Merger
+
+[X]
+[X]
+Credit Event Upon Merger
+
+[X]
+[X]
+Additional Termination Event(s):
+
+None
+None
+
+(e)  Substitution.
+
+(i)  “Substitution Date” has the meaning specified in Paragraph 4(d)(ii).
+
+(ii)  Consent.  If specified here as applicable, then the Pledgor must obtain the Secured Party’s consent for any substitution pursuant to Paragraph 4(d):  Inapplicable.
+
+(f)  Dispute Resolution.
+
+(i)  “Resolution Time” means 1:00 p.m., New York time, on the third Local Business Day following the date on which notice of the dispute is given under Paragraph 5.
+
+(ii)  Value.  For the purpose of Paragraphs 5(i)(C) and 5(ii), the Value of Posted Credit Support as of the relevant calculation date will be calculated as follows:
+
+(1)  With respect to cash, the face amount thereof; and
+
+
+With respect to any Government Obligations, the sum of (A)(x) the mean of the high bid and low asked prices quoted on such date by two principal market makers of recognized national standing (each a “Principal Market Maker”) for such Government Obligations chosen by the Valuation Agent, or (y) if quotations are not available from two Principal Market Makers for such date, the mean of such high bid and low asked prices as of the day next preceding such date, on which such quotations were available, plus (B) the accrued interest on such Government Obligations (except to the extent Transferred to a party pursuant to any applicable provision of this Annex or included in the applicable price referred to in (A) of this clause (2)) as of such date, multiplied by the applicable Valuation Percentage.
+
+ (iii)  Alternative:  The provisions of Paragraph 5 will apply except to the following extent; pending the resolution of a dispute, Transfer of the undisputed Value of Eligible Credit Support or Posted Credit Support involved in the relevant demand will be due as provided in Paragraph 5 if the demand is given by the Notification Time but will be due on the second Local Business Day after the demand if the demand is given after the Notification Time.
+(iv)  The provisions of Paragraph 5(i)(B) are hereby amended by inserting the following immediately before the word “and” in line 5 thereof:
+provided that if no quotation from a Reference Market-maker is available for such Transaction (or Swap Transaction), then quotations of rates or prices from one or more leading participants in the relevant market (selected in good faith) may be used for such Transaction (or Swap Transaction);
+
+(g) Holding and Using Posted Collateral.
+
+(i)  Eligibility to Hold Posted Collateral; Custodians.  Party A and its Custodian will be entitled to hold Posted Collateral pursuant to Paragraph 6(b); provided that the following conditions applicable to it are satisfied:
+
+(1)  Party A is not a Defaulting Party and Party A’s Credit Support Provider has a Credit Rating from S&P and the lowest Credit Rating for Party A’s Credit Support Provider is “BBB-” or higher by S&P or “Baa3” or higher by Moody’s.
+
+
+Posted Collateral may be held only in the following jurisdictions:  Any jurisdiction within the United States.
+
+
+The Custodian is a Qualified Institution (as defined below), approved by Party B (which approval shall not be unreasonably withheld). The Custodian shall hold the Posted Collateral in a segregated, safekeeping or custody account within the Custodian with the title of such account indicating that the property contained therein is being held as Posted Collateral for the ownership of Party B, subject to the security interest of Party A.
+
+Party B and its Custodian will be entitled to hold Posted Collateral pursuant to Paragraph 6(b); provided that the following conditions applicable to it are satisfied:
+
+(1)  Party B is not a Defaulting Party and it has a Credit Rating from S&P and the lowest Credit Rating for it is “BBB-” or higher by S&P or “Baa3” or higher by Moody’s.
+
+(2)  Posted Collateral may be held only in the following jurisdictions:  Any jurisdiction in the United States.
+
+(3)  The Custodian is a Qualified Institution, approved by Party A (which approval shall not be unreasonably withheld).  The Custodian shall hold the Posted Collateral in a segregated, safekeeping or custody account within the Custodian with the title of such account indicating that the property contained therein is being held as Posted Collateral for the ownership of Party A, subject to the security interest of Party B.
+
+If a party or its Custodian is not eligible to hold Posted Collateral pursuant to this Section, then it shall be considered a “Downgraded Party” (as defined in Paragraph 13(g)(ii)) and Posted Collateral shall be maintained in accordance with Paragraphs 13(g)(ii) and 13(h)(iii).
+
+
+(ii)  Use of Posted Collateral.
+
+The provisions of Paragraph 6(c) will apply to the parties; provided, however, that if a party or its Custodian is not eligible to hold Posted Collateral pursuant to Paragraph 13(g)(i) (such party shall be the “Downgraded Party” and the event that caused it to be ineligible to hold Posted Collateral shall be a “Credit Rating Event”), then:
+
+(1)  the provisions of Paragraph 6(c) will not apply with respect to the Downgraded Party as the Secured Party; and
+
+(2)  the Downgraded Party shall be required to deliver (or cause to be delivered) not later than the close of business on the second Local Business Day following such Credit Rating Event all Posted Collateral in its possession or held on its behalf to a commercial bank or trust company organized under the law of the United States or a political subdivision thereof, with a Credit Rating of at least “A-” in the case of S&P or “A3” in the case of Moody’s (“Qualified Institution”), approved by the non-Downgraded Party (which approval shall not be unreasonably withheld) to a segregated, safekeeping or custody account (“Collateral Account”) within such Qualified Institution with the title of the Collateral Account indicating that the property contained therein is being held as Posted Collateral for the Downgraded Party.  The Qualified Institution shall serve as Custodian with respect to the Posted Collateral in the Collateral Account, and shall hold such Posted Collateral in accordance with the terms of this Annex and for the security interest of the Downgraded Party and, subject to such security interest, for the ownership of the non-Downgraded Party.
+
+(iii)  For purposes of Section 5(a)(iii) of this Agreement, failure by a party or its Custodian to comply with any of the obligations under this Paragraph 13(g) will constitute an Event of Default with respect to such party if the failure continues for two (2) Local Business Days after notice of the failure is given to that party.
+
+
+(h) Distributions and Interest Amount.
+
+(i)  Interest Rate.  The “Interest Rate” will be:  Federal Funds Effective Rate as from time to time in effect.
+
+(ii)  Transfer of Interest Amount. The transfer of the Interest Amount will be made monthly on the second Local Business Day of each calendar month.
+
+(iii)  Alternative to Interest Amount.  The provisions of Paragraph 6(d)(ii) will apply except as modified below.
+
+(A)  If the provisions of Paragraph 6(c) do not apply to a party as a result of a Credit Rating Event described in Paragraph 13(g)(ii), the provisions of Paragraphs 6(d)(i) and 6(d)(ii) will not apply, Posted Collateral consisting of Government Obligations, if any, including all Distributions with respect to such Posted Collateral, shall be maintained in the Collateral Account by the Qualified Institution pursuant to Paragraph 13(g)(ii), and the investment of the Posted Collateral consisting of Cash shall be governed in accordance with the following provisions:
+
+The Qualified Institution holding the Posted Collateral will invest and reinvest or procure the investment and reinvestment of the Posted Collateral in accordance with the written instructions of the Pledgor, subject to the approval of such instructions by the Secured Party (which approval shall not be unreasonably withheld), provided that the Secured Party shall not be required to so invest or reinvest or procure such investment or reinvestment if an Event of Default or Potential Event of Default or Specified Condition with respect to the Pledgor shall have occurred and be continuing.  The Secured Party shall have no responsibility for any losses resulting from any investment or reinvestment effected in accordance with the Pledgor’s instructions.
+
+For purposes of Section 5(a)(iii) of this Agreement, failure by a party to comply with any of the obligations under this Paragraph 13(h)(iii)(A) will constitute an Event of Default with respect to such party if the failure continues for two (2) Local Business Days after notice of the failure is given to that party.
+
+(B)  If Transfer of an Interest Amount (or any portion thereof) to a Pledgor on any day would result in, or increase, a Delivery Amount (treating the day as a Valuation Date, as provided in Paragraph 6(d)(ii)) but the Pledgor would nonetheless have no obligation to make a Transfer pursuant to Paragraph 3(a) on that day if it were a Valuation Date (because the Delivery Amount is lower than the Pledgor’s Minimum Transfer Amount or otherwise), the Secured Party will be required to Transfer that Interest Amount (or portion thereof) to the Pledgor, notwithstanding anything to the contrary in Paragraph 6(d)(ii).
+
+(i) Additional Representation(s) and Covenants.
+
+Each party represents and covenants to the other party (which representations and covenants will be deemed to be repeated as of each date on which it, as the Pledgor, Transfers Eligible Credit Support (or, in the case of after-acquired Eligible Credit Support, at the time the other party or its agent acquires rights therein), and which covenants will be deemed to apply at all times) that:
+
+(i)  with respect to the issuance, renewal, substitution, or increase (as the case may be) of a Letter of Credit, such Letter of Credit is the legal, valid, and binding obligation of the issuer thereof, enforceable in accordance with its terms.
+
+(ii)  the necessary action to authorize referred to in Section 3(a)(ii) of this Agreement includes all authorizations required under the Federal Deposit Insurance Act as amended (including amendments effected by the Financial Institutions Reform, Recovery, and Enforcement Act of 1989) and under any agreement, writ, decree or order entered into with the Pledgor’s supervisory authorities; and at all times during the term of this Annex, the Pledgor will continuously include and maintain as part of its official written books and records this Annex, all exhibits, supplements and attachments hereto and documents incorporated by reference herein, and evidence of all necessary authorizations.
+
+(j) Other Eligible Support and Other Posted Support.
+
+(i)  “Value” with respect to Other Eligible Support and Other Posted Support means:  The Valuation Percentage times the stated amount then available under the Letter of Credit to be unconditionally drawn by the Secured Party.
+
+(ii)  “Transfer” with respect to Other Eligible Support and Other Posted Support means:  For purposes of Paragraph 3(a), delivery of the Letter of Credit by the Pledgor to the Secured Party at the address specified in this Annex or delivery of an executed amendment to such Letter of Credit (extending the term or increasing the amount available to the Secured Party thereunder) by the Pledgor to the Secured Party at the address specified in this Annex; and for purposes of Paragraph 3(b), return of the Letter of Credit by the Secured Party to the Pledgor, at the address specified in this Annex, or delivery of an executed amendment to the Letter of Credit in form and substance satisfactory to the Pledgor, reducing the amount available to the Secured Party thereunder by the Pledgor to the Secured Party at the address specified in this Annex.
+
+(iii)  All Other Eligible Support and Other Posted Support consisting of Letters of Credit shall be issued and maintained in accordance with the provisions set forth in Exhibit A and Schedule 1 attached hereto.
+
+(k) Demands and Notices.
+
+All demands, specifications, and notices under this Annex will be made pursuant to the Notices Section of this Agreement.
+
+(l) Addresses for Transfers.
+
+Party A:     To be provided in notice requesting delivery/return of Eligible Credit Support/Posted Credit Support.
+
+Party B:  JP Morgan  Services Delaware
+Collateral Operations Americas 3/OPS4 
+500 Stanton Christiana Road
+Newark , DE, 19713 USA
+Telephone No.: 302-552-0438
+Fax No.: 302-552-0393
+
+(m) Other Provisions.
+
+(i)  Paragraph 12 of this Annex is hereby amended by adding the following:
+
+“Credit Rating” means with respect to a party (or its Credit Support Provider, as the case may be) or entity, on any date of determination, the respective ratings then assigned to such party’s (or its Credit Support Provider's, as the case may be) or entity’s unsecured, senior long-term debt (not supported by third party credit enhancement) by S&P, Moody’s or the other specified rating agency or agencies. 
+
+“Federal Funds Effective Rate” means, for the relevant determination date the rate opposite the caption “Federal Funds (Effective)” as set forth in the weekly statistical release designated as H.15 (519), or any successor publication, published by the Board of Governors of the Federal Reserve System.
+
+“Letter of Credit” means an irrevocable, transferable, standby letter of credit, issued by a major U.S. commercial bank or foreign bank with a U.S. branch office with a Credit Rating of at least “A-” by S&P and “A3” by Moody’s, utilizing the form set forth in Schedule 1 attached hereto, with such changes to the terms in that form as the issuing bank may require and as may be acceptable to the party in whose favor the letter of credit is issued.  Each Letter of Credit shall be a Credit Support Document.
+
+“Moody’s” means Moody’s Investors Service, Inc. or its successor.
+
+“S&P” means the Standard & Poor's Rating Group (a division of McGraw-Hill, Inc.) or its successor.
+
+(ii)  Paragraph 6(d)(i) is hereby amended by adding the following sentence:
+
+“Subject to Paragraph 4(a) and only to the extent contemplated in the previous sentence, if a Secured Party receives or is deemed to receive Distributions on a day that is not a Local Business Day, or after its close of business on a Local Business Day, it will Transfer Distributions to the Pledgor on the second following Local Business Day.”
+
+(iii)  Paragraph 7(i) is hereby amended by deleting the words “Eligible Collateral” and replacing them with the words “Eligible Credit Support.” 
+
+
+
+
+EXHIBIT A
+to Paragraph 13
+of Annex A
+
+LETTER OF CREDIT PROVISIONS
+
+I.  Letters of Credit.  Posted Credit Support provided by one party (“X”) for the benefit of the other (“Y”) in the form of a Letter of Credit shall be subject to the following provisions.
+
+(a)  Any Letter of Credit shall be delivered by X to such address as Y shall specify and shall be maintained for the benefit of Y or its designee.  X or the issuer of the Letter of Credit shall (i) renew or cause the renewal of each outstanding Letter of Credit on a timely basis as provided in the relevant Letter of Credit, (ii) if the bank that issued an outstanding Letter of Credit has indicated its intent not to renew such Letter of Credit, provide either a substitute Letter of Credit or other Eligible Credit Support, in each case at least twenty (20) Local Business Days prior to the expiration of the outstanding Letter of Credit, and (iii) if a bank issuing a Letter of Credit shall fail to honor Y’s properly documented request to draw on an outstanding Letter of Credit, provide for the benefit of Y either a substitute Letter of Credit that is issued by a bank acceptable to Y or other Eligible Credit Support, in each case within two (2) Local Business Days after such refusal.
+
+(b)  Upon the occurrence of a Letter of Credit Default, X agrees to deliver to Y either a substitute Letter of Credit or other Eligible Credit Support, in each case on or before the second Local Business Day after the occurrence thereof (or on or before the fifth Local Business Day after the occurrence thereof if only clause (i) under the definition of Letter of Credit Default applies).  “Letter of Credit Default” shall mean with respect to an outstanding Letter of Credit, the occurrence of any of the following events:  (i) the issuer of such Letter of Credit shall fail to maintain a Credit Rating of at least “A-” by S&P or “A3” by Moody’s; (ii) the issuer of the Letter of Credit shall fail to comply with or perform its obligations under such Letter of Credit if such failure shall be continuing after the lapse of any applicable grace period; (iii) the issuer of such Letter of Credit shall disaffirm, disclaim, repudiate or reject, in whole or in part, or challenge the validity of, such Letter of Credit; (iv) such Letter of Credit shall expire or terminate, or shall fail or cease to be in full force and effect at any time during the term of this Agreement; or (v) any event analogous to an event specified in Section 5(a)(vii) of this Agreement shall occur with respect to the issuer of such Letter of Credit; provided, however, that no Letter of Credit Default shall occur in any event with respect to a Letter of Credit after the time such Letter of Credit is required to be canceled or returned to X in accordance with the terms of this Agreement.
+
+(c)  As one method of providing additional Posted Credit Support, X may increase the amount of an outstanding Letter of Credit or establish one or more additional Letters of Credit.
+
+(d)  (i)  A Letter of Credit shall provide that Y may draw upon the Letter of Credit in an amount that is equal to all amounts that are due and owing from X but have not been paid to Y within the time allowed for such payments under this Agreement.  A Letter of Credit shall provide that a drawing may be made on the Letter of Credit upon submission to the bank issuing the Letter of Credit of one or more certificates of Y in accordance with the specific requirements of the Letter of Credit.
+
+(ii) Upon or at any time after the occurrence of an Event of Default with respect to X, Y may draw on the entire, undrawn portion of any outstanding Letter of Credit upon submission to the bank issuing such Letter of Credit of one or more certificates in accordance with the specific requirements of the Letter of Credit.  Cash proceeds received from drawing upon the Letter of Credit shall be deemed Posted Collateral and shall either be (y) applied against all amounts that are due and owing from X but have not been paid to Y within the time allowed for such payments under this Agreement or (z) maintained in accordance with this Annex.  Notwithstanding Y’s receipt of Cash under the Letter of Credit, X shall remain liable to Y for any failure to Transfer sufficient Eligible Credit Support to Y in accordance with the terms of this Annex.  In addition, X shall remain liable for any amounts owing to Y and remaining unpaid after the application of the amounts so drawn by Y.
+
+(e)  If a party’s Credit Support Provider shall furnish a Letter of Credit hereunder, the amount otherwise required under such Letter of Credit may at the option of such Credit Support Provider be reduced by the amount of any Letter of Credit established by such party (but only for such time as such party’s Letter of Credit shall be in effect).  In the event a party shall be required to furnish a Letter of Credit hereunder, the amount otherwise required under such Letter of Credit may at the option of such party be reduced by the amount of any Letter of Credit established by such party’s Credit Support Provider (but only for such time as such Credit Support Provider’s Letter of Credit shall be in effect).
+
+(f)  Upon or at any time after the occurrence or deemed occurrence of an Early Termination Date as a result of a Termination Event and the failure of X to make all payments due and owing to Y in accordance with the terms of this Agreement, Y may draw on any outstanding Letter of Credit in an amount equal to such amounts owing to it.  X shall remain liable for any amounts owing to Y and remaining unpaid after the application of the amounts so drawn by Y.
+
+(g)  The provisions of this Exhibit A shall constitute agreements for all purposes of this Agreement and this Annex, including Section 5(a)(iii) of this Agreement.
+
+
+SCHEDULE 1
+
+IRREVOCABLE TRANSFERABLE STANDBY LETTER OF CREDIT FORMAT
+DATE OF ISSUANCE:     
+[Address]
+ Re:  Credit No. _______________
+
+ We hereby establish our Irrevocable Transferable Standby Letter of Credit in your favor for the account of _____________ (the “Account Party”), for the aggregate amount not exceeding ____________ United States Dollars ($_______), available to you at sight upon demand at our counters at (Location) on or before the expiration hereof against presentation to us of one or more of  the following statements, dated and signed by a representative of the beneficiary:
+
+
+“An Event of Default (as defined in the Master Agreement dated as of ________ between beneficiary and Account Party, as the same may have been amended (the “Master Agreement”)) has occurred and is continuing with respect to Account Party under the Master Agreement.”; or
+“An Early Termination Date (as defined in the Master Agreement) has occurred as a result of a Termination Event (as defined in the Master Agreement) and Account Party has failed to make all payments due and owing to beneficiary in accordance with the terms of the Master Agreement.”
+
+ The amount which may be drawn by you under this Letter of Credit shall be automatically reduced by the amount of any drawings paid through the Issuing Bank referencing this Letter of Credit No. ____.  Partial drawings are permitted hereunder.
+
+ This Letter of Credit shall expire ________________ (____) days from the date of issuance, but shall automatically extend without amendment for additional _____________ (_____)-day periods from such expiration date and from subsequent expiration dates, if you, as beneficiary, and the Account Party have not received due notice of our intention not to renew ninety (90) days prior to any such expiration date.
+
+ We hereby agree with you that documents drawn under and in compliance with the terms of this Letter of Credit shall be duly honored upon presentation as specified.
+
+ This Letter of Credit shall be governed by the Uniform Customs and Practice for Documentary Credits, 1993 Revision, International Chamber of Commerce Publication No. 500 (the "UCP"), except to the extent that the terms hereof are inconsistent with the provisions of the UCP, including but not limited to Articles 13(b) and 17 of the UCP, in which case the terms of this Letter of Credit shall govern.
+
+With respect to Article 13(b) of the UCP, the Issuing Bank shall have a reasonable amount of time, not to exceed three (3) banking days following the date of its receipt of documents from the beneficiary, to examine the documents and determine whether to take up or refuse the documents and to inform the beneficiary accordingly.
+
+ In the event of an Act of God, riot, civil commotion, insurrection, war or any other cause beyond our control that interrupts our business (collectively, an “Interruption Event”) and causes the place for presentation of this Letter of Credit to be closed for business on the last day for presentation, the expiry date of this Letter of Credit will be automatically extended without amendment to a date thirty (30) calendar days after the place for presentation reopens for business.
+
+ This Letter of Credit is transferable, and we hereby consent to such transfer, but otherwise may not be amended, changed or modified without the express written consent of the beneficiary, the Issuing Bank and the Account Party.
+[BANK SIGNATURE]
+
+
+
+EXHIBIT A
+
+ENRON CORP.
+
+Guaranty
+
+This Guaranty (the “Guaranty”), dated as of  May 28, 1992, is made and entered into by ENRON CORP., an Oregon corporation (“Guarantor”).
+W I T N E S S E T H:
+
+WHEREAS, MORGAN GUARANTY TRUST COMPANY OF NEW YORK, a New York State banking corporation (“Counterparty”) and ENRON NORTH AMERICA CORP. (“Enron”), a wholly owned subsidiary of Guarantor, are contemplating entering into one or more swap, option or other financially-settled derivative transactions, which transactions will be evidenced by one or more swap agreements, confirmations and/or master agreements, including without limitation, the Master Agreement of even date herewith (the “Master Agreement”) (all such swap, option or other financially-settled derivative transactions and the agreements evidencing same, including without limitation, the Master Agreement, whether entered into prior to, on or after the date hereof, as the same may from time to time be modified, amended and supplemented, shall be referred to herein collectively as the “Contract”); and 
+
+WHEREAS, Guarantor will directly or indirectly benefit from the transactions to be entered into between Enron and Counterparty;
+
+NOW THEREFORE, in consideration of Counterparty entering into the Contract, Guarantor hereby covenants and agrees as follows:
+
+1.  GUARANTY.  Subject to the provisions hereof, Guarantor hereby irrevocably and unconditionally guarantees the timely payment when due of the obligations of Enron (the “Obligations”) to Counterparty under the Contract.  This Guaranty shall constitute a guarantee of payment and not of collection.  The liability of Guarantor under the Guaranty shall be subject to the following:
+(a)  Guarantor’s liability hereunder shall be and is specifically limited to payments expressly required to be made under the Contract (even if such payments are deemed to be damages) and, except to the extent specifically provided in the Contract, in no event shall Guarantor be subject hereunder to consequential, exemplary, equitable, loss of profits, punitive, tort, or any other damages, costs, or attorney’s fees.
+TO BE DISCUSSED:[(b)  The aggregate amount covered by this Guaranty shall not exceed U.S. $50,000,000.]
+
+2.  DEMANDS AND NOTICE.  Upon the occurrence and during the continuance of an Event of Default or Termination Event, if Enron fails or refuses to pay any Obligations and Counterparty has elected to exercise its rights under this Guaranty, Counterparty shall make a demand upon Guarantor (hereinafter referred to as a “Payment Demand”).  A Payment Demand shall be in writing and shall reasonably and briefly specify in what manner and what amount Enron has failed to pay and an explanation of why such payment is due, with a specific statement that Counterparty is calling upon Guarantor to pay under this Guaranty. A Payment Demand satisfying the foregoing requirements shall be required with respect to Obligations before Guarantor is required to pay such Obligations hereunder and shall be deemed sufficient notice to Guarantor that it must pay the Obligations within five (5) Business Days after its receipt of the Payment Demand. A single written Payment Demand shall be effective as to any specific default during the continuance of such default, until Enron or Guarantor has cured such default, and additional written demands concerning such default shall not be required until such default is cured.
+
+3.  REPRESENTATIONS AND WARRANTIES.  Guarantor represents and warrants that:
+(a)  it is a corporation duly organized and validly existing under the laws of the State of Oregon and has the corporate power and authority to execute, deliver and carry out the terms and provisions of the Guaranty; 
+(b)  no authorization, approval, consent or order of, or registration or filing with, any court or other governmental body having jurisdiction over Guarantor is required on the part of Guarantor for the execution and delivery of this Guaranty; and
+(c)  this Guaranty, when executed and delivered, will constitute a valid and legally binding agreement of Guarantor, except as the enforceability of this Guaranty may be limited by the effect of any applicable bankruptcy, insolvency, reorganization, moratorium or similar laws affecting creditors' rights generally and by general principles of equity.
+
+4.  SETOFFS AND COUNTERCLAIMS.  Without limiting Guarantor’s own defenses and rights hereunder, Guarantor reserves to itself all rights, setoffs, counterclaims and other defenses to which Enron or any other affiliate of Guarantor is or may be entitled to arising from or out of the Contract or otherwise, except for defenses arising out of the bankruptcy, insolvency, dissolution or liquidation of Enron.
+
+5.  AMENDMENT OF GUARANTY.  No term or provision of this Guaranty shall be amended, modified, altered, waived or supplemented except in a writing signed by Guarantor and Counterparty.
+
+6.  WAIVERS.  Guarantor hereby waives (a) notice of acceptance of this Guaranty; (b) presentment and demand concerning the liabilities of Guarantor, except as expressly hereinabove set forth; and (c) any right to require that any action or proceeding be brought against Enron or any other person, or except as expressly hereinabove set forth, to require that Counterparty seek enforcement of any performance against Enron or any other person, prior to any action against Guarantor under the terms hereof.
+
+Except as to applicable statutes of limitation, no delay of Counterparty in the exercise of, or failure to exercise, any rights hereunder shall operate as a waiver of such rights, a waiver of any other rights or a release of Guarantor from any obligations hereunder.
+
+Guarantor consents to the renewal, compromise, extension, acceleration or other changes in the time of payment of or other changes in the terms of the Obligations, or any part thereof or any changes or modifications to the terms of the Contract.
+
+Guarantor may terminate this Guaranty by providing written notice of such termination to Counterparty and upon the effectiveness of such termination, Guarantor shall have no further liability hereunder, except as provided in the last sentence of this paragraph.  No such termination shall be effective until five (5) Business Days after receipt by Counterparty of such termination notice.  No such termination shall affect Guarantor's liability with respect to any Transaction (as defined in the Contract) entered into prior to the time the termination is effective, which Transaction shall remain guaranteed pursuant to the terms of this Guaranty.
+
+7.  NOTICE.  Any Payment Demand, notice, request, instruction, correspondence or other document to be given hereunder by any party to another (herein collectively called “Notice”) shall be in writing and delivered personally or mailed by certified mail, postage prepaid and return receipt requested, or by telegram or telecopier, as follows:
+
+
+To Counterparty:
+Morgan Guaranty Trust Company of New York
+To Guarantor:
+Enron Corp.
+
+ 
+
+1400 Smith Street
+
+ 
+
+Houston, Texas  77002
+
+Attn.:   
+Fax No.:   
+
+Attn.:  Vice President, Finance and Treasurer
+
+
+
+Fax No.:  (713) 646-3422
+
+A copy of any notice sent to Guarantor pursuant hereto must also be sent to the above address to:  Enron North America Corp., (i) Attention: Corporate Secretary, Fax No. (713) 853-2534, and (ii) Attention:  Assistant General Counsel, Trading Group, Fax No. (713) 646-4818.
+
+Notice given by personal delivery or mail shall be effective upon actual receipt. Notice given by telegram or telecopier shall be effective upon actual receipt if received during the recipient's normal business hours, or at the beginning of the recipient's next business day after receipt if not received during the recipient's normal business hours.  All Notices by telegram or telecopier shall be confirmed promptly after transmission in writing by certified mail or personal delivery.  Any party may change any address to which Notice is to be given to it by giving notice as provided above of such change of address.
+
+8.  MISCELLANEOUS.  This Guaranty shall in all respects be governed by, and construed in accordance with, the law of the State of Texas, without regard to principles of conflicts of laws.  This Guaranty shall be binding upon Guarantor, its successors and assigns and inure to the benefit of and be enforceable by Counterparty, its successors and assigns.  The Guaranty embodies the entire agreement and understanding between Guarantor and Counterparty and supersedes all prior agreements and understandings relating to the subject matter hereof.  The headings in this Guaranty are for purposes of reference only, and shall not affect the meaning hereof.
+
+IN WITNESS WHEREOF, the Guarantor has executed this Guaranty on   , 2000, but it is effective as of the date first above written.
+
+ENRON CORP.
+
+
+By:        
+Name:        
+Title:        
+
+
