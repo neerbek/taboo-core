@@ -17,6 +17,8 @@ import server_rnn
 import inference_enron
 import EnronDocument
 
+import sys
+sys.setrecursionlimit(10000)
 
 class ServerState:
     def __init__(self):
@@ -93,24 +95,24 @@ def load_labels(labelfile):
     
 def load_doclist(dirname):  #TODO: does not work for relative paths...
     emaildir = dirname   
-    db = defaultdict(lambda: EnronDocument.EnronDocument()) #url to EnronDocument
+    enronDocuments = defaultdict(lambda: EnronDocument.EnronDocument()) #url to EnronDocument
     for dirName, subdirList, fileList in os.walk(emaildir):
         d = os.path.join(emaildir, dirName)
         count = 0
         for i,fname in enumerate(fileList):
             count += 1
             fileid = fname[:fname.index(".txt")]
-            if fileid in db and fileid in db[fileid].docs:
-                raise Exception("Fileid found twice! {} and {}".format(db[fileid].emailid, fname))
+            if fileid in enronDocuments and fileid in enronDocuments[fileid].docs:
+                raise Exception("Fileid found twice! {} and {}".format(enronDocuments[fileid].emailid, fname))
             emailfileid = EnronDocument.EnronDocument.get_parent_id(fileid)
-            db[emailfileid].add_doc(emailid = emailfileid, docid = fileid, docpath = os.path.join(d,fname))
+            enronDocuments[emailfileid].add_doc(emailid = emailfileid, docid = fileid, docpath = os.path.join(d,fname))
         print_status = True
         if count==0 and dirName[-4]=='.': #top directories end with ".zip" or ".pst" and are expected to be empty
             print_status=False                        
         if print_status:
             print('Found directory: ' + dirName)
             print('   In directory: #files={}'.format(count))
-    return db
+    return enronDocuments
 
 
 def get_enron_documents(documents, label_list, enronDocuments):
@@ -131,6 +133,10 @@ def keep_doc2(i, d):
         return False
     if len(get_indexes(d.text, "\n"))<= 3 and (d.text.startswith("URL") or d.text.startswith("Attachment") or d.text.startswith("[InternetShort")):
         return False
+    if len(d.text)>500:
+        count_tabs = d.text.count('\t')
+        if count_tabs>10 and count_tabs>d.text.count('\n'):
+            return False  #more tabs than newlines, this is probabably a spreadsheet
     return True
 
 def replace(text, key, value):
@@ -264,20 +270,20 @@ def load_labeled_documents(labelfile, document_root, problem_label):
 
     print('getting labeled docs')
     pos,neg,not_rated = labels.get_labels(problem_label)
-    doclist = load_doclist(document_root)
+    enronDocumentDict = load_doclist(document_root)
 
     #removing unknown emails (because we are working on a debug subset)
-    pos = remove_unfound_files(doclist, pos)
-    neg = remove_unfound_files(doclist, neg)
-    documents = []
-    get_enron_documents(documents, pos, doclist)        
-    get_enron_documents(documents, neg, doclist)       
-    doc2 = load_text(documents)
-    if len(documents)!=len(doc2):
-        print("Removed {} documents from original list of size {}. Removed documents were very short".format(len(documents)-len(doc2), len(documents)))
+    pos = remove_unfound_files(enronDocumentDict, pos)
+    neg = remove_unfound_files(enronDocumentDict, neg)
+    enronTexts = []
+    get_enron_documents(enronTexts, pos, enronDocumentDict)        
+    get_enron_documents(enronTexts, neg, enronDocumentDict)       
+    enronTexts2 = load_text(enronTexts)
+    if len(enronTexts)!=len(enronTexts2):
+        print("Removed {} documents from original list of size {}. Removed documents were very short".format(len(enronTexts)-len(enronTexts2), len(enronTexts)))
 
-    for i in range(len(doc2)):
-        d = doc2[i]
+    for i in range(len(enronTexts2)):
+        d = enronTexts2[i]
         if d.enron_label.relevance==0:
             d.enron_label.relevance="0"
         elif d.enron_label.relevance==1:
@@ -286,5 +292,5 @@ def load_labeled_documents(labelfile, document_root, problem_label):
             raise Exception("unknown label encountered {}".format(d.enron_label.relevance))
     
     rand = RandomState(374637)
-    rand.shuffle(doc2)
-    return doc2
+    rand.shuffle(enronTexts2)
+    return enronTexts2

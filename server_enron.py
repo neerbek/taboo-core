@@ -133,14 +133,18 @@ def load_model_data_from_file():
     total_ratio_str = request.args.get('total_ratio')
     train_ratio_str = request.args.get('train_ratio')
     dev_ratio_str = request.args.get('dev_ratio')
+    max_count_str = request.args.get('max_count')
     if is_none([data_file, total_ratio_str, train_ratio_str, dev_ratio_str]):
         return response_error("Load data needs parameters data_file, total_ratio, train_ratio, dev_ratio")
+    max_count = -1
+    if max_count_str!=None:
+        max_count=int(max_count_str)
     total_ratio = float(total_ratio_str)
     train_ratio = float(train_ratio_str)
     dev_ratio = float(dev_ratio_str)
     if not is_positive([total_ratio, train_ratio, dev_ratio]):
         return response_error("Load data needs parameters total_ratio, train_ratio, dev_ratio to be postive numbers (below 1)")
-    doc2 = load_trees.get_trees(data_file)
+    doc2 = load_trees.get_trees(data_file, max_count)
     print("***totalratio:", len(doc2), total_ratio, train_ratio, dev_ratio)
     total_index = int(len(doc2)*total_ratio)
     train_index = int(total_index*train_ratio)

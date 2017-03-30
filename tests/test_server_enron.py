@@ -9,7 +9,7 @@ import unittest
 import os
 from flask import Response
 import json
-
+import datetime
 #os.chdir('/Users/neerbek/jan/phd/DLP/paraphrase/python')
 #os.chdir('/home/neerbek/jan/phd/DLP/paraphrase/python')
 
@@ -53,6 +53,14 @@ def initialize_model(num_wordvectors=5000, num_trees=1000):
 
 
 class ServiceTest(unittest.TestCase):
+    def setUp(self):
+        self.tick = datetime.datetime.now()
+
+    def tearDown(self):
+        self.tock = datetime.datetime.now()
+        diff = self.tock - self.tick
+        print("Time used in test (test_server_enron)",self.id().split('.')[-1],  (diff.total_seconds()), "sec")
+
 
     def test_run_rnn1(self):
         initialize_model()
@@ -153,7 +161,6 @@ class ServiceTest(unittest.TestCase):
         req.args.args['train_ratio'] = '0.6'
         req.args.args['dev_ratio'] = '0.75'
         server_enron.request = req
-        print("***jan was here")
         res = server_enron.load_model_data()
         if not isinstance(res, str):
             self.assertTrue(False,"expected string response")
@@ -174,6 +181,7 @@ class ServiceTest(unittest.TestCase):
         initialize_model()
         req = Request() 
         req.args.args['data_file'] = os.path.join(os.getcwd(), 'trees/train.txt')
+        req.args.args['max_count'] = '1000'
         req.args.args['total_ratio'] = '1'
         req.args.args['train_ratio'] = '0.6'
         req.args.args['dev_ratio'] = '0.75'
@@ -183,7 +191,7 @@ class ServiceTest(unittest.TestCase):
             self.assertTrue(False,"expected string response")
         d = json.loads(res)
         self.assertTrue(d['msg']!=None)
-        self.assertTrue(len(server_enron.serverState.train_trees)==5400)
+        self.assertEqual(600, len(server_enron.serverState.train_trees), "number of new training trees does not match")
 
     
     def test_train_rnn1(self):

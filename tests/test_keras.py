@@ -6,6 +6,7 @@ Created on Tue Aug 16 09:20:15 2016
 """
 
 import unittest
+import datetime
 
 #Test disabled
 print("note keras testing is disabled")
@@ -20,6 +21,13 @@ data_dim = 20
 
 nb_classes = 4
 class KerasTest(unittest.TestCase):
+    def setUp(self):
+        self.tick = datetime.datetime.now()
+
+    def tearDown(self):
+        self.tock = datetime.datetime.now()
+        diff = self.tock - self.tick
+        print("Time used in test (test_keras)", self.id().split('.')[-1], (diff.total_seconds()), "sec")
     
     @unittest.skip
     def test_keras_train(self):

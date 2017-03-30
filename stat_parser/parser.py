@@ -59,28 +59,28 @@ def CKY(pcfg, norm_words):
         for X in pcfg.N:
             norm, word = x[i]
             if (X, norm) in pcfg.q1:
-                pi[i, i, X] = pcfg.q1[X, norm]
-                bp[i, i, X] = (X, word, i, i)
+                pi[i, i, X] = pcfg.q1[X, norm] #score of rule X which yields word norm==word
+                bp[i, i, X] = (X, word, i, i)  #rule X in back-parse
     
     # Dynamic program
     for l in range(1, n):
         for i in range(1, n-l+1):
             timerList.forwardTimer.begin()
             j = i+l
-            for X in pcfg.N:
+            for X in pcfg.N:  #we are looking for next node X in tree. Node corresponds to rule X -> Y Z
                 # Note that we only check rules that exist in training
                 # and have non-zero probability
                 score, back = argmax([(
-                        pcfg.q2[X, Y, Z] * pi[i, s, Y] * pi[s+1, j, Z],
-                        (X, Y, Z, i, s, j)
+                        pcfg.q2[X, Y, Z] * pi[i, s, Y] * pi[s+1, j, Z], 
+                        (X, Y, Z, i, s, j)  #this becomes back
                     ) for s in range(i, j)
-                        for Y, Z in pcfg.binary_rules[X]
-                            if pi[i  , s, Y] > 0.0
+                        for Y, Z in pcfg.binary_rules[X]  #look for rules X->Y Z
+                            if pi[i  , s, Y] > 0.0  
                             if pi[s+1, j, Z] > 0.0
                 ])
                 
                 if score > 0.0:
-                    bp[i, j, X], pi[i, j, X] = back, score
+                    bp[i, j, X], pi[i, j, X] = back, score  #
             timerList.forwardTimer.end()
             if timerList.report(min_seconds=5, update_timers=True):
                 if timerList.forwardTimer.elapsed > MAX_TIME_FORWARD:

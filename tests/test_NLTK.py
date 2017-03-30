@@ -7,7 +7,7 @@ Created on Sat Mar  4 07:00:23 2017
 
 import os
 import unittest
-
+import datetime
 #os.chdir('/Users/neerbek/jan/phd/DLP/paraphrase/python')
 #os.chdir('/home/neerbek/jan/phd/DLP/paraphrase/python')
 
@@ -27,6 +27,14 @@ def get_id(filepath):
     
 
 class ParserTest(unittest.TestCase):
+    def setUp(self):
+        self.tick = datetime.datetime.now()
+
+    def tearDown(self):
+        self.tock = datetime.datetime.now()
+        diff = self.tock - self.tick
+        print("Time used in test (test_NLTK)", self.id().split('.')[-1], (diff.total_seconds()), "sec")
+
     #modified copy of server_enron_helper.get_trees
 
     def get_trees_from_doc(self, d, expected_count=-1):
@@ -63,21 +71,32 @@ class ParserTest(unittest.TestCase):
         "3.922767.IBI0MS320MRSHVJDNPA4IDIH00ZB2E24A.1" ]
         for d_id in fileids:
             self.assertIn(d_id, docmap)
-#        t = self.get_trees_from_doc(doc2[0], 237)
-#        self.assertIsNotNone(t, "expected tree")
-#        t = self.get_trees_from_doc(doc2[1], 22)
-#        self.assertIsNotNone(t, "expected tree")
-        d = docmap[fileids[2]]
-        t = self.get_trees_from_doc(d, 13)
+        #FILE 1
+        d = docmap[fileids[0]]
+        sentences = server_rnn_helper.get_indexed_sentences(d.text)
+        self.assertEqual(24, len(sentences), "Expected sentences count was wrong")
+        #shorter text to make test run faster
+        d.text = sentences[0].sentence+"\n"+sentences[3].sentence+"\n"+sentences[5].sentence+"\n"+sentences[6].sentence
+        t = self.get_trees_from_doc(d, 4)
         self.assertIsNotNone(t, "expected tree")
+        #FILE 2
         d = docmap[fileids[1]]
         t = self.get_trees_from_doc(d, 1)
         self.assertIsNotNone(t, "expected tree")
         self.assertEqual(d.filepath, os.path.join(os.getcwd(), 'tests/resources/enron_data_test', '3.1042627.PHWXPNGVEWJDVZE4OHDV2Z0GNLRJVO5SA.txt'))
         self.assertEqual(d.text.strip(), "Li Doyle")
-        d = docmap[fileids[0]]
-        t = self.get_trees_from_doc(d, 24)
+        #FILE 3
+        d = docmap[fileids[2]]
+        sentences = server_rnn_helper.get_indexed_sentences(d.text)
+        self.assertEqual(13, len(sentences), "Expected sentences count was wrong")
+        #shorter text to make test run faster
+        d.text = sentences[0].sentence+"\n"+sentences[1].sentence+"\n"+sentences[7].sentence+"\n"+sentences[8].sentence;
+        t = self.get_trees_from_doc(d, 4)
         self.assertIsNotNone(t, "expected tree")
+        #FILE 4
+        d = docmap[fileids[3]]
+        sentences = server_rnn_helper.get_indexed_sentences(d.text)
+        self.assertEqual(318, len(sentences), "Expected sentences count was wrong")
         
     def test_header_line_break(self):
         s = """Multilateral Transactions
@@ -148,18 +167,26 @@ By:  Phillip Keith Allen
         self.assertTrue(len(t)>0)
 
 
-    def test_whitespace_from_file2(self):
-        file="tests/resources/textExample2.txt"
-        #small/selective copy of
-        #file="/home/neerbek/jan/AIProjectsData/TREC2010/data/corpora/trec/legal10/emails/edrm-enron-v2_shackleton-s_xml.zip/text_000/3.556787.HRYCGJJUVARPMD1XCNR4OWP3T1ZWV5NWA.2.txt"        
+    def test_whitespace_from_file1(self):
+        file="tests/resources/textExample1.txt"
+        #small/selective copy of edrm-enron-v2_love-p_xml.zip/text_000/3.476695.KK4ZP3TKPLPOW0WULFMZGOKVSSKDHLVKB.1.txt
         enronText = EnronDocument.EnronText(0, file)        
         enronTexts = []
-            enronTexts = server_enron_helper.load_text([enronText])
+        enronTexts = server_enron_helper.load_text([enronText])
+        self.assertEqual(0, len(enronTexts), "Expected doc to be cleaned")
+
+    def test_whitespace_from_file2(self):
+        file="tests/resources/textExample2.txt"
+        #small/selective copy of edrm-enron-v2_shackleton-s_xml.zip/text_000/3.556787.HRYCGJJUVARPMD1XCNR4OWP3T1ZWV5NWA.2.txt"        
+        enronText = EnronDocument.EnronText(0, file)        
+        enronTexts = []
+        enronTexts = server_enron_helper.load_text([enronText])
         self.assertEqual(1, len(enronTexts), "Expected doc to not be cleaned")
         text = enronText.text
         sentences = server_rnn_helper.get_indexed_sentences(text)
+        self.assertEqual(5, len(sentences), "Expected sentences count was wrong")
         trees = server_rnn_helper.get_nltk_trees(0, sentences)
-        print("got", len(trees), "trees")
+        self.assertEqual(5, len(trees), "Expected tree count was wrong")
 
         
 

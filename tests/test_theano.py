@@ -9,9 +9,17 @@ import time
 import theano
 import theano.tensor as T
 from theano import function, config, shared
-
+import datetime
 
 class TheanoTest(unittest.TestCase):
+    def setUp(self):
+        self.tick = datetime.datetime.now()
+
+    def tearDown(self):
+        self.tock = datetime.datetime.now()
+        diff = self.tock - self.tick
+        print("Time used in test (TheanoTest)", self.id().split('.')[-1], (diff.total_seconds()), "sec")
+
     #modified copy of server_enron_helper.get_trees
     def test_dot_time(self):
         A = np.random.rand(800,1000).astype(theano.config.floatX)

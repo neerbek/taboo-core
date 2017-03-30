@@ -71,6 +71,7 @@ def add_node(tree, child):
 class ParserStatistics:
     def __init__(self):
         self.sentences = 0
+        self.sentencesToBeSplit = 0
         self.splits = 0
         self.emptySubTrees = 0
         self.emptySentenceTrees = 0
@@ -101,9 +102,11 @@ def get_nltk_parsed_tree_from_sentence(l2, parser, timers, parserStatistics):
             i += 1
     l2 = l2.strip()
     trees=[]
-    if len(l2)>MAX_SENTENCE_LENGTH and DEBUG_PRINT_VERBOSE:
-        print("Going to split long sentence: {}".format(len(l2)))
-        print(l2)
+    if len(l2)>MAX_SENTENCE_LENGTH:
+        parserStatistics.sentencesToBeSplit += 1
+        if DEBUG_PRINT_VERBOSE:
+            print("Going to split long sentence: {}".format(len(l2)))
+            print(l2)
     subsentence_skipped=False
     while len(l2)>0:
         tmp = None
@@ -272,6 +275,10 @@ class NodeCounter:
         self.node_count += nodeCounter.node_count
         self.word_count += nodeCounter.word_count
         self.unknown_count += nodeCounter.unknown_count
+    def getRatio(self):
+        if self.word_count==0:
+            return 0.0
+        return (self.unknown_count + 0.0)/self.word_count
         
 UNKNOWN_WORD = "*unknown*"
 def updateWordVectors(node, lookup_table, nodeCounter):
@@ -326,7 +333,7 @@ def initializeTrees(trees, LT):
         else:
             raise Exception("tree does not have correct syntax label")
         setTreeLabel(tree, label)
-    print("Done with tree. Saw {} nodes, {} words and {} unknowns. Unknown ratio is {}".format(totalCounter.node_count, totalCounter.word_count, totalCounter.unknown_count, (totalCounter.unknown_count + 0.0)/totalCounter.word_count))
+    print("Done with tree. Saw {} nodes, {} words and {} unknowns. Unknown ratio is {}".format(totalCounter.node_count, totalCounter.word_count, totalCounter.unknown_count, totalCounter.getRatio()))
 
 #def nodeForward(node, update_count, reg):
 #    # assumes is_binary and has_only_words_at_leafs
