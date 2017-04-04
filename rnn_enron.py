@@ -70,11 +70,12 @@ def add_node(tree, child):
     
 class ParserStatistics:
     def __init__(self):
-        self.sentences = 0
-        self.sentencesToBeSplit = 0
-        self.splits = 0
-        self.emptySubTrees = 0
-        self.emptySentenceTrees = 0
+        self.sentences = 0          #number of sentences 
+        self.sentencesToBeSplit = 0 #number of sentences that have been split at least once
+        self.splits = 0             #total number of splits
+        self.emptySubTrees = 0      #empty (splited) sentences
+        self.emptySentenceTrees = 0 #empty complete sentence
+        self.failedSameSentences = 0  #sentence after parsing,deserialization and serialization was changed
 
 def get_nltk_parsed_tree_from_sentence(l2, parser, timers, parserStatistics):
     fn = "get_nltk_parsed_tree_from_sentence"   #function name
@@ -164,6 +165,9 @@ def get_nltk_parsed_tree_from_sentence(l2, parser, timers, parserStatistics):
         l3 = load_trees.output_sentence(root)    
         l3 = l3.strip()
         if l2_copy!=l3: #final sentence must be the same
+            print("Warning: " + fn + " marshall and unmarshalling differs" + "\n" + l2_copy + "\n" + l3)
+            parserStatistics.failedSameSentences += 1
+            root = None
             raise Exception(fn + " marshall and unmarshalling differs" + "\n" + l2_copy + "\n" + l3)
     if root==None:
         parserStatistics.emptySentenceTrees += 1

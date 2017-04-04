@@ -156,12 +156,14 @@ By:  Phillip Keith Allen
         
     def test_whitespace(self):
         s ="""-LRB- B -RRB- Threshold means, with respect to a party -LRB- a -RRB- the amount set forth opposite the lowest Credit Rating for the party -LRB- or in the case of Party A, its Credit Support Provider -RRB- on the relevant date of determination; or -LRB- b -RRB- zero if on the relevant date of determination -LRB- i -RRB- the entity referred to in clause -LRB- a -RRB- above does not have a Credit Rating from either S-AMP-P or Moody's, or -LRB- ii -RRB- an Event of Default or Potential Event of Default with respect to such party has occurred and is continuing: THRESHOLD."""
+        s = server_enron_helper.clean_text(s)
         indexedSentences = server_rnn_helper.get_indexed_sentences(s)
         t = server_rnn_helper.get_nltk_trees(0, indexedSentences)
         self.assertTrue(len(t)>0)
 
     def test_whitespace2(self):
         s ="\"Credit Rating\" means with respect to a party (or its Credit Support Provider, as the case may be) or entity, on any date of determination, the respective ratings then assigned to such party’s (or its Credit Support Provider's, as the case may be) or entity’s unsecured, senior long-term debt (not supported by third party credit enhancement) by S&P, Moody’s or the other specified rating agency or agencies."
+        s = server_enron_helper.clean_text(s)
         indexedSentences = server_rnn_helper.get_indexed_sentences(s)
         t = server_rnn_helper.get_nltk_trees(0, indexedSentences)
         self.assertTrue(len(t)>0)
@@ -187,6 +189,30 @@ By:  Phillip Keith Allen
         self.assertEqual(5, len(sentences), "Expected sentences count was wrong")
         trees = server_rnn_helper.get_nltk_trees(0, sentences)
         self.assertEqual(5, len(trees), "Expected tree count was wrong")
+
+    def test_quotes(self):
+        s= """[1:50 1:58] Changed "is " to "and (ii) are "
+[1:50 1:59] Changed "following:-" to ""
+[1:51 1:59] Changed ""Address " to ""(i) Address  ...  follows: "
+[1:51 1:59] Changed "Section " to "Sections "
+"""
+        indexedSentences = server_rnn_helper.get_indexed_sentences(s)
+        t = server_rnn_helper.get_nltk_trees(0, indexedSentences)
+        self.assertTrue(len(t)>0)
+
+    def test_quotes_from_file(self):
+        rnn_enron.MAX_SENTENCE_LENGTH=100
+        file="tests/resources/textExample3.txt"
+        #small/selective copy of edrm-enron-v2_shackleton-s_xml.zip/text_000/3.556787.HRYCGJJUVARPMD1XCNR4OWP3T1ZWV5NWA.2.txt"        
+        enronText = EnronDocument.EnronText(0, file)        
+        enronTexts = []
+        enronTexts = server_enron_helper.load_text([enronText])
+        self.assertEqual(1, len(enronTexts), "Expected doc to not be cleaned")
+        text = enronText.text
+        sentences = server_rnn_helper.get_indexed_sentences(text)
+        self.assertEqual(1, len(sentences), "Expected sentences count was wrong")
+        trees = server_rnn_helper.get_nltk_trees(0, sentences)
+        self.assertEqual(1, len(trees), "Expected tree count was wrong")
 
         
 

@@ -215,6 +215,8 @@ def clean_text(text, look_for_header=None):
     text = replace(text, "B.", "B:")
     #nltk has problems with '
     text = text.replace("'", "")
+    #text = text.replace("\"", "")
+    text = text.replace("\"\"", "\"")
 
     ###add punctuation in emails where \n is used as punctuation. E.g.
     ###if we have newline and last char was not punctuation and
