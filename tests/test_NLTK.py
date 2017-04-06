@@ -122,7 +122,7 @@ transaction in commodities."""
         s = server_enron_helper.clean_text(s)
         sentences = server_rnn_helper.get_indexed_sentences(s)
         self.assertEqual(1, len(sentences), "Expected sentences count was wrong")
-        self.assertEqual("line1\nline2\n", sentences[0].sentence, "Expected sentence was wrong")
+        self.assertEqual("line1\nline2", sentences[0].sentence.strip(), "Expected sentence was wrong")
             
     def test_clean_doc_not_mail(self):
         #from edrm-enron-v2_allen-p_xml.zip/text_000/3.824725.EQ1SIWOIQCJEGJAXSR3JXBZWMH552WQEB.1.txt
