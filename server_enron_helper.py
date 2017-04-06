@@ -240,6 +240,10 @@ def load_text(enronTexts):
     for i, d in enumerate(enronTexts):
         d.load_text()
         d.text = re.sub(r'[^\x09-\x7f]', r'', d.text) #remove non-ascii
+        d.text = d.text.replace('#', '')
+        d.text = d.text.replace('\x0b', '')
+        d.text = re.sub(r'[\x0e-\x1f]', r'', d.text) #remove non-ascii
+
         if i % 200 == 0:
             print(i, "time elapsed is: {}".format(time.time() - start))
             #load_time = 0
