@@ -1,11 +1,29 @@
 Notes:
 
-Runs python3!
+Runs python3(!)
 
-To run tests: from taboo-core, say: ./run_tests.sh
+Dependencies: numpy, theano, nltk, click and flask
 
-Dependencies: numpy, theano and nltk
+pip3 (or conda or apt-get or ...) install numpy, theano, nltk, click, flask
 
-pip3 (or conda or apt-get or ...) install numpy, theano, nltk
+Ex:
+sudo apt-get install python3-pip
 
-run: nltk.download(), TODO: add list of packages to download...
+pip3 install theano nltk flask
+
+Download glove word embeddings:
+./download_glove.sh
+
+run: nltk.download(), load package pickle
+
+ex: python3 -c "import nltk; nltk.download()"
+
+select pickle
+
+select Download
+
+To run tests: from taboo-core, say:
+
+./run_tests.sh
+
+
