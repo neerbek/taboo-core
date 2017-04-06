@@ -25,7 +25,7 @@ class PreprocessingTest(unittest.TestCase):
     #modified copy of server_enron_helper.get_trees
 
     def test_nonascii(self):
-        inputfile="3.317398.KFV32XJXBEP5TEF42WHM3J1JO0BHARTVB.1.txt"
+        inputfile="tests/resources/3.317398.KFV32XJXBEP5TEF42WHM3J1JO0BHARTVB.1.txt"
         enronLabel = EnronDocument.EnronLabel(problem="201", fileid=inputfile, strata=1000, relevance="0")
         enronText = EnronDocument.EnronText(enronLabel, inputfile)
         enronTexts = [enronText]
