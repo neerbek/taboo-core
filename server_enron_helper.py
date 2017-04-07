@@ -26,7 +26,7 @@ class ServerState:
         self.rnn = None
         self.rng = RandomState(1234)
         self.server_rnn_state = None
-        self.server_rnn_state = server_rnn.State(max_embedding_count)
+        self.server_rnn_state = server_rnn.State(max_embedding_count = max_embedding_count)
     def load_model(self):
         self.rnn = server_rnn.RNNWrapper()
         self.rnn.load('model_rootacc0.7469.save')

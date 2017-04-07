@@ -367,14 +367,16 @@ def initializeTrees(trees, LT):
 ######################
 
 class Evaluator:
-    SIZE=None     #initialize this
-    HIDDEN_SIZE=300
     RES_SIZE=5
-    hidden_rep = numpy.zeros(HIDDEN_SIZE)
+    SIZE=None     #initialize this
+    HIDDEN_SIZE=None
+    hidden_rep = None
     leaf_rep = None
-    def set_size(SIZE):
+    def set_size(SIZE, HIDDEN_SIZE):
         Evaluator.SIZE = SIZE
         Evaluator.leaf_rep = numpy.zeros(Evaluator.SIZE)
+        Evaluator.HIDDEN_SIZE = HIDDEN_SIZE
+        Evaluator.hidden_rep = numpy.zeros(Evaluator.HIDDEN_SIZE)
         
     def __init__(self, reg):
         self.W = reg.reluLayer.W.eval()
@@ -704,7 +706,7 @@ if __name__ == "__main__":
     
     
     nx = 50
-    Evaluator.set_size(nx)
+    Evaluator.set_size(nx, 300)
     LT = get_word_embeddings("../code/glove/glove.6B.{}d.txt".format(nx), RandomState(1234))
     len(LT)
     

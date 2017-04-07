@@ -19,20 +19,20 @@ import rnn_enron
 from ai_util import Timer
 
 class State:
-    def __init__(self, max_embedding_count=-1, nx=50, rng=RandomState(1234), glove_path="../code/glove/"):
+    def __init__(self, max_embedding_count=-1, nx=50, nh=300, rng=RandomState(1234), glove_path="../code/glove/"):
         self.nx = None
         self.LT = None
         self.train_trees = None
         self.valid_trees = None
         self.test_trees = None
-        self.setWordSize(nx)
+        self.setWordSize(nx, nh)
         self.LT = rnn_enron.get_word_embeddings(os.path.join(glove_path, "glove.6B.{}d.txt".format(self.nx)), rng, max_embedding_count)
         rnn_enron.Ctxt.evaltimer = Timer("eval timer")
         rnn_enron.Ctxt.appendtimer = Timer("append timer")
 
-    def setWordSize(self, wordSize):
+    def setWordSize(self, wordSize, hiddenSize):
         self.nx = wordSize
-        rnn_enron.Evaluator.set_size(self.nx)
+        rnn_enron.Evaluator.set_size(self.nx, hiddenSize)
 
     def load_trees(self, trainer, max_tree_count=-1):
         self.train_trees = load_trees.get_trees('trees/train.txt', max_tree_count)
