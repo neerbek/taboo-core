@@ -21,19 +21,20 @@ import sys
 sys.setrecursionlimit(10000)
 
 class ServerState:
-    def __init__(self):
+    def __init__(self, max_embedding_count=-1):
         self.enronLabels = None
         self.rnn = None
-        self.rng = None
-    def load_model(self, max_count=-1):
-        server_rnn.setWordSize(50)
-        server_rnn.initialize_state(max_count)
+        self.rng = RandomState(1234)
+        self.server_rnn_state = None
+        self.server_rnn_state = server_rnn.State(max_embedding_count)
+    def load_model(self):
         self.rnn = server_rnn.RNNWrapper()
         self.rnn.load('model_rootacc0.7469.save')
-        self.rng = RandomState(1234)
     def initialize(self, max_count=-1):
         if self.rnn==None:
-            self.load_model(max_count)
+            trainer = server_rnn.Trainer()
+            self.server_rnn_state.load_trees(trainer, max_count)
+            self.rnn = server_rnn.RNNWrapper()
 
 
 class KeywordState:

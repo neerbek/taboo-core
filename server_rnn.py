@@ -5,7 +5,7 @@ Created on Thu Feb 23 15:11:21 2017
 @author: neerbek
 """
 
-
+import os
 import numpy
 from numpy.random import RandomState
 import theano
@@ -19,37 +19,32 @@ import rnn_enron
 from ai_util import Timer
 
 class State:
-    def __init__(self):
+    def __init__(self, max_embedding_count=-1, nx=50, rng=RandomState(1234), glove_path="../code/glove/"):
         self.nx = None
         self.LT = None
         self.train_trees = None
-        self.dev_trees = None
+        self.valid_trees = None
         self.test_trees = None
-        self.is_initialized = False
-state = State()   #global state
-
-def setWordSize(wordSize):
-    state.nx = wordSize
-    rnn_enron.Evaluator.set_size(state.nx)
-
-def initialize_state(max_count=-1):
-    if not state.is_initialized:
-        setWordSize(50)
-        rng = RandomState(1234)
-        state.LT = rnn_enron.get_word_embeddings("../code/glove/glove.6B.{}d.txt".format(state.nx), rng, max_count)
+        self.setWordSize(nx)
+        self.LT = rnn_enron.get_word_embeddings(os.path.join(glove_path, "glove.6B.{}d.txt".format(self.nx)), rng, max_embedding_count)
         rnn_enron.Ctxt.evaltimer = Timer("eval timer")
         rnn_enron.Ctxt.appendtimer = Timer("append timer")
-        state.is_initialized = True
 
-def load_model(trainer, max_count=-1):
-    state.train_trees = load_trees.get_trees('trees/train.txt', max_count)
-    state.valid_trees = load_trees.get_trees('trees/dev.txt', max_count)
-    state.test_trees = load_trees.get_trees('trees/test.txt', max_count)
-    rnn_enron.initializeTrees(state.train_trees, state.LT)
-    rnn_enron.initializeTrees(state.valid_trees, state.LT)
-    rnn_enron.initializeTrees(state.test_trees, state.LT)
-    trainer.update_batch_size()
-        
+    def setWordSize(self, wordSize):
+        self.nx = wordSize
+        rnn_enron.Evaluator.set_size(self.nx)
+
+    def load_trees(self, trainer, max_tree_count=-1):
+        self.train_trees = load_trees.get_trees('trees/train.txt', max_tree_count)
+        self.valid_trees = load_trees.get_trees('trees/dev.txt', max_tree_count)
+        self.test_trees = load_trees.get_trees('trees/test.txt', max_tree_count)
+        self.init_trees(trainer)        
+    
+    def init_trees(self, trainer):
+        rnn_enron.initializeTrees(self.train_trees, self.LT)
+        rnn_enron.initializeTrees(self.valid_trees, self.LT)
+        rnn_enron.initializeTrees(self.test_trees, self.LT)
+        trainer.update_batch_size(self)
 
 class Trainer:
     def __init__(self):
@@ -64,24 +59,24 @@ class Trainer:
         self.n_valid_batches = 0
         self.n_test_batches = 0
 
-    def update_batch_size(self):
+    def update_batch_size(self, state):
         # compute number of minibatches for training, validation and testing
         self.n_train_batches = len(state.train_trees) // self.batch_size
         self.valid_batch_size = len(state.valid_trees)
         self.n_valid_batches = len(state.valid_trees) // self.valid_batch_size
         self.n_test_batches = len(state.test_trees) // self.batch_size
         
-    def train(self, rnn, n_epochs=1, rng=RandomState(1234)):
+    def train(self, state, rnnWrapper, n_epochs=1, rng=RandomState(1234)):
         validation_frequency = 1   #self.n_train_batches/2
         epoch = 0
         it = 0
         batch_size = self.batch_size
-        reg = rnn.rnn
-        cost = reg.cost(rnn.y) + self.L1_reg * reg.L1 + self.L2_reg * reg.L2_sqr
+        reg = rnnWrapper.rnn
+        cost = reg.cost(rnnWrapper.y) + self.L1_reg * reg.L1 + self.L2_reg * reg.L2_sqr
             
         validate_model = theano.function(
-            inputs=[rnn.x,rnn.y,rnn.z],
-            outputs=reg.errors(rnn.y)
+            inputs=[rnnWrapper.x,rnnWrapper.y,rnnWrapper.z],
+            outputs=reg.errors(rnnWrapper.y)
         )
         
         gparams = [T.grad(cost, param) for param in reg.params]
@@ -91,12 +86,12 @@ class Trainer:
         ]
         
         cost_model = theano.function(
-            inputs=[rnn.x,rnn.y,rnn.z],
+            inputs=[rnnWrapper.x,rnnWrapper.y,rnnWrapper.z],
             outputs=cost
         )
         
         train_model = theano.function(
-            inputs=[rnn.x,rnn.y,rnn.z],
+            inputs=[rnnWrapper.x,rnnWrapper.y,rnnWrapper.z],
             outputs=cost,
             updates=updates
         )
@@ -151,11 +146,10 @@ class Trainer:
 
 
 class RNNWrapper:
-    def __init__(self):
+    def __init__(self, rng = RandomState(1234)):
         self.x = T.matrix('x')  
         self.y = T.matrix('y')  
         self.z = T.matrix('z')    #for dropout
-        rng = RandomState(1234)
         # Define RNN
         self.rnn = nn_model.RNN(rng=rng, X=self.x, Z=self.z, n_in=2*(rnn_enron.Evaluator.SIZE+rnn_enron.Evaluator.HIDDEN_SIZE), 
               n_hidden=rnn_enron.Evaluator.HIDDEN_SIZE, n_out=rnn_enron.Evaluator.RES_SIZE
@@ -197,8 +191,7 @@ def get_predictions(rnn, indexed_sentences):
 if __name__ == "__main__":
     #testing
     import server_rnn_helper
-    setWordSize(50)
-    initialize_state()
+    state = State()
     rnn = RNNWrapper()
     rnn.load('model.save')
     

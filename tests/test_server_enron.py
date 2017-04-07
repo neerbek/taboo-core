@@ -10,8 +10,7 @@ import os
 from flask import Response
 import json
 import datetime
-#os.chdir('/Users/neerbek/jan/phd/DLP/paraphrase/python')
-#os.chdir('/home/neerbek/jan/phd/DLP/paraphrase/python')
+from numpy.random import RandomState
 
 class Args:
     def __init__(self):
@@ -36,6 +35,7 @@ We may have to move to cash margining if necessary. prepay model"""
 
 
 import server_enron
+import server_enron_helper
 import server_rnn
 import rnn_enron
 
@@ -44,12 +44,33 @@ rnn_enron.MAX_SENTENCE_LENGTH=80  #approx 14secs, if =160 approx 30secs
 rnn_enron.DEBUG_PRINT_VERBOSE = DEBUG_PRINT
 rnn_enron.DEBUG_PRINT = DEBUG_PRINT
 
+state = {}
+
 def initialize_model(num_wordvectors=5000, num_trees=1000):
-    server_enron.serverState.initialize(num_wordvectors)            
-    if server_rnn.state.train_trees==None:
-        t = server_rnn.Trainer()
-        server_rnn.load_model(t, num_trees)
-    server_enron.keywordState.initialize(server_rnn.state)
+    if len(state)==0:
+        server_rnn_state = server_enron.serverState.server_rnn_state
+        state['LT'] = server_rnn_state.LT   #hack - we know serverState has been loaded the first time we are called
+        trainer = server_rnn.Trainer()
+        server_rnn_state.load_trees(trainer)
+        state['trt'] = server_rnn_state.train_trees
+        state['vat'] = server_rnn_state.valid_trees
+        state['tet'] = server_rnn_state.test_trees
+
+    server_enron.serverState = server_enron_helper.ServerState(max_embedding_count=1)
+    server_rnn_state = server_enron.serverState.server_rnn_state
+    
+    server_rnn_state.LT = state['LT']
+    server_enron.keywordState = server_enron_helper.KeywordState()
+    server_enron.serverState.rnn = server_rnn.RNNWrapper()
+    
+    server_rnn_state.train_trees = state['trt'][:num_trees]
+    server_rnn_state.valid_trees = state['vat'][:num_trees]
+    server_rnn_state.test_trees = state['tet'][:num_trees]
+    trainer = server_rnn.Trainer()
+    server_rnn_state.init_trees(trainer)        
+
+    server_enron.serverState.load_model()
+    server_enron.keywordState.initialize(server_enron.serverState.server_rnn_state)
 
 
 class ServiceTest(unittest.TestCase):
@@ -93,7 +114,8 @@ class ServiceTest(unittest.TestCase):
         print(res)
         d = json.loads(res)
         self.assertTrue(len(d)==1)
-        self.assertTrue(d['predictions'][0]['prediction']==1)
+        print(d['predictions'])
+        self.assertEqual(1, d['predictions'][0]['prediction'], "expected first result to be sensitive")
     
     def test_run_keyword1(self):
         initialize_model()
@@ -128,7 +150,7 @@ class ServiceTest(unittest.TestCase):
         d = json.loads(res)
         self.assertTrue(len(d)==1)
         self.assertTrue(d['predictions']!=None)
-        self.assertTrue(len(d['predictions'])==1)
+        self.assertEqual(1, len(d['predictions']), "expected a prediction")
 
     def test_load_keyword1(self):
         initialize_model()
@@ -198,7 +220,7 @@ class ServiceTest(unittest.TestCase):
         initialize_model()
         server_enron.request = Request()
         trainer = server_rnn.Trainer()
-        server_rnn.load_model(trainer, max_count=100)
+        server_enron.serverState.server_rnn_state.load_trees(trainer, max_tree_count=100)
         server_enron.train_rnn_impl(trainer,1)
 
     
@@ -206,7 +228,7 @@ class ServiceTest(unittest.TestCase):
         initialize_model()
         server_enron.request = Request()
         trainer = server_rnn.Trainer()
-        server_rnn.load_model(trainer, max_count=100)
+        server_enron.serverState.server_rnn_state.load_trees(trainer, max_tree_count=100)
         req = Request()
         server_enron.request = req
         res = server_enron.train_rnn()
@@ -219,7 +241,7 @@ class ServiceTest(unittest.TestCase):
         initialize_model()
         server_enron.request = Request()
         trainer = server_rnn.Trainer()
-        server_rnn.load_model(trainer, max_count=100)
+        server_enron.serverState.server_rnn_state.load_trees(trainer, max_tree_count=100)
         req = Request()
         req.args.args['learning_rate'] = '0.001'
         req.args.args['L1_reg'] = '0.001'

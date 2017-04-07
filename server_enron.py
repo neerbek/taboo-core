@@ -28,10 +28,10 @@ serverState = server_enron_helper.ServerState()
 keywordState = server_enron_helper.KeywordState()
 
 if __name__ == "__main__":
-    serverState.initialize()  #calls server_rnn.initialize_state
+    serverState.initialize()
     t = server_rnn.Trainer()
-    server_rnn.load_model(t)
-    keywordState.initialize(server_rnn.state)
+    serverState.server_rnn_state.load_model(t)
+    keywordState.initialize(serverState.server_rnn_state)
 
 def is_none(l):
     for e in l:
@@ -69,7 +69,7 @@ def run_rnn():
         trees = server_rnn_helper.get_nltk_trees(0, indexed_sentences, parserStatistics)
         for t in trees:
             t.replace_nodenames("0")
-        rnn_enron.initializeTrees(trees, server_rnn.state.LT)
+        rnn_enron.initializeTrees(trees, serverState.server_rnn_state.LT)
         print("getting predictions")
         server_rnn.get_predictions(serverState.rnn, indexed_sentences)
         for s in indexed_sentences:
@@ -115,9 +115,9 @@ def load_model_data():
     dev_index = int(len(doc2)*dev_ratio)
     print("***totalindex:", total_index, train_index, dev_index)
     parserStatistics = rnn_enron.ParserStatistics()
-    train_trees = server_rnn_helper.get_trees(doc2[:train_index], server_rnn.state.LT, parserStatistics)
-    dev_trees = server_rnn_helper.get_trees(doc2[train_index:dev_index], server_rnn.state.LT, parserStatistics)
-    test_trees = server_rnn_helper.get_trees(doc2[dev_index:], server_rnn.state.LT, parserStatistics)
+    train_trees = server_rnn_helper.get_trees(doc2[:train_index], serverState.server_rnn_state.LT, parserStatistics)
+    dev_trees = server_rnn_helper.get_trees(doc2[train_index:dev_index], serverState.server_rnn_state.LT, parserStatistics)
+    test_trees = server_rnn_helper.get_trees(doc2[dev_index:], serverState.server_rnn_state.LT, parserStatistics)
     print("***trees loaded")
     serverState.train_trees = train_trees
     serverState.valid_trees = dev_trees
@@ -162,7 +162,7 @@ def load_model_data_from_file():
     return response_success(ResponseString("load completed"))
 
 def train_rnn_impl(trainer, n_epochs):
-    trainer.train(serverState.rnn, n_epochs, serverState.rng)
+    trainer.train(state = serverState.server_rnn_state, rnnWrapper = serverState.rnn, n_epochs=n_epochs, rng = serverState.rng)
 
 @app.route("/train_model/rnn")
 def train_rnn():
@@ -184,7 +184,7 @@ def train_rnn():
     trainer.L1_reg = float(L1_reg)
     trainer.learning_rate =float(learning_rate)
     n_epochs = int(n_epochs)
-    trainer.update_batch_size()
+    trainer.update_batch_size(serverState.server_rnn_state)
     if not is_positive([trainer.learning_rate, n_epochs, trainer.batch_size]):
         return response_error("Training needs parameters learning_rate, n_epochs, batch_size to be above zero")
     train_rnn_impl(trainer, n_epochs)
@@ -199,14 +199,14 @@ def train_keyword():
     if is_none([cut_off]):
         return response_error("Training keywords needs cutoff")
     cut_off = float(cut_off)
-    keywordState.initialize(server_rnn.state, cut_off)
+    keywordState.initialize(serverState.server_rnn_state, cut_off)
     print("train_keyword DONE")
     sys.stdout.flush()
     return response_success(ResponseString("keyword training completed"))
 
 @app.route("/examples")
 def get_examples():
-    train = server_rnn.state.train_trees
+    train = serverState.server_rnn_state.train_trees
     rng = serverState.rng
     train = rng.choice(train, 50, replace=False)
     res = []
@@ -226,7 +226,7 @@ def get_examples():
     trees = server_rnn_helper.get_nltk_trees(0, res, parserStatistics)
     for t in trees:
         t.replace_nodenames("0")
-    rnn_enron.initializeTrees(trees, server_rnn.state.LT)
+    rnn_enron.initializeTrees(trees, serverState.server_rnn_state.LT)
     server_rnn.get_predictions(serverState.rnn, res)
     indexed_sentences = []
     count = 0
