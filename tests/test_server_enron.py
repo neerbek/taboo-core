@@ -10,7 +10,6 @@ import os
 from flask import Response
 import json
 import datetime
-from numpy.random import RandomState
 
 class Args:
     def __init__(self):
