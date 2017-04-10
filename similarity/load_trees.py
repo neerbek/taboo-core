@@ -207,9 +207,6 @@ def parse_line(l, index, node):
             continue
         else:
             word += c
-    #TODO: fix this check
-    #if node.number_of_children()==1:
-    #    raise Exception("Node should have 0 or 2 children. Index={} ".format(index) + output(node) )
     return i
 
 def get_trees(file, max_count=-1):
@@ -237,10 +234,9 @@ def get_trees(file, max_count=-1):
                 raise Exception(fn + " tree is not properly normalized")
             trees.append(tree)
             count +=1
-            if count%500 == 0:
+            if count%2000 == 0:
                 print("Extracted: ", count)
     print(fn + " done. Count={}".format(count))
-    #shared_nodes = theano.shared(numpy.asarray(nodes))
     return trees
             
 def put_trees(file, trees):
