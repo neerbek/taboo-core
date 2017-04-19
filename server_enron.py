@@ -5,6 +5,7 @@ Created on Mon Jan 23 13:58:46 2017
 @author: neerbek
 """
 
+import sys
 from flask import Flask
 from flask import request
 from flask import Response
@@ -13,7 +14,6 @@ import json
 app = Flask(__name__)
 
 import numpy as np
-import sys
 
 import rnn_enron
 import server_rnn
@@ -27,10 +27,13 @@ import similarity.load_trees as load_trees
 serverState = server_enron_helper.ServerState()
 keywordState = server_enron_helper.KeywordState()
 
+
 if __name__ == "__main__":
-    serverState.initialize()
-    t = server_rnn.Trainer()
-    serverState.server_rnn_state.load_model(t)
+    rnn_enron.DEBUG_PRINT=True
+    rnn_enron.DEBUG_PRINT_VERBOSE=True
+    server_rnn_helper.DEBUG_PRINT=True
+    serverState.initialize()   #loads trees
+    serverState.load_model()
     keywordState.initialize(serverState.server_rnn_state)
 
 def is_none(l):
@@ -256,6 +259,7 @@ def response_error(msg):
                         status=500,
                         mimetype="text/plain")
     print(msg)
+    sys.stdout.flush()
     return res
 
 def toJSON(e):
@@ -266,6 +270,7 @@ def response_success(value, root_tag = None):
     print(value)
     if root_tag is not None:
         res = '{"' + root_tag +'": ' + res + '}'
+    sys.stdout.flush()
     return res
 
 
