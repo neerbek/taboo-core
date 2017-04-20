@@ -95,7 +95,7 @@ class PerformanceMeasurer:
 class Trainer:
     def __init__(self):
         self.learning_rate=0.01
-        self.L1_reg=0.00
+        self.L1_reg=0.0
         self.L2_reg=0.0001
         self.n_epochs=1000
         self.batch_size=40
@@ -112,7 +112,7 @@ class Trainer:
         self.n_valid_batches = len(state.valid_trees) // self.valid_batch_size
         self.n_test_batches = len(state.test_trees) // self.batch_size
         
-    def train(self, state, rnnWrapper, n_epochs=1, rng=RandomState(1234)):
+    def train(self, state, rnnWrapper, file_prefix="save", n_epochs=1, rng=RandomState(1234)):
         validation_frequency = 1   #self.n_train_batches/2
         epoch = 0
         it = 0
@@ -142,6 +142,7 @@ class Trainer:
             updates=updates
         )
         performanceMeasurerBest = PerformanceMeasurer()
+        performanceMeasurerBest.epoch=-1
         while (n_epochs==-1 or epoch < n_epochs):
             epoch += 1
             minibatch_index=0
@@ -156,6 +157,7 @@ class Trainer:
                 it += 1
                 if it % validation_frequency == 0:
                     performanceMeasurer = PerformanceMeasurer()
+                    performanceMeasurer.epoch = epoch
                     performanceMeasurer.measure(state, self,  reg, validate_model, cost_model)
                     print("epoch {}. time is {}, minibatch {}/{}, validation total accuracy {:.4f} % ({:.4f} %) validation cost {:.6f}, val root acc {:.4f} % ({:.4f} %)".format(
                             epoch, datetime.now().strftime('%d-%m %H:%M'),
@@ -164,10 +166,12 @@ class Trainer:
                         ))
                     #have to mult by 1.0 to convert minibatch_avg_cost from theano to python variables
                     if performanceMeasurerBest.val_root_acc<performanceMeasurer.val_root_acc:
+                        filename = "{}_{}_{:.4f}.txt".format(file_prefix, epoch, performanceMeasurer.val_root_acc)
+                        print("Found new best. Previous {};{:.4f}. New {};{:.4f}".format(performanceMeasurerBest.epoch, performanceMeasurerBest.val_root_acc, performanceMeasurer.epoch, performanceMeasurer.val_root_acc))
+                        print("Saving as " + filename)
                         performanceMeasurerBest = performanceMeasurer
-                        print("Found new best")
-                        rnnWrapper.save()
-                        #TODO: continue here
+                        performanceMeasurerBest.epoch = epoch
+                        rnnWrapper.save(filename)
 
 class RNNWrapper:
     def __init__(self, rng = RandomState(1234)):
@@ -187,10 +191,10 @@ class RNNWrapper:
 
 
     def load(self, filename='model.save'):
-        nn_model.load(self.rnn, filename)
+        return nn_model.load(rnn=self.rnn, filename=filename)
 
-    def save(self, filename='model.save'):
-        nn_model.save(self.rnn, filename)
+    def save(self, filename='model.save', epoch=0, acc=0):
+        nn_model.save(rnn=self.rnn, filename=filename, epoch=epoch, acc=acc)
 
 #train = load_trees.get_trees('trees/train.txt')
 #rnn_enron.initializeTrees(train, state.LT)

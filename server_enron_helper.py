@@ -29,7 +29,9 @@ class ServerState:
         self.server_rnn_state = server_rnn.State(max_embedding_count = max_embedding_count)
     def load_model(self):
         self.rnn = server_rnn.RNNWrapper()
-        self.rnn.load('model_rootacc0.7469.save')
+        #server_rnn.nn_model.load_old(self.rnn.rnn, 'model_rootacc0.7469.save')
+        #self.rnn.save('model_rootacc0.7469.v1.save')
+        self.rnn.load('model_rootacc0.7469.v1.save')
     def initialize(self, max_count=-1):
         if self.rnn==None:
             trainer = server_rnn.Trainer()

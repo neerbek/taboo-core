@@ -132,20 +132,46 @@ class RNN(object):
         
         
 from six.moves import cPickle
-def get_object_list(reg):
-    obj_list = [ reg.reluLayer.W, reg.reluLayer.b, reg.regressionLayer.W, reg.regressionLayer.b]
+VERSION="RNN_SERIALIZED_VERSION_1"
+def get_object_list(reg, epoch, acc):
+    obj_list = [ VERSION, epoch, acc, reg.reluLayer.W, reg.reluLayer.b, reg.regressionLayer.W, reg.regressionLayer.b]
     return obj_list
 
-def save(reg, name='model.save'):
-    obj_list = get_object_list(reg)
-    f = open(name, 'wb')
-    #print("W[5,10] ", reg.reluLayer.W.get_value()[5,10])
-    for obj in obj_list:
+def save(rnn, filename='model.save', epoch=0, acc=0):
+    obj_list = get_object_list(rnn, epoch, acc)
+    f = open(filename, 'wb')
+    for obj in obj_list[:3]:
+        cPickle.dump(obj, f, protocol=cPickle.HIGHEST_PROTOCOL)
+        
+    for obj in obj_list[3:]:  #theano tensor variables
         cPickle.dump(obj.get_value(), f, protocol=cPickle.HIGHEST_PROTOCOL)
     f.close()
 
-def load(reg, name='model.save'):
-    obj_list = get_object_list(reg)
+def load(rnn, filename='model.save'):
+    epoch = 0
+    acc = 0
+    obj_list = get_object_list(rnn, epoch, acc)
+    f = open(filename, 'rb')
+    for i in range(len(obj_list)):
+        v = cPickle.load(f)
+        obj_list[i] = v
+    if obj_list[0]!=VERSION:
+        raise Exception("Version mismatch in rnn4.load")
+    epoch = obj_list[1]
+    acc =  obj_list[2]
+    rnn.reluLayer.W.set_value(obj_list[3])
+    rnn.reluLayer.b.set_value(obj_list[4])
+    rnn.regressionLayer.W.set_value(obj_list[5])
+    rnn.regressionLayer.b.set_value(obj_list[6])
+    #print("W[5,10] ", reg.reluLayer.W.get_value()[5,10])
+    f.close()
+    return (epoch, acc)
+
+def load_old(reg, name='model.save'):
+    epoch = 0
+    acc = 0
+    obj_list = get_object_list(reg, epoch, acc)
+    obj_list = obj_list[3:]
     f = open(name, 'rb')
     for i in range(len(obj_list)):
         v = cPickle.load(f)
@@ -156,4 +182,5 @@ def load(reg, name='model.save'):
     reg.regressionLayer.b.set_value(obj_list[3])
     #print("W[5,10] ", reg.reluLayer.W.get_value()[5,10])
     f.close()
-    
+    return (epoch, acc)
+
