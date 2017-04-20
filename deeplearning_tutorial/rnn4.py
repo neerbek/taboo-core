@@ -132,9 +132,11 @@ class RNN(object):
         
         
 from six.moves import cPickle
-VERSION="RNN_SERIALIZED_VERSION_1"
+VERSION_1="RNN_SERIALIZED_VERSION_1"
+VERSION="RNN_SERIALIZED_VERSION_2"
 def get_object_list(reg, epoch, acc):
-    obj_list = [ VERSION, epoch, acc, reg.reluLayer.W, reg.reluLayer.b, reg.regressionLayer.W, reg.regressionLayer.b]
+    obj_list = [ VERSION, "{}".format(epoch), "{:.4f}".format(acc), reg.reluLayer.W, reg.reluLayer.b, reg.regressionLayer.W, reg.regressionLayer.b]
+    print("we are listing: " + obj_list[1]+"," + obj_list[2])
     return obj_list
 
 def save(rnn, filename='model.save', epoch=0, acc=0):
@@ -157,6 +159,26 @@ def load(rnn, filename='model.save'):
         obj_list[i] = v
     if obj_list[0]!=VERSION:
         raise Exception("Version mismatch in rnn4.load")
+    epoch = int(obj_list[1])
+    acc =  float(obj_list[2])
+    rnn.reluLayer.W.set_value(obj_list[3])
+    rnn.reluLayer.b.set_value(obj_list[4])
+    rnn.regressionLayer.W.set_value(obj_list[5])
+    rnn.regressionLayer.b.set_value(obj_list[6])
+    #print("W[5,10] ", reg.reluLayer.W.get_value()[5,10])
+    f.close()
+    return (epoch, acc)
+
+def load_v1(rnn, filename='model.save'):
+    epoch = 0
+    acc = 0
+    obj_list = get_object_list(rnn, epoch, acc)
+    f = open(filename, 'rb')
+    for i in range(len(obj_list)):
+        v = cPickle.load(f)
+        obj_list[i] = v
+    if obj_list[0]!=VERSION_1:
+        raise Exception("Version mismatch in rnn4.load")
     epoch = obj_list[1]
     acc =  obj_list[2]
     rnn.reluLayer.W.set_value(obj_list[3])
@@ -167,7 +189,7 @@ def load(rnn, filename='model.save'):
     f.close()
     return (epoch, acc)
 
-def load_old(reg, name='model.save'):
+def load_v0(reg, name='model.save'):
     epoch = 0
     acc = 0
     obj_list = get_object_list(reg, epoch, acc)

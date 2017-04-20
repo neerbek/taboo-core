@@ -143,6 +143,8 @@ class Trainer:
         )
         performanceMeasurerBest = PerformanceMeasurer()
         performanceMeasurerBest.epoch=-1
+        performanceMeasurer = PerformanceMeasurer()
+        performanceMeasurer.epoch = -1
         while (n_epochs==-1 or epoch < n_epochs):
             epoch += 1
             minibatch_index=0
@@ -166,12 +168,20 @@ class Trainer:
                         ))
                     #have to mult by 1.0 to convert minibatch_avg_cost from theano to python variables
                     if performanceMeasurerBest.val_root_acc<performanceMeasurer.val_root_acc:
-                        filename = "{}_{}_{:.4f}.txt".format(file_prefix, epoch, performanceMeasurer.val_root_acc)
-                        print("Found new best. Previous {};{:.4f}. New {};{:.4f}".format(performanceMeasurerBest.epoch, performanceMeasurerBest.val_root_acc, performanceMeasurer.epoch, performanceMeasurer.val_root_acc))
-                        print("Saving as " + filename)
+                        filename = "{}_best.txt".format(file_prefix)
+                        self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
                         performanceMeasurerBest = performanceMeasurer
-                        performanceMeasurerBest.epoch = epoch
-                        rnnWrapper.save(filename)
+                    else:
+                        if performanceMeasurerBest.epoch +20 < epoch:
+                            filename = "{}_running.txt".format(file_prefix)
+                            self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
+        filename = "{}_running.txt".format(file_prefix)
+        self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
+        
+    def save(self, rnnWrapper, filename, epoch, performanceMeasurer, performanceMeasurerBest):
+        print("Saving rnnWrapper. Previous {};{:.4f}. New {};{:.4f}".format(performanceMeasurerBest.epoch, performanceMeasurerBest.val_root_acc, performanceMeasurer.epoch, performanceMeasurer.val_root_acc))
+        print("Saving as " + filename)
+        rnnWrapper.save(filename, epoch, performanceMeasurer.val_root_acc)
 
 class RNNWrapper:
     def __init__(self, rng = RandomState(1234)):
