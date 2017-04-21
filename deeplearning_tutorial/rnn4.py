@@ -136,7 +136,6 @@ VERSION_1="RNN_SERIALIZED_VERSION_1"
 VERSION="RNN_SERIALIZED_VERSION_2"
 def get_object_list(reg, epoch, acc):
     obj_list = [ VERSION, "{}".format(epoch), "{:.4f}".format(acc), reg.reluLayer.W, reg.reluLayer.b, reg.regressionLayer.W, reg.regressionLayer.b]
-    print("we are listing: " + obj_list[1]+"," + obj_list[2])
     return obj_list
 
 def save(rnn, filename='model.save', epoch=0, acc=0):
