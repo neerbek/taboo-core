@@ -112,9 +112,8 @@ class Trainer:
         self.n_valid_batches = len(state.valid_trees) // self.valid_batch_size
         self.n_test_batches = len(state.test_trees) // self.batch_size
         
-    def train(self, state, rnnWrapper, file_prefix="save", n_epochs=1, rng=RandomState(1234)):
+    def train(self, state, rnnWrapper, file_prefix="save", n_epochs=1, rng=RandomState(1234), epoch=0):
         validation_frequency = 1   #self.n_train_batches/2
-        epoch = 0
         it = 0
         batch_size = self.batch_size
         reg = rnnWrapper.rnn
