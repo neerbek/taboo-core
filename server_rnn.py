@@ -49,17 +49,17 @@ class State:
 class PerformanceMeasurer:
     def __init__(self, performanceMeasurer=None):
         if performanceMeasurer==None:
-            self.val_total_acc = 0
-            self.val_root_acc = 0
-            self.val_total_zeros = 0
-            self.val_root_zeros = 0
-            self.val_cost = 0
+            self.total_acc = 0
+            self.root_acc = 0
+            self.total_zeros = 0
+            self.root_zeros = 0
+            self.cost = 0
         else:
-            self.val_total_acc = performanceMeasurer.val_total_acc
-            self.val_root_acc = performanceMeasurer.val_root_acc
-            self.val_total_zeros = performanceMeasurer.val_total_zeros
-            self.val_root_zeros = performanceMeasurer.val_root_zeros
-            self.val_cost = performanceMeasurer.val_cost
+            self.total_acc = performanceMeasurer.total_acc
+            self.root_acc = performanceMeasurer.root_acc
+            self.total_zeros = performanceMeasurer.total_zeros
+            self.root_zeros = performanceMeasurer.root_zeros
+            self.cost = performanceMeasurer.cost
         
     def measure(me, state, trainer, rnn, validate_model, cost_model):
         validation_losses = []
@@ -72,7 +72,7 @@ class PerformanceMeasurer:
         for i in range(trainer.n_valid_batches):
             trees = state.valid_trees[i * trainer.valid_batch_size: (i + 1) * trainer.valid_batch_size]
             (roots, x_val, y_val) = rnn_enron.getInputArrays(rnn, trees, evaluator)
-            z_val = numpy.ones(shape=(x_val.shape[0], rnn_enron.Evaluator.HIDDEN_SIZE))
+            z_val = numpy.ones(shape=(x_val.shape[0], rnn.n_hidden))
             z_val = z_val * trainer.retain_probability
             validation_losses.append(validate_model(x_val, y_val, z_val))
             validation_cost.append(cost_model(x_val, y_val, z_val))
@@ -82,15 +82,50 @@ class PerformanceMeasurer:
             for r in roots:
                 x_roots.append(x_val[r,:])
                 y_roots.append(y_val[r,:])
-            z_roots = numpy.ones(shape=(len(x_roots), rnn_enron.Evaluator.HIDDEN_SIZE))
+            z_roots = numpy.ones(shape=(len(x_roots), rnn.n_hidden))
             z_roots = z_roots * trainer.retain_probability
             val_root_losses.append(validate_model(x_roots, y_roots, z_roots))
             val_root_zeros.append(rnn_enron.get_zeros(y_roots))
-        me.val_total_acc = 1 - numpy.mean(validation_losses)
-        me.val_root_acc = 1  - numpy.mean(val_root_losses)
-        me.val_total_zeros = 1 - numpy.mean(val_total_zeros)
-        me.val_root_zeros = 1 - numpy.mean(val_root_zeros)
-        me.val_cost = numpy.mean(validation_cost)
+        me.total_acc = 1 - numpy.mean(validation_losses)
+        me.root_acc = 1  - numpy.mean(val_root_losses)
+        me.total_zeros = 1 - numpy.mean(val_total_zeros)
+        me.root_zeros = 1 - numpy.mean(val_root_zeros)
+        me.cost = numpy.mean(validation_cost)
+        
+    def measure_trees(self, trees, retain_probability, rnn, validation_model, cost_model):
+        validation_losses = 0
+        val_total_zeros = 0
+        val_root_losses = 0
+        val_root_zeros = 0
+        validation_cost = 0
+        evaluator = rnn_enron.Evaluator(rnn)
+        (roots, x_val, y_val) = rnn_enron.getInputArrays(rnn, trees, evaluator)
+        z_val = numpy.ones(shape=(x_val.shape[0], rnn.n_hidden))
+        z_val = z_val * retain_probability
+        validation_losses = validation_model(x_val, y_val, z_val)
+        validation_cost = cost_model(x_val, y_val, z_val)
+        val_total_zeros = rnn_enron.get_zeros(y_val)
+        x_roots = []
+        y_roots = []
+        for r in roots:
+            x_roots.append(x_val[r,:])
+            y_roots.append(y_val[r,:])
+        z_roots = numpy.ones(shape=(len(x_roots), rnn.n_hidden))
+        z_roots = z_roots * retain_probability
+        val_root_losses = validation_model(x_roots, y_roots, z_roots)
+        val_root_zeros = rnn_enron.get_zeros(y_roots)
+        self.total_acc = 1 - validation_losses
+        self.root_acc = 1  - val_root_losses
+        self.total_zeros = 1 - val_total_zeros
+        self.root_zeros = 1 - val_root_zeros
+        self.cost = validation_cost
+        
+    def report(self, msg = ""):
+        print(msg + " total accuracy {:.4f} % ({:.4f} %) cost {:.6f}, root acc {:.4f} % ({:.4f} %)".format(self.total_acc*100., 
+              self.total_zeros*100., self.cost*1.0, 
+              self.root_acc*100., self.root_zeros*100.
+              ))
+
 
 class Trainer:
     def __init__(self):
@@ -112,17 +147,36 @@ class Trainer:
         self.n_valid_batches = len(state.valid_trees) // self.valid_batch_size
         self.n_test_batches = len(state.test_trees) // self.batch_size
         
-    def train(self, state, rnnWrapper, file_prefix="save", n_epochs=1, rng=RandomState(1234), epoch=0):
-        validation_frequency = 1   #self.n_train_batches/2
+    def get_cost(self, rnnWrapper):
+        reg = rnnWrapper.rnn
+        return reg.cost(rnnWrapper.y) + self.L1_reg * reg.L1 + self.L2_reg * reg.L2_sqr
+
+    def get_cost_model(self, rnnWrapper, cost):
+        cost_model = theano.function(
+            inputs=[rnnWrapper.x,rnnWrapper.y,rnnWrapper.z],
+            outputs=cost
+        )
+        return cost_model
+
+    def get_validation_model(self, rnnWrapper):
+        return theano.function(
+            inputs=[rnnWrapper.x,rnnWrapper.y,rnnWrapper.z],
+            outputs=rnnWrapper.rnn.errors(rnnWrapper.y)
+        )
+    def evaluate_model(self, trees, rnnWrapper, validation_model, cost_model):
+        performanceMeasurer = PerformanceMeasurer()
+        performanceMeasurer.measure_trees(trees=trees, retain_probability = self.retain_probability, 
+                                          rnn = rnnWrapper.rnn, validation_model=validation_model, 
+                                          cost_model=cost_model)
+        return performanceMeasurer
+        
+    def train(self, state, rnnWrapper, file_prefix="save", n_epochs=1, rng=RandomState(1234), epoch=0, validation_frequency=1):
         it = 0
         batch_size = self.batch_size
         reg = rnnWrapper.rnn
-        cost = reg.cost(rnnWrapper.y) + self.L1_reg * reg.L1 + self.L2_reg * reg.L2_sqr
+        cost = self.get_cost(rnnWrapper)
             
-        validate_model = theano.function(
-            inputs=[rnnWrapper.x,rnnWrapper.y,rnnWrapper.z],
-            outputs=reg.errors(rnnWrapper.y)
-        )
+        validate_model = self.get_validation_model(rnnWrapper)
         
         gparams = [T.grad(cost, param) for param in reg.params]
         updates = [
@@ -130,10 +184,7 @@ class Trainer:
             for param, gparam in zip(reg.params, gparams)
         ]
         
-        cost_model = theano.function(
-            inputs=[rnnWrapper.x,rnnWrapper.y,rnnWrapper.z],
-            outputs=cost
-        )
+        cost_model = self.get_cost_model(rnnWrapper, cost)
         
         train_model = theano.function(
             inputs=[rnnWrapper.x,rnnWrapper.y,rnnWrapper.z],
@@ -160,13 +211,10 @@ class Trainer:
                     performanceMeasurer = PerformanceMeasurer()
                     performanceMeasurer.epoch = epoch
                     performanceMeasurer.measure(state, self,  reg, validate_model, cost_model)
-                    print("epoch {}. time is {}, minibatch {}/{}, validation total accuracy {:.4f} % ({:.4f} %) validation cost {:.6f}, val root acc {:.4f} % ({:.4f} %)".format(
-                            epoch, datetime.now().strftime('%d-%m %H:%M'),
-                            minibatch_index + 1, self.n_train_batches, performanceMeasurer.val_total_acc*100., performanceMeasurer.val_total_zeros*100.,
-                            performanceMeasurer.val_cost*1.0, performanceMeasurer.val_root_acc*100., performanceMeasurer.val_root_zeros*100.
-                        ))
-                    #have to mult by 1.0 to convert minibatch_avg_cost from theano to python variables
-                    if performanceMeasurerBest.val_root_acc<performanceMeasurer.val_root_acc:
+                    performanceMeasurer.report(msg = "epoch {}. time is {}, minibatch {}/{}, On validation set:".format(epoch, 
+                                               datetime.now().strftime('%d-%m %H:%M'), minibatch_index + 1, 
+                            self.n_train_batches))
+                    if performanceMeasurerBest.root_acc<performanceMeasurer.root_acc:
                         filename = "{}_best.txt".format(file_prefix)
                         self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
                         performanceMeasurerBest = performanceMeasurer
@@ -178,9 +226,9 @@ class Trainer:
         self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
         
     def save(self, rnnWrapper, filename, epoch, performanceMeasurer, performanceMeasurerBest):
-        print("Saving rnnWrapper. Previous {};{:.4f}. New {};{:.4f}".format(performanceMeasurerBest.epoch, performanceMeasurerBest.val_root_acc, performanceMeasurer.epoch, performanceMeasurer.val_root_acc))
+        print("Saving rnnWrapper. Previous {};{:.4f}. New {};{:.4f}".format(performanceMeasurerBest.epoch, performanceMeasurerBest.root_acc, performanceMeasurer.epoch, performanceMeasurer.root_acc))
         print("Saving as " + filename)
-        rnnWrapper.save(filename, epoch, performanceMeasurer.val_root_acc)
+        rnnWrapper.save(filename, epoch, performanceMeasurer.root_acc)
 
 class RNNWrapper:
     def __init__(self, rng = RandomState(1234)):

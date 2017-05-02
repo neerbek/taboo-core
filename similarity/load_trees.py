@@ -249,6 +249,21 @@ def put_trees(file, trees):
             count += 1
     print(fn + "done. Count={}".format(count))
 
+def get_fraction(trees, report=False):
+    count_0 = 0
+    count_4 = 0
+    for t in trees:
+        if t.syntax=="0":
+            count_0+=1
+        elif t.syntax=="4":
+            count_4+=1
+        else:
+            raise Exception("unknown syntax encountered in tree: {}".format(t.syntax))
+    res = count_4 / (count_0+count_4)
+    if report:
+        print("Total count {}, sensitive {} fraction sensitive {:.4f}".format(count_0+count_4, count_4, res))
+    return res
+
 def escape_sentence(l2):
     "removes parenteses and other stuff from sentence"
     l2 = l2.replace('(', '-LRB- ').replace(')', ' -RRB-')

@@ -87,6 +87,9 @@ class ReluLayer(object):
 
 class RNN(object):
     def __init__(self, rng, X, Z, n_in, n_hidden, n_out):
+        self.n_in = n_in
+        self.n_hidden = n_hidden
+        self.n_out = n_out
         self.reluLayer = ReluLayer(
             rng=rng,
             X=X,
