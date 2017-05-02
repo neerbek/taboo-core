@@ -7,7 +7,6 @@ Created on Sat Mar  4 07:00:23 2017
 
 import os
 import unittest
-import datetime
 #os.chdir('/Users/neerbek/jan/phd/DLP/paraphrase/python')
 #os.chdir('/home/neerbek/jan/phd/DLP/paraphrase/python')
 
@@ -15,6 +14,8 @@ import server_enron_helper
 import server_rnn_helper
 import rnn_enron
 import EnronDocument
+
+import RunTimer
 
 DEBUG_PRINT = False
 rnn_enron.MAX_SENTENCE_LENGTH=80
@@ -28,12 +29,10 @@ def get_id(filepath):
 
 class ParserTest(unittest.TestCase):
     def setUp(self):
-        self.tick = datetime.datetime.now()
+        self.timer = RunTimer.Timer()
 
     def tearDown(self):
-        self.tock = datetime.datetime.now()
-        diff = self.tock - self.tick
-        print("Time used in test (test_NLTK)", self.id().split('.')[-1], (diff.total_seconds()), "sec")
+        self.timer.report(self, __file__)
 
     #modified copy of server_enron_helper.get_trees
 

@@ -6,21 +6,19 @@ Created on Wed Apr  5 11:44:13 2017
 """
 
 
-import os
 import unittest
-import datetime
 
 import server_enron_helper
 import EnronDocument
 
+import RunTimer
+
 class PreprocessingTest(unittest.TestCase):
     def setUp(self):
-        self.tick = datetime.datetime.now()
+        self.timer = RunTimer.Timer()
 
     def tearDown(self):
-        self.tock = datetime.datetime.now()
-        diff = self.tock - self.tick
-        print("Time used in test ("+ os.path.basename(__file__)+")", self.id().split('.')[-1], (diff.total_seconds()), "sec")
+        self.timer.report(self, __file__)
 
     #modified copy of server_enron_helper.get_trees
 

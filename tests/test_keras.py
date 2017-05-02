@@ -17,17 +17,17 @@ if False:
     
 import numpy as np
 
+import RunTimer
+
 data_dim = 20
 
 nb_classes = 4
 class KerasTest(unittest.TestCase):
     def setUp(self):
-        self.tick = datetime.datetime.now()
+        self.timer = RunTimer.Timer()
 
     def tearDown(self):
-        self.tock = datetime.datetime.now()
-        diff = self.tock - self.tick
-        print("Time used in test (test_keras)", self.id().split('.')[-1], (diff.total_seconds()), "sec")
+        self.timer.report(self, __file__)
     
     @unittest.skip
     def test_keras_train(self):

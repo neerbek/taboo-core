@@ -9,7 +9,6 @@ import unittest
 import os
 from flask import Response
 import json
-import datetime
 
 class Args:
     def __init__(self):
@@ -37,6 +36,8 @@ import server_enron
 import server_enron_helper
 import server_rnn
 import rnn_enron
+
+import RunTimer
 
 DEBUG_PRINT = False
 rnn_enron.MAX_SENTENCE_LENGTH=80  #approx 14secs, if =160 approx 30secs
@@ -74,12 +75,10 @@ def initialize_model(num_wordvectors=5000, num_trees=1000):
 
 class ServiceTest(unittest.TestCase):
     def setUp(self):
-        self.tick = datetime.datetime.now()
+        self.timer = RunTimer.Timer()
 
     def tearDown(self):
-        self.tock = datetime.datetime.now()
-        diff = self.tock - self.tick
-        print("Time used in test (test_server_enron)",self.id().split('.')[-1],  (diff.total_seconds()), "sec")
+        self.timer.report(self, __file__)
 
 
     def test_run_rnn1(self):
