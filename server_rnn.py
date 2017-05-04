@@ -221,9 +221,10 @@ class Trainer:
                         self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
                         performanceMeasurerBest = performanceMeasurer
                     else:
-                        if performanceMeasurerBest.epoch +20 < epoch:
+                        if performanceMeasurerBest.epoch + 0 < epoch:
                             filename = "{}_running.txt".format(file_prefix)
                             self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
+                            performanceMeasurerBest.epoch = epoch
         filename = "{}_running.txt".format(file_prefix)
         self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
         
