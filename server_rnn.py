@@ -18,6 +18,7 @@ import deeplearning_tutorial.rnn4 as nn_model
 import rnn_enron
 from ai_util import Timer
 
+DEBUG_PRINT = True
 class State:
     def __init__(self, max_embedding_count=-1, nx=50, nh=300, rng=RandomState(1234), glove_path="../code/glove/"):
         self.nx = None
@@ -211,9 +212,10 @@ class Trainer:
                     performanceMeasurer = PerformanceMeasurer()
                     performanceMeasurer.epoch = epoch
                     performanceMeasurer.measure(state, self,  reg, validate_model, cost_model)
-                    performanceMeasurer.report(msg = "epoch {}. time is {}, minibatch {}/{}, On validation set:".format(epoch, 
-                                               datetime.now().strftime('%d-%m %H:%M'), minibatch_index + 1, 
-                            self.n_train_batches))
+                    if DEBUG_PRINT:
+                        performanceMeasurer.report(msg = "epoch {}. time is {}, minibatch {}/{}, On validation set:".format(epoch, 
+                                                   datetime.now().strftime('%d-%m %H:%M'), minibatch_index + 1, 
+                                self.n_train_batches))
                     if performanceMeasurerBest.root_acc<performanceMeasurer.root_acc:
                         filename = "{}_best.txt".format(file_prefix)
                         self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)

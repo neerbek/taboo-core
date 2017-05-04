@@ -25,19 +25,51 @@ class RNNTest(unittest.TestCase):
     def test_hello(self):
         self.assertEqual("42", "4"+"2", "I am very surprised that this test failed")
 
+    trees = None
+    def get_trees(self):
+        if RNNTest.trees == None:
+           RNNTest.trees = load_trees.get_trees(file = "tests/resources/trees_201_100_custom_0000_0250.txt", max_count=2000)
+        
+        res = []
+        for t in RNNTest.trees:
+            res.append(load_trees.clone_tree(t))
+        return res
+        
+    def test_no_empty_trees(self):
+        all_trees = self.get_trees()
+        self.assertEqual(2001, len(all_trees))
+        for t in all_trees:
+            self.assertNotEqual(0, load_trees.count_non_leaf_nodes(t), "expected count to be bigger than 0")
+    
+    def test_root_indexes(self):
+        all_trees = self.get_trees()
+        self.assertEqual(2001, len(all_trees))
+        rng = RandomState(93574836)
+        nx= 50
+        unknown = rng.uniform(-1, 1, size=nx)
+        LT = {}  #word embeddings
+        LT[rnn_enron.UNKNOWN_WORD] = unknown
+
+        rnn_enron.initializeTrees(all_trees, LT)
+        rnn_enron.Evaluator.set_size(nx,nx)
+        rnnWrapper = server_rnn.RNNWrapper(rng=rng)
+                
+        evaluator = rnn_enron.Evaluator(rnnWrapper.rnn)
+        (list_root_indexes, x_val, y_val) = rnn_enron.getInputArrays(rnnWrapper.rnn, all_trees, evaluator)
+        r = 0
+        for i in range(len(all_trees)):
+            t = all_trees[i]
+            c = load_trees.count_non_leaf_nodes(t)
+            r += c
+            self.assertNotEqual(0, c, "expected node count to be bigger than 0")            
+            self.assertEqual(r-1, list_root_indexes[i], "root count is unexpected")
+                   
     def test_train(self):
-        trainer = server_rnn.Trainer()
-        trainer.learning_rate=0.01
-        trainer.L1_reg=0.00
-        trainer.L2_reg=0.0001
-        trainer.n_epochs=1
-        trainer.batch_size=400
-        trainer.retain_probability = 0.4
-        totaltimer = ai_util.Timer("Total time: ")
-        traintimer =  ai_util.Timer("Train time: ")
-        totaltimer.begin()
-        all_trees = load_trees.get_trees(file = "tests/resources/trees_201_100_custom_0000_0250.txt", max_count=2000)
-        load_trees.get_fraction(all_trees, report=True)
+        all_trees = self.get_trees()
+        #all_trees = res
+        self.assertEqual(2001, len(all_trees))
+        f = load_trees.get_fraction(all_trees)
+        self.assertAlmostEqual(0.23, f, places = 2)
         #Constants to make the different set equal in ratios of sensitive vs non-sensitive
         test_index = int(0.15*len(all_trees))
         dev_index = int(0.28*len(all_trees))        
@@ -52,52 +84,61 @@ class RNNTest(unittest.TestCase):
         
         
         #shuffel trees
-        rng = RandomState(93574836)
-        nx= 50
-        nh = 100
-        glove_path = "../code/glove"
+        rng = RandomState(93)
         train_trees = rng.permutation(train_trees)
         dev_trees = rng.permutation(dev_trees)
         test_trees = rng.permutation(test_trees)
         
-        train_trees=train_trees[:400]
+        train_trees=train_trees[200:300]
         #report ratio+size
-        load_trees.get_fraction(train_trees, report=True)
-        load_trees.get_fraction(dev_trees, report=True)
-        load_trees.get_fraction(test_trees, report=True)
-        print(len(train_trees), len(dev_trees), len(test_trees))
-        state = server_rnn.State(max_embedding_count=10000, nx = nx, nh = nh, rng = rng, glove_path=glove_path)
+        f = load_trees.get_fraction(train_trees)
+        self.assertAlmostEqual(0.22, f, places = 2)
+        f = load_trees.get_fraction(dev_trees)
+        self.assertAlmostEqual(0.21, f, places = 2)
+        f = load_trees.get_fraction(test_trees)
+        self.assertAlmostEqual(0.22, f, places = 2)
+        self.assertEqual(100, len(train_trees))
+        self.assertEqual(400, len(dev_trees))
+        self.assertEqual(401, len(test_trees))
+        
+        #trainer
+        trainer = server_rnn.Trainer()
+        trainer.learning_rate=5.5
+        trainer.L1_reg=0.0
+        trainer.L2_reg=0.0
+        trainer.n_epochs=6
+        trainer.batch_size=100
+        trainer.retain_probability = 0.9
+        
+        #initialize state for training
+        rng = RandomState(464)
+        nx= 50
+        nh = 100
+        glove_path = "../code/glove"
+        state = server_rnn.State(max_embedding_count=30000, nx = nx, nh = nh, rng = rng, glove_path=glove_path)
         state.train_trees = train_trees
         state.valid_trees = dev_trees
         state.test_trees = test_trees
-        
         state.init_trees(trainer)
                 
-        rnnWrapper = server_rnn.RNNWrapper(rng = RandomState(34))
+        rnnWrapper = server_rnn.RNNWrapper(rng = RandomState(958589))
         #load model here
         rng = RandomState(1234)
         # Training
-        traintimer.begin()
         trainer.train(state = state, rnnWrapper = rnnWrapper, file_prefix="save_test", n_epochs = trainer.n_epochs, rng = rng, epoch=0)
-        traintimer.end()
         
+        #measure 
         cost = trainer.get_cost(rnnWrapper=rnnWrapper)
         cost_model = trainer.get_cost_model(rnnWrapper=rnnWrapper, cost=cost)
         eval_model = trainer.get_validation_model(rnnWrapper=rnnWrapper)
         
-        performanceMeasurer = trainer.evaluate_model(trees=train_trees, rnnWrapper=rnnWrapper, validation_model = eval_model, cost_model = cost_model)
-        performanceMeasurer.report(msg="On train set")
-        load_trees.get_fraction(train_trees, report=True)
-        rnn_enron.get_zeros(train_trees)
-        # Done
-        totaltimer.end()
-        totaltimer.report()
-        traintimer.report()
-        print("***train completed")
-
-#epoch 1: 0.094936 (rng = RandomState(234))
-#epoch 1. val total acc 59.7131 % (63.1169 %) val cost 0.094938, val root acc 77.2500 % (78.2500 %) (rng = RandomState(93574836))
+        performanceMeasurer = trainer.evaluate_model(trees=dev_trees, rnnWrapper=rnnWrapper, validation_model = eval_model, cost_model = cost_model)
+        m = max(performanceMeasurer.total_acc, performanceMeasurer.total_zeros, 1-performanceMeasurer.total_zeros)
+        self.assertEquals(m, performanceMeasurer.total_acc, "expected total acc to be the strictly better than total_zeros/non_zeros")
+        
 
 
 if __name__ == "__main__":
+    rnn_enron.DEBUG_PRINT=False
+    server_rnn.DEBUG_PRINT=False
     unittest.main()

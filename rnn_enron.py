@@ -6,22 +6,15 @@ Created on Mon Jan  2 11:49:15 2017
 """
 
 # start spyder with: OMP_NUM_THREADS=3 spyder3
-import os
 import io
 import sys
 #import time
-from datetime import datetime
 import time
 
 import numpy
-from numpy.random import RandomState
 
-import theano
-import theano.tensor as T
 
 import similarity.load_trees as load_trees
-import deeplearning_tutorial.rnn4 as rnn
-#reload(rnn)
 from ai_util import Timer
 from StatisticTextParser import StatisticTextParser
 
@@ -337,7 +330,8 @@ def initializeTrees(trees, LT):
         else:
             raise Exception("tree does not have correct syntax label")
         setTreeLabel(tree, label)
-    print("Done with tree. Saw {} nodes, {} words and {} unknowns. Unknown ratio is {}".format(totalCounter.node_count, totalCounter.word_count, totalCounter.unknown_count, totalCounter.getRatio()))
+    if DEBUG_PRINT:
+        print("Done with tree. Saw {} nodes, {} words and {} unknowns. Unknown ratio is {}".format(totalCounter.node_count, totalCounter.word_count, totalCounter.unknown_count, totalCounter.getRatio()))
 
 #def nodeForward(node, update_count, reg):
 #    # assumes is_binary and has_only_words_at_leafs
@@ -521,6 +515,10 @@ def getInputArrays(reg, trees, evaluator):
     list_y = []
     list_root_indexes = []
     for t in trees:
+        if t is None:
+            raise Exception("Received a none tree")
+        if t.left==None or t.right==None:
+            raise Exception("one word tree")
         addNodeRepresentations(reg, t, list_x, list_y, evaluator)
         list_root_indexes.append(len(list_x)-1) #root is added last
     #train_set_x = theano.shared(numpy.asarray(train_set_x), borrow = True)
@@ -601,5 +599,5 @@ def get_zeros(y_val):
         if e[0]==0:
             zeros +=1
     res = (zeros + 0.0) / len(y_val)
-    print("rnn_enron: Total count {}, non-sensitive {} fraction sensitive {:.4f}".format(len(y_val), zeros, res))
+    #print("rnn_enron: Total count {}, sensitive {} fraction sensitive {:.4f}".format(len(y_val), zeros, res))
     return res

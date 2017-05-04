@@ -9,7 +9,7 @@ import io;
 DEBUG_PRINT = False
 
 class Node:
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         self.parent = parent
         self.word = None
         self.syntax = None
@@ -20,6 +20,7 @@ class Node:
         self.update_count = -1
     
     def clone(self, node):
+        #update clone_tree also
         self.parent = node.parent
         self.word = node.word
         self.syntax = node.syntax
@@ -90,7 +91,29 @@ class Node:
             return False
         return (self.left.has_only_words_at_leafs() and self.right.has_only_words_at_leafs())
             
-        
+
+def clone_tree(node, parent=None):
+    if node==None:
+        return None
+
+    n = Node()
+    n.parent = parent
+    n.word = node.word #expected immutable string or int
+    n.syntax = node.syntax #expected immutable string or int
+    n.representation = node.representation  #if this is an array we might need to copy this
+    n.left = clone_tree(node.left, n)
+    n.right = clone_tree(node.right, n)
+    n.update_count = node.update_count #expected immutable string or int
+    return n
+
+def as_array(node):
+    if node==None:
+        return []
+    res = [node]
+    res.extend(as_array(node.left))
+    res.extend(as_array(node.right))
+    return res
+    
 def read_rep(l, index, node):
     """ read l from index and until ] is encountered, return floats read as a rep array"""
     i = index
@@ -232,6 +255,9 @@ def get_trees(file, max_count=-1):
                 raise Exception(fn + " tree is not binary")
             if not tree.has_only_words_at_leafs():
                 raise Exception(fn + " tree is not properly normalized")
+            if tree.is_leaf():
+                print("tree is one word. Ignoring")
+                continue
             trees.append(tree)
             count +=1
             if count%2000 == 0:
@@ -280,6 +306,15 @@ def unescape_sentence(l2):
     l2 = l2.replace('-AMP-' , '&')
     return l2
     
+def count_non_leaf_nodes(node, count=0):
+    if node==None:
+        return count
+    if node.is_leaf():
+        return count
+    count += 1
+    count = count_non_leaf_nodes(node.left, count)
+    count = count_non_leaf_nodes(node.right, count)
+    return count
 #trees = get_trees("/Users/neerbek/jan/phd/DLP/paraphrase/code/deep-recursive/jan.txt")
 
 #len(trees)
