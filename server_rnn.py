@@ -11,6 +11,7 @@ from numpy.random import RandomState
 import theano
 import theano.tensor as T
 from datetime import datetime
+import math
 
 import similarity.load_trees as load_trees
 
@@ -143,10 +144,10 @@ class Trainer:
 
     def update_batch_size(self, state):
         # compute number of minibatches for training, validation and testing
-        self.n_train_batches = len(state.train_trees) // self.batch_size
+        self.n_train_batches = int(math.ceil(len(state.train_trees) / self.batch_size))
         self.valid_batch_size = len(state.valid_trees)
-        self.n_valid_batches = len(state.valid_trees) // self.valid_batch_size
-        self.n_test_batches = len(state.test_trees) // self.batch_size
+        self.n_valid_batches = int(math.ceil(len(state.valid_trees) / self.valid_batch_size))
+        self.n_test_batches = int(math.ceil(len(state.test_trees) / self.batch_size))
         
     def get_cost(self, rnnWrapper):
         reg = rnnWrapper.rnn
@@ -213,9 +214,12 @@ class Trainer:
                     performanceMeasurer.epoch = epoch
                     performanceMeasurer.measure(state, self,  reg, validate_model, cost_model)
                     if DEBUG_PRINT:
+                        performanceMeasurerTrain = self.evaluate_model(trees=trees, rnnWrapper=rnnWrapper, validation_model = validate_model, cost_model = cost_model)
+
                         performanceMeasurer.report(msg = "epoch {}. time is {}, minibatch {}/{}, On validation set:".format(epoch, 
                                                    datetime.now().strftime('%d-%m %H:%M'), minibatch_index + 1, 
                                 self.n_train_batches))
+                        performanceMeasurerTrain.report("On Train subset:")
                     if performanceMeasurerBest.root_acc<performanceMeasurer.root_acc:
                         filename = "{}_best.txt".format(file_prefix)
                         self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
