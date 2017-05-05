@@ -106,7 +106,7 @@ class RNNTest(unittest.TestCase):
         trainer.learning_rate=5.5
         trainer.L1_reg=0.0
         trainer.L2_reg=0.0
-        trainer.n_epochs=6
+        trainer.n_epochs=21
         trainer.batch_size=100
         trainer.retain_probability = 0.9
         
@@ -120,7 +120,7 @@ class RNNTest(unittest.TestCase):
         state.valid_trees = dev_trees
         state.test_trees = test_trees
         state.init_trees(trainer)
-                
+        
         rnnWrapper = server_rnn.RNNWrapper(rng = RandomState(958589))
         #load model here
         rng = RandomState(1234)
@@ -139,6 +139,7 @@ class RNNTest(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    rnn_enron.DEBUG_PRINT=False
-    server_rnn.DEBUG_PRINT=False
+    #TODO: set to false
+    rnn_enron.DEBUG_PRINT=True
+    server_rnn.DEBUG_PRINT=True
     unittest.main()

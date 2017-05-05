@@ -172,7 +172,7 @@ class Trainer:
                                           cost_model=cost_model)
         return performanceMeasurer
         
-    def train(self, state, rnnWrapper, file_prefix="save", n_epochs=1, rng=RandomState(1234), epoch=0, validation_frequency=1):
+    def train(self, state, rnnWrapper, file_prefix="save", n_epochs=1, rng=RandomState(1234), epoch=0, validation_frequency=1, train_report_frequency=1, balance_trees=False):
         it = 0
         batch_size = self.batch_size
         reg = rnnWrapper.rnn
@@ -198,28 +198,43 @@ class Trainer:
         performanceMeasurer = PerformanceMeasurer()
         performanceMeasurer.epoch = -1
         while (n_epochs==-1 or epoch < n_epochs):
+            train_trees = rng.permutation(state.train_trees).tolist()
+            count = 0
+            for t in train_trees:
+                if type(t)!=load_trees.Node:
+                    print("type error in check. type(t) {}, count {}".format(type(t), count))
+                    raise Exception("type error in check")
+                count += 1
             epoch += 1
             minibatch_index=0
             for minibatch_index in range(self.n_train_batches):
-                trees = state.train_trees[minibatch_index * batch_size: (minibatch_index + 1) * batch_size]
+                trees = train_trees[minibatch_index * batch_size: (minibatch_index + 1) * batch_size]
+                trees = list(trees)   #try to counter AttributeError: 'iterator' object has no attribute ...
+                if balance_trees:
+                    trees = get_balanced_data(trees, rng)
+                if len(trees)==0:
+                    print("continueing")
+                    continue
                 evaluator = rnn_enron.Evaluator(reg)
                 (roots, x_val, y_val) = rnn_enron.getInputArrays(reg, trees, evaluator)
-                minibatch_avg_cost = []
                 z_val = rng.binomial(n=1, size=(x_val.shape[0], rnn_enron.Evaluator.HIDDEN_SIZE), p=self.retain_probability)
-                minibatch_avg_cost.append(train_model(x_val, y_val, z_val))
-                minibatch_avg_cost = numpy.mean(minibatch_avg_cost)
+                minibatch_cost = train_model(x_val, y_val, z_val)
+                
                 it += 1
+                if it % train_report_frequency == 0:
+                    if DEBUG_PRINT:
+                        minibatch_acc = 1 - validate_model(x_val, y_val, z_val)
+                        minibatch_zeros = 1 - rnn_enron.get_zeros(y_val)
+                        print("epoch {}. time is {}, minibatch {}/{}, On train set: cost {:.6f} batch acc {:.4f} %  ({:.4f} %)".format(epoch, datetime.now().strftime('%d-%m %H:%M'), minibatch_index + 1, self.n_train_batches, minibatch_cost*1.0, minibatch_acc*100.0, minibatch_zeros*100.0
+                        ))
                 if it % validation_frequency == 0:
                     performanceMeasurer = PerformanceMeasurer()
                     performanceMeasurer.epoch = epoch
                     performanceMeasurer.measure(state, self,  reg, validate_model, cost_model)
                     if DEBUG_PRINT:
-                        performanceMeasurerTrain = self.evaluate_model(trees=trees, rnnWrapper=rnnWrapper, validation_model = validate_model, cost_model = cost_model)
-
                         performanceMeasurer.report(msg = "epoch {}. time is {}, minibatch {}/{}, On validation set:".format(epoch, 
                                                    datetime.now().strftime('%d-%m %H:%M'), minibatch_index + 1, 
                                 self.n_train_batches))
-                        performanceMeasurerTrain.report("On Train subset:")
                     if performanceMeasurerBest.root_acc<performanceMeasurer.root_acc:
                         filename = "{}_best.txt".format(file_prefix)
                         self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
@@ -260,6 +275,50 @@ class RNNWrapper:
     def save(self, filename='model.save', epoch=0, acc=0):
         nn_model.save(rnn=self.rnn, filename=filename, epoch=epoch, acc=acc)
 
+class IteratorGuard:
+    def __init__(self):
+        self.a = "a"
+
+def get_balanced_data(trees, rng):
+    zero_trees = []
+    four_trees = []
+    count = 0
+    try:
+        for t in trees:
+            t2 = trees[count]
+            if t2.syntax=='0':
+                zero_trees.append(t2)
+            elif t2.syntax=='4':
+                four_trees.append(t2)
+            count += 1
+    except AttributeError:
+        print("attribute error in loop len(trees) {}, count {}, type trees {}, type t {} type t2 {}".format(len(trees), count, type(trees), type(t), type(t2)))
+        print("type next(t) {}".format(type(next(t, IteratorGuard()))))
+        raise
+    if len(zero_trees)+ len(four_trees)!=len(trees):
+        raise Exception("expected lengths to match {} + {} == {}".format(len(zero_trees),len(four_trees),len(trees))
+        )
+    min_list = zero_trees
+    max_list = four_trees
+    if (len(zero_trees)>len(four_trees)):
+        min_list, max_list = four_trees, zero_trees
+    if len(min_list)<2:
+        print("for training no examples in mimimum list")
+        return []
+    
+    length = int(len(min_list)*1)
+    max_list = rng.choice(max_list, size=length, replace=False)
+    if len(max_list)<3:
+        print("after pruning only: {} elements in list".format(2*len(max_list)))
+        return []
+    max_list = [t for t in max_list]  #reconvert to array
+    trees = min_list
+    trees.extend(max_list)
+    #print("len(trees)", len(trees))
+    trees = rng.permutation(trees)
+    trees = trees.tolist()
+    return trees
+        
 #train = load_trees.get_trees('trees/train.txt')
 #rnn_enron.initializeTrees(train, state.LT)
 #train_trees = train[100:200]

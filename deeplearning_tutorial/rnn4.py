@@ -12,25 +12,27 @@ import theano.tensor as T
 class Regression(object):
     """ Inspired by logistic_sgd.py: http://deeplearning.net/tutorial/code/logistic_sgd.py
     """
-    def __init__(self, X, n_in, n_out):
+    def __init__(self, rng, X, n_in, n_out):
         # initialize with 0 the weights W as a matrix of shape (n_in, n_out)
-        self.W = theano.shared(
-            value=numpy.zeros(
-                (n_in, n_out),
-                dtype=theano.config.floatX
+        W_values = numpy.asarray(
+            rng.uniform(
+                low=-numpy.sqrt(6. / (n_in + n_out)),
+                high=numpy.sqrt(6. / (n_in + n_out)),
+                size=(n_in, n_out)
             ),
-            name='W',
-            borrow=True
+            dtype=theano.config.floatX
         )
+        self.W = theano.shared(value=W_values, name='W', borrow=True)
         # initialize the biases b as a vector of n_out 0s
-        self.b = theano.shared(
-            value=numpy.zeros(
-                (n_out,),
-                dtype=theano.config.floatX
+        b_values = numpy.asarray(
+            rng.uniform(
+                low=-numpy.sqrt(6. / (n_out)),
+                high=numpy.sqrt(6. / (n_out)),
+                size=(n_out,)
             ),
-            name='b',
-            borrow=True
+            dtype=theano.config.floatX
         )
+        self.b = theano.shared(value=b_values, name='b', borrow=True)
         self.p_y_given_x = T.nnet.softmax(T.dot(X, self.W) + self.b)
         self.y_pred = T.argmax(self.p_y_given_x, axis=1)
         self.params = [self.W, self.b]
@@ -72,11 +74,16 @@ class ReluLayer(object):
             ),
             dtype=theano.config.floatX
         )
-        W = theano.shared(value=W_values, name='W', borrow=True)
-        b_values = numpy.zeros((n_out,), dtype=theano.config.floatX)
-        b = theano.shared(value=b_values, name='b', borrow=True)
-        self.W = W
-        self.b = b
+        self.W = theano.shared(value=W_values, name='W', borrow=True)
+        b_values = numpy.asarray(
+            rng.uniform(
+                low=-numpy.sqrt(6. / (n_out)),
+                high=numpy.sqrt(6. / (n_out)),
+                size=(n_out,)
+            ),
+            dtype=theano.config.floatX
+        )
+        self.b = theano.shared(value=b_values, name='b', borrow=True)
         lin_output = T.dot(X, self.W) + self.b
         self.output = T.nnet.relu(lin_output)
         #dropout
@@ -98,6 +105,7 @@ class RNN(object):
             n_out=n_hidden
         )
         self.regressionLayer = Regression(
+            rng=rng,
             X=self.reluLayer.output,
             n_in=n_hidden,
             n_out=n_out
