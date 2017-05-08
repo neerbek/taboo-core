@@ -6,6 +6,7 @@ Created on Thu Feb 23 15:11:21 2017
 """
 
 import os
+#import psutil
 import numpy
 from numpy.random import RandomState
 import theano
@@ -198,149 +199,25 @@ class Trainer:
         performanceMeasurer = PerformanceMeasurer()
         performanceMeasurer.epoch = -1
         while (n_epochs==-1 or epoch < n_epochs):
-#           TEST
-            count = 0
-            for t in state.train_trees:
-                if type(t)!=load_trees.Node:
-                    print("type error in pre-check. type(t) {}, count {}".format(type(t), count))         
-                    for elem in list(t):
-                        print(elem)
-                    print(next(t, IteratorGuard()))
-                    print("end of elements in t")
-                    raise Exception("type error in check")
-                count += 1
-#           END-OF TEST
-            count = 0
-            for t in state.train_trees:
-                if type(t)!=load_trees.Node:
-                    print("type error in pre-check. type(t) {}, count {}".format(type(t), count))         
-                    for elem in list(t):
-                        print(elem)
-                    print(next(t, IteratorGuard()))
-                    print("end of elements in t")
-                    raise Exception("type error in check")
-                count += 1
-            import copy
-            train_trees =  copy.deepcopy(rng.permutation(state.train_trees).tolist())
-            #           TEST
-            count = 0
-            for t in state.train_trees:
-                if type(t)!=load_trees.Node:
-                    print("type error in pre-check. type(t) {}, count {}".format(type(t), count))         
-                    for elem in list(t):
-                        print(elem)
-                    print(next(t, IteratorGuard()))
-                    print("end of elements in t")
-                    raise Exception("type error in check")
-                count += 1
-#           END-OF TEST
-            count = 0
-            for t in train_trees:
-                if type(t)!=load_trees.Node:
-                    print("type error in check. type(t) {}, count {}".format(type(t), count))
-                    raise Exception("type error in check")
-                count += 1
+            perm = rng.permutation(len(state.train_trees))
+            train_trees =  [state.train_trees[i] for i in perm]
             epoch += 1
-            minibatch_index=0
             for minibatch_index in range(self.n_train_batches):
-                 #           TEST
-                count = 0
-                for t in state.train_trees:
-                    if type(t)!=load_trees.Node:
-                        print("type error in pre-check. type(t) {}, count {}".format(type(t), count))         
-                        for elem in list(t):
-                            print(elem)
-                        print(next(t, IteratorGuard()))
-                        print("end of elements in t")
-                        raise Exception("type error in check")
-                    count += 1
-#           END-OF TEST
-                tree_data = []
-                #import copy
-                #trees = copy.deepcopy(train_trees[minibatch_index * batch_size: (minibatch_index + 1) * batch_size])
-                #trees = train_trees[minibatch_index * batch_size: (minibatch_index + 1) * batch_size]
-                #trees = [t for t in trees]
-                #trees = train_trees.copy()
+                trees = train_trees[minibatch_index * batch_size: (minibatch_index + 1) * batch_size]
                 if balance_trees:
-                    #           TEST
-                    count = 0
-                    for t in state.train_trees:
-                        if type(t)!=load_trees.Node:
-                            print("type error in pre-check. type(t) {}, count {}".format(type(t), count))         
-                            for elem in list(t):
-                                print(elem)
-                            print(next(t, IteratorGuard()))
-                            print("end of elements in t")
-                            print("first {}; second {}; length train_trees {}".format(minibatch_index * batch_size, (minibatch_index + 1) * batch_size, len(train_trees)))
-                            raise Exception("type error in check")
-                        count += 1
-#           END-OF TEST
-                    trees = train_trees[minibatch_index * batch_size: (minibatch_index + 1) * batch_size]
-                    #           TEST
-                    count = 0
-                    for t in state.train_trees:
-                        if type(t)!=load_trees.Node:
-                            print("type error in pre-check. type(t) {}, count {}".format(type(t), count))         
-                            for elem in list(t):
-                                print(elem)
-                            print(next(t, IteratorGuard()))
-                            print("end of elements in t")
-                            print("first {}; second {}; length train_trees {}".format(minibatch_index * batch_size, (minibatch_index + 1) * batch_size, len(train_trees)))
-                            raise Exception("type error in check")
-                        count += 1
-#           END-OF TEST
-                    tree_data = get_balanced_data(trees, rng, state)
-                    #           TEST
-                    count = 0
-                    for t in state.train_trees:
-                        if type(t)!=load_trees.Node:
-                            print("type error in pre-check. type(t) {}, count {}".format(type(t), count))         
-                            for elem in list(t):
-                                print(elem)
-                            print(next(t, IteratorGuard()))
-                            print("end of elements in t")
-                            print("first {}; second {}; length train_trees {}".format(minibatch_index * batch_size, (minibatch_index + 1) * batch_size, len(train_trees)))
-                            raise Exception("type error in check")
-                        count += 1
-#           END-OF TEST
-                else:
-                    tree_data = train_trees[minibatch_index * batch_size: (minibatch_index + 1) * batch_size]
+                    trees = get_balanced_data(trees, rng, state)
                 if len(trees)==0:
                     print("continueing")
                     continue
-                #           TEST
-                count = 0
-                for t in state.train_trees:
-                    if type(t)!=load_trees.Node:
-                        print("type error in pre-check. type(t) {}, count {}".format(type(t), count))
-                        count=0
-                        for elem in list(t):
-                            print(elem)
-                            count += 1
-                        print(next(t, IteratorGuard()))
-                        print("end of elements in t. Count was {}".format(count))
-                        raise Exception("type error in check")
-                    count += 1
-#           END-OF TEST
                 evaluator = rnn_enron.Evaluator(reg)
-                (roots, x_val, y_val) = rnn_enron.getInputArrays(reg, tree_data, evaluator)
+                (roots, x_val, y_val) = rnn_enron.getInputArrays(reg, trees, evaluator)
                 z_val = rng.binomial(n=1, size=(x_val.shape[0], rnn_enron.Evaluator.HIDDEN_SIZE), p=self.retain_probability)
                 minibatch_cost = train_model(x_val, y_val, z_val)
-                #           TEST
-                count = 0
-                for t in state.train_trees:
-                    if type(t)!=load_trees.Node:
-                        print("type error in pre-check. type(t) {}, count {}".format(type(t), count))         
-                        for elem in list(t):
-                            print(elem)
-                        print(next(t, IteratorGuard()))
-                        print("end of elements in t")
-                        raise Exception("type error in check")
-                    count += 1
-#           END-OF TEST
                 it += 1
                 if it % train_report_frequency == 0:
                     if DEBUG_PRINT:
+                        #process = psutil.Process(os.getpid())
+                        #print(str(process.memory_info().rss/1000000) + " MB")                        
                         minibatch_acc = 1 - validate_model(x_val, y_val, z_val)
                         minibatch_zeros = 1 - rnn_enron.get_zeros(y_val)
                         print("epoch {}. time is {}, minibatch {}/{}, On train set: cost {:.6f} batch acc {:.4f} %  ({:.4f} %)".format(epoch, datetime.now().strftime('%d-%m %H:%M'), minibatch_index + 1, self.n_train_batches, minibatch_cost*1.0, minibatch_acc*100.0, minibatch_zeros*100.0
@@ -349,19 +226,9 @@ class Trainer:
                     performanceMeasurer = PerformanceMeasurer()
                     performanceMeasurer.epoch = epoch
                     performanceMeasurer.measure(state, self,  reg, validate_model, cost_model)
-                    #           TEST
-                    count = 0
-                    for t in state.train_trees:
-                        if type(t)!=load_trees.Node:
-                            print("type error in pre-check. type(t) {}, count {}".format(type(t), count))         
-                            for elem in list(t):
-                                print(elem)
-                            print(next(t, IteratorGuard()))
-                            print("end of elements in t")
-                            raise Exception("type error in check")
-                        count += 1
-        #           END-OF TEST
                     if DEBUG_PRINT:
+                        #process = psutil.Process(os.getpid())
+                        #print(str(process.memory_info().rss/1000000) + " MB")                        
                         performanceMeasurer.report(msg = "epoch {}. time is {}, minibatch {}/{}, On validation set:".format(epoch, 
                                                    datetime.now().strftime('%d-%m %H:%M'), minibatch_index + 1, 
                                 self.n_train_batches))
@@ -370,7 +237,7 @@ class Trainer:
                         self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
                         performanceMeasurerBest = performanceMeasurer
                     else:
-                        if performanceMeasurerBest.epoch + 0 < epoch:
+                        if performanceMeasurerBest.epoch + 2 < epoch:
                             filename = "{}_running.txt".format(file_prefix)
                             self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
                             performanceMeasurerBest.epoch = epoch
@@ -410,15 +277,6 @@ class IteratorGuard:
         self.a = "a"
 
 def get_balanced_data(trees, rng, state = None):
-#           TEST
-    count = 0
-    if state is not None:
-        for t in state.train_trees:
-            if type(t)!=load_trees.Node:
-                print("type error in pre-check. type(t) {}, count {}".format(type(t), count))         
-                raise Exception("type error in check")
-            count += 1
-#           END-OF TEST
     zero_trees = []
     four_trees = []
     count = 0
@@ -446,26 +304,16 @@ def get_balanced_data(trees, rng, state = None):
     
     length = int(len(min_list)*1)
     length = min(length, len(max_list))
-    max_list = rng.choice(max_list, size=length, replace=False)
+    choices = rng.choice(len(max_list), size=length, replace=False)
+    max_list = [max_list[i] for i in choices]
     if len(max_list)<3:
         print("after pruning only: {} elements in list".format(2*len(max_list)))
         return []
-    max_list = max_list.tolist()
     res = min_list
     res.extend(max_list)
     #print("len(res)", len(res))
-    res = rng.permutation(res)
-    res = res.tolist()
-#           TEST
-    count = 0
-    if state is not None:
-        for t in state.train_trees:
-            if type(t)!=load_trees.Node:
-                print("type error in pre-check. type(t) {}, count {}".format(type(t), count))         
-                raise Exception("type error in check")
-            count += 1
-#           END-OF TEST
-
+    perm = rng.permutation(len(res))
+    res = [res[i] for i in perm]
     return res
         
 #train = load_trees.get_trees('trees/train.txt')

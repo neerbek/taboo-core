@@ -492,8 +492,11 @@ class Ctxt:
 def addNodeRepresentations(reg, node, x_val, y_val, evaluator):
     if node == None:
         return
-    if node.is_leaf():
+    if node.number_of_children()==0:
         return
+    if node.number_of_children()==1:
+        raise Exception("tree is not valid!")
+        
         
     addNodeRepresentations(reg, node.left, x_val, y_val, evaluator)
     addNodeRepresentations(reg, node.right, x_val, y_val, evaluator)
