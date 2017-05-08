@@ -85,8 +85,7 @@ class PerformanceMeasurer:
             for r in roots:
                 x_roots.append(x_val[r,:])
                 y_roots.append(y_val[r,:])
-            z_roots = numpy.ones(shape=(len(x_roots), rnn.n_hidden))
-            z_roots = z_roots * trainer.retain_probability
+            z_roots = trainer.retain_probability*numpy.ones(shape=(len(x_roots), rnn.n_hidden))
             val_root_losses.append(validate_model(x_roots, y_roots, z_roots))
             val_root_zeros.append(rnn_enron.get_zeros(y_roots))
         me.total_acc = 1 - numpy.mean(validation_losses)
@@ -113,8 +112,7 @@ class PerformanceMeasurer:
         for r in roots:
             x_roots.append(x_val[r,:])
             y_roots.append(y_val[r,:])
-        z_roots = numpy.ones(shape=(len(x_roots), rnn.n_hidden))
-        z_roots = z_roots * retain_probability
+        z_roots = retain_probability*numpy.ones(shape=(len(x_roots), rnn.n_hidden))
         val_root_losses = validation_model(x_roots, y_roots, z_roots)
         val_root_zeros = rnn_enron.get_zeros(y_roots)
         self.total_acc = 1 - validation_losses
