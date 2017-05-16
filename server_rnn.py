@@ -13,7 +13,6 @@ import theano
 import theano.tensor as T
 from datetime import datetime
 import math
-import gc
 
 import similarity.load_trees as load_trees
 
@@ -130,17 +129,29 @@ class PerformanceMeasurer:
 
 
 class Trainer:
-    def __init__(self):
-        self.learning_rate=0.01
-        self.L1_reg=0.0
-        self.L2_reg=0.0001
-        self.n_epochs=1000
-        self.batch_size=40
-        self.retain_probability = 0.8
-        self.n_train_batches = 0
-        self.valid_batch_size = 0
-        self.n_valid_batches = 0
-        self.n_test_batches = 0
+    def __init__(self, trainer=None):
+        if trainer!=None:
+            self.learning_rate=trainer.learning_rate
+            self.L1_reg=trainer.L1_reg
+            self.L2_reg=trainer.L2_reg
+            self.n_epochs=trainer.n_epochs
+            self.batch_size=trainer.batch_size
+            self.retain_probability = trainer.retain_probability
+            self.n_train_batches = trainer.n_train_batches
+            self.valid_batch_size = trainer.valid_batch_size
+            self.n_valid_batches = trainer.n_valid_batches
+            self.n_test_batches = trainer.n_test_batches
+        else:
+            self.learning_rate=0.01
+            self.L1_reg=0.0
+            self.L2_reg=0.0001
+            self.n_epochs=1000
+            self.batch_size=40
+            self.retain_probability = 0.8
+            self.n_train_batches = 0
+            self.valid_batch_size = 0
+            self.n_valid_batches = 0
+            self.n_test_batches = 0
 
     def update_batch_size(self, state):
         # compute number of minibatches for training, validation and testing
@@ -173,7 +184,6 @@ class Trainer:
         return performanceMeasurer
         
     def train(self, state, rnnWrapper, file_prefix="save", n_epochs=1, rng=RandomState(1234), epoch=0, validation_frequency=1, train_report_frequency=1, balance_trees=False):
-        gc.enable()
         it = 0
         batch_size = self.batch_size
         reg = rnnWrapper.rnn
@@ -223,7 +233,6 @@ class Trainer:
                         print("epoch {}. time is {}, minibatch {}/{}, On train set: cost {:.6f} batch acc {:.4f} %  ({:.4f} %)".format(epoch, datetime.now().strftime('%d-%m %H:%M'), minibatch_index + 1, self.n_train_batches, minibatch_cost*1.0, minibatch_acc*100.0, minibatch_zeros*100.0
                         ))
                 if it % validation_frequency == 0:
-                    gc.collect()
                     performanceMeasurer = PerformanceMeasurer()
                     performanceMeasurer.epoch = epoch
                     performanceMeasurer.measure(state, self,  reg, validate_model, cost_model)
