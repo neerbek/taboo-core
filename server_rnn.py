@@ -13,6 +13,7 @@ import theano
 import theano.tensor as T
 from datetime import datetime
 import math
+import gc
 
 import similarity.load_trees as load_trees
 
@@ -172,6 +173,7 @@ class Trainer:
         return performanceMeasurer
         
     def train(self, state, rnnWrapper, file_prefix="save", n_epochs=1, rng=RandomState(1234), epoch=0, validation_frequency=1, train_report_frequency=1, balance_trees=False):
+        gc.enable()
         it = 0
         batch_size = self.batch_size
         reg = rnnWrapper.rnn
@@ -221,6 +223,7 @@ class Trainer:
                         print("epoch {}. time is {}, minibatch {}/{}, On train set: cost {:.6f} batch acc {:.4f} %  ({:.4f} %)".format(epoch, datetime.now().strftime('%d-%m %H:%M'), minibatch_index + 1, self.n_train_batches, minibatch_cost*1.0, minibatch_acc*100.0, minibatch_zeros*100.0
                         ))
                 if it % validation_frequency == 0:
+                    gc.collect()
                     performanceMeasurer = PerformanceMeasurer()
                     performanceMeasurer.epoch = epoch
                     performanceMeasurer.measure(state, self,  reg, validate_model, cost_model)
