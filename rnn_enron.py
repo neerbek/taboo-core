@@ -12,7 +12,7 @@ import sys
 import time
 
 import numpy
-
+import theano
 
 import similarity.load_trees as load_trees
 from ai_util import Timer
@@ -532,6 +532,8 @@ def getInputArrays(reg, trees, evaluator):
     y_val = numpy.concatenate(list_y,axis=0).reshape(-1,Evaluator.RES_SIZE)
     #x_val = numpy.asarray(list_x)
     #y_val = numpy.asarray(list_y)
+    x_val = x_val.astype(dtype=theano.config.floatX)
+    y_val = y_val.astype(dtype=theano.config.floatX)
     if x_val.shape != (len(list_x), 2*(Evaluator.SIZE + Evaluator.HIDDEN_SIZE)):
         raise Exception("error in numpy conversion of x, shape was {}".format(x_val.shape))
     if y_val.shape != (len(list_y), Evaluator.RES_SIZE):

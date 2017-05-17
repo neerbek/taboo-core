@@ -77,6 +77,7 @@ class PerformanceMeasurer:
             (roots, x_val, y_val) = rnn_enron.getInputArrays(rnn, trees, evaluator)
             z_val = numpy.ones(shape=(x_val.shape[0], rnn.n_hidden))
             z_val = z_val * trainer.retain_probability
+            z_val = z_val.astype(dtype=theano.config.floatX)
             validation_losses.append(validate_model(x_val, y_val, z_val))
             validation_cost.append(cost_model(x_val, y_val, z_val))
             val_total_zeros.append(rnn_enron.get_zeros(y_val))
@@ -86,6 +87,7 @@ class PerformanceMeasurer:
                 x_roots.append(x_val[r,:])
                 y_roots.append(y_val[r,:])
             z_roots = trainer.retain_probability*numpy.ones(shape=(len(x_roots), rnn.n_hidden))
+            z_roots = z_roots.astype(dtype=theano.config.floatX)
             val_root_losses.append(validate_model(x_roots, y_roots, z_roots))
             val_root_zeros.append(rnn_enron.get_zeros(y_roots))
         me.total_acc = 1 - numpy.mean(validation_losses)
@@ -104,6 +106,7 @@ class PerformanceMeasurer:
         (roots, x_val, y_val) = rnn_enron.getInputArrays(rnn, trees, evaluator)
         z_val = numpy.ones(shape=(x_val.shape[0], rnn.n_hidden))
         z_val = z_val * retain_probability
+        z_val = z_val.astype(dtype=theano.config.floatX)
         validation_losses = validation_model(x_val, y_val, z_val)
         validation_cost = cost_model(x_val, y_val, z_val)
         val_total_zeros = rnn_enron.get_zeros(y_val)
@@ -222,6 +225,7 @@ class Trainer:
                 evaluator = rnn_enron.Evaluator(reg)
                 (roots, x_val, y_val) = rnn_enron.getInputArrays(reg, trees, evaluator)
                 z_val = rng.binomial(n=1, size=(x_val.shape[0], rnn_enron.Evaluator.HIDDEN_SIZE), p=self.retain_probability)
+                z_val = z_val.astype(dtype=theano.config.floatX)
                 minibatch_cost = train_model(x_val, y_val, z_val)
                 it += 1
                 if it % train_report_frequency == 0:
@@ -261,9 +265,9 @@ class Trainer:
 
 class RNNWrapper:
     def __init__(self, rng = RandomState(1234)):
-        self.x = T.matrix('x')  
-        self.y = T.matrix('y')  
-        self.z = T.matrix('z')    #for dropout
+        self.x = T.matrix('x', dtype=theano.config.floatX)  
+        self.y = T.matrix('y', dtype=theano.config.floatX)  
+        self.z = T.matrix('z', dtype=theano.config.floatX)    #for dropout
         # Define RNN
         self.rnn = nn_model.RNN(rng=rng, X=self.x, Z=self.z, n_in=2*(rnn_enron.Evaluator.SIZE+rnn_enron.Evaluator.HIDDEN_SIZE), 
               n_hidden=rnn_enron.Evaluator.HIDDEN_SIZE, n_out=rnn_enron.Evaluator.RES_SIZE
@@ -344,6 +348,8 @@ def get_predictions(rnn, indexed_sentences):
         y_roots.append(y_val[r,:])
     z_roots = numpy.ones(shape=(len(x_roots), rnn_enron.Evaluator.HIDDEN_SIZE))
     z_roots = z_roots * 0.9
+    z_roots = z_roots.astype(dtype=theano.config.floatX)
+
     pred = rnn.run_model(x_roots, z_roots)
     for i in range(len(pred)):
         indexed_sentences[i].pred = pred[i]
