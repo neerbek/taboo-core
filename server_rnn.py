@@ -14,6 +14,7 @@ import theano.tensor as T
 from datetime import datetime
 import math
 import objgraph
+import gc
 
 import similarity.load_trees as load_trees
 
@@ -234,6 +235,7 @@ class Trainer:
                     #DEBUG memory
                     #objgraph.show_most_common_types()
                     objgraph.show_growth(limit=10)
+                    print("len(gc)",  len(gc.get_objects()))
                     if DEBUG_PRINT:
                         #process = psutil.Process(os.getpid())
                         #print(str(process.memory_info().rss/1000000) + " MB")                        
