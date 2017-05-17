@@ -230,7 +230,8 @@ class Trainer:
                 minibatch_cost = train_model(x_val, y_val, z_val)
                 it += 1
                 if it % train_report_frequency == 0:
-                    objgraph.show_most_common_types()
+                    #objgraph.show_most_common_types()
+                    objgraph.show_growth(limit=10)
                     if DEBUG_PRINT:
                         #process = psutil.Process(os.getpid())
                         #print(str(process.memory_info().rss/1000000) + " MB")                        
