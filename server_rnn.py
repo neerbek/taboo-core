@@ -13,6 +13,7 @@ import theano
 import theano.tensor as T
 from datetime import datetime
 import math
+import objgraph
 
 import similarity.load_trees as load_trees
 
@@ -216,6 +217,7 @@ class Trainer:
             train_trees =  [state.train_trees[i] for i in perm]
             epoch += 1
             for minibatch_index in range(self.n_train_batches):
+                objgraph.show_most_common_types()
                 trees = train_trees[minibatch_index * batch_size: (minibatch_index + 1) * batch_size]
                 if balance_trees:
                     trees = get_balanced_data(trees, rng, state)
