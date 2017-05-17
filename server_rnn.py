@@ -212,6 +212,7 @@ class Trainer:
         performanceMeasurerBest.epoch=-1
         performanceMeasurer = PerformanceMeasurer()
         performanceMeasurer.epoch = -1
+
         while (n_epochs==-1 or epoch < n_epochs):
             perm = rng.permutation(len(state.train_trees))
             train_trees =  [state.train_trees[i] for i in perm]
@@ -230,6 +231,7 @@ class Trainer:
                 minibatch_cost = train_model(x_val, y_val, z_val)
                 it += 1
                 if it % train_report_frequency == 0:
+                    #DEBUG memory
                     #objgraph.show_most_common_types()
                     objgraph.show_growth(limit=10)
                     if DEBUG_PRINT:
