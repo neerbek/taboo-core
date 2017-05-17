@@ -217,7 +217,6 @@ class Trainer:
             train_trees =  [state.train_trees[i] for i in perm]
             epoch += 1
             for minibatch_index in range(self.n_train_batches):
-                objgraph.show_most_common_types()
                 trees = train_trees[minibatch_index * batch_size: (minibatch_index + 1) * batch_size]
                 if balance_trees:
                     trees = get_balanced_data(trees, rng, state)
@@ -231,6 +230,7 @@ class Trainer:
                 minibatch_cost = train_model(x_val, y_val, z_val)
                 it += 1
                 if it % train_report_frequency == 0:
+                    objgraph.show_most_common_types()
                     if DEBUG_PRINT:
                         #process = psutil.Process(os.getpid())
                         #print(str(process.memory_info().rss/1000000) + " MB")                        
