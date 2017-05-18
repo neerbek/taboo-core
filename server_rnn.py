@@ -13,8 +13,9 @@ import theano
 import theano.tensor as T
 from datetime import datetime
 import math
-import objgraph
-import gc
+#import objgraph
+#import gc
+#.import sys
 
 import similarity.load_trees as load_trees
 
@@ -211,6 +212,7 @@ class Trainer:
         )
         performanceMeasurerBest = PerformanceMeasurer()
         performanceMeasurerBest.epoch=-1
+        performanceMeasurerBest.running_epoch=-1
         performanceMeasurer = PerformanceMeasurer()
         performanceMeasurer.epoch = -1
 
@@ -234,8 +236,8 @@ class Trainer:
                 if it % train_report_frequency == 0:
                     #DEBUG memory
                     #objgraph.show_most_common_types()
-                    objgraph.show_growth(limit=10)
-                    print("len(gc)",  len(gc.get_objects()))
+                    #objgraph.show_growth(limit=10)
+                    #print("len(gc)",  len(gc.get_objects()))
                     if DEBUG_PRINT:
                         #process = psutil.Process(os.getpid())
                         #print(str(process.memory_info().rss/1000000) + " MB")                        
@@ -250,18 +252,18 @@ class Trainer:
                     if DEBUG_PRINT:
                         #process = psutil.Process(os.getpid())
                         #print(str(process.memory_info().rss/1000000) + " MB")                        
-                        performanceMeasurer.report(msg = "epoch {}. time is {}, minibatch {}/{}, On validation set:".format(epoch, 
-                                                   datetime.now().strftime('%d-%m %H:%M'), minibatch_index + 1, 
-                                self.n_train_batches))
+                        performanceMeasurer.report(msg = "{} Epoch {}. On validation set: Best ({}, {:.6f}, {:.4f}%). Current: ".format( 
+                                                   datetime.now().strftime('%d%m%y %H:%M'), epoch, performanceMeasurerBest.epoch, performanceMeasurerBest.cost*1.0, performanceMeasurerBest.root_acc*100.))
                     if performanceMeasurerBest.root_acc<performanceMeasurer.root_acc:
                         filename = "{}_best.txt".format(file_prefix)
                         self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
                         performanceMeasurerBest = performanceMeasurer
+                        performanceMeasurerBest.running_epoch = epoch
                     else:
-                        if performanceMeasurerBest.epoch + 2 < epoch:
+                        if performanceMeasurerBest.running_epoch + 1 < epoch:
                             filename = "{}_running.txt".format(file_prefix)
                             self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
-                            performanceMeasurerBest.epoch = epoch
+                            performanceMeasurerBest.running_epoch = epoch
         filename = "{}_running.txt".format(file_prefix)
         self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
         
