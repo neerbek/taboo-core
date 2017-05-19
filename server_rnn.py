@@ -118,7 +118,7 @@ class PerformanceMeasurer:
         for r in roots:
             x_roots.append(x_val[r,:])
             y_roots.append(y_val[r,:])
-        z_roots = retain_probability*numpy.ones(shape=(len(x_roots), rnn.n_hidden))
+        z_roots = retain_probability*numpy.ones(shape=(len(x_roots), rnn.n_hidden), dtype=theano.config.floatX)
         val_root_losses = validation_model(x_roots, y_roots, z_roots)
         val_root_zeros = rnn_enron.get_zeros(y_roots)
         self.total_acc = 1 - validation_losses
@@ -254,6 +254,10 @@ class Trainer:
                         #print(str(process.memory_info().rss/1000000) + " MB")                        
                         performanceMeasurer.report(msg = "{} Epoch {}. On validation set: Best ({}, {:.6f}, {:.4f}%). Current: ".format( 
                                                    datetime.now().strftime('%d%m%y %H:%M'), epoch, performanceMeasurerBest.epoch, performanceMeasurerBest.cost*1.0, performanceMeasurerBest.root_acc*100.))
+                        performanceMeasurerTrain = self.evaluate_model(train_trees, rnnWrapper, validate_model, cost_model)
+                        performanceMeasurerTrain.report(msg = "{} Epoch {}. On train set: Current:".format( 
+                                                   datetime.now().strftime('%d%m%y %H:%M'), epoch))
+                                                   
                     if performanceMeasurerBest.root_acc<performanceMeasurer.root_acc:
                         filename = "{}_best.txt".format(file_prefix)
                         self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
@@ -273,13 +277,14 @@ class Trainer:
         rnnWrapper.save(filename, epoch, performanceMeasurer.root_acc)
 
 class RNNWrapper:
-    def __init__(self, rng = RandomState(1234)):
+    def __init__(self, rng = RandomState(1234), cost_weight=0):
         self.x = T.matrix('x', dtype=theano.config.floatX)  
         self.y = T.matrix('y', dtype=theano.config.floatX)  
         self.z = T.matrix('z', dtype=theano.config.floatX)    #for dropout
         # Define RNN
         self.rnn = nn_model.RNN(rng=rng, X=self.x, Z=self.z, n_in=2*(rnn_enron.Evaluator.SIZE+rnn_enron.Evaluator.HIDDEN_SIZE), 
-              n_hidden=rnn_enron.Evaluator.HIDDEN_SIZE, n_out=rnn_enron.Evaluator.RES_SIZE
+              n_hidden=rnn_enron.Evaluator.HIDDEN_SIZE, n_out=rnn_enron.Evaluator.RES_SIZE,
+              cost_weight=cost_weight
               )
         self.y_pred = self.rnn.y_pred
         

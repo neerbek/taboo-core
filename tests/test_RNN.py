@@ -139,7 +139,6 @@ class RNNTest(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    #TODO: set to false
     rnn_enron.DEBUG_PRINT=True
     server_rnn.DEBUG_PRINT=True
     unittest.main()

@@ -8,11 +8,14 @@ Created on Thu Dec 29 13:03:20 2016
 import numpy
 
 import theano
+#import theano.printing as printing
+#import theano.function as function
 import theano.tensor as T
+
 class Regression(object):
     """ Inspired by logistic_sgd.py: http://deeplearning.net/tutorial/code/logistic_sgd.py
     """
-    def __init__(self, rng, X, n_in, n_out):
+    def __init__(self, rng, X, n_in, n_out, cost_weight=0):
         # initialize with 0 the weights W as a matrix of shape (n_in, n_out)
         W_values = numpy.asarray(
             rng.uniform(
@@ -34,12 +37,33 @@ class Regression(object):
         )
         self.b = theano.shared(value=b_values, name='b', borrow=True)
         self.p_y_given_x = T.nnet.softmax(T.dot(X, self.W) + self.b)
+        self.cost_weight = cost_weight
         self.y_pred = T.argmax(self.p_y_given_x, axis=1)
         self.params = [self.W, self.b]
         self.X = X
 
+        
     def cost(self, y):
-        return T.mean(0.5 *((self.p_y_given_x - y) ** 2))
+        err = (self.p_y_given_x - y)
+        cost_weight = T.ones_like(y.shape) + y * self.cost_weight
+        err_weighted = err * cost_weight
+        return T.mean(0.5 *((err_weighted) ** 2))
+
+    def softmax_debug(self, w):
+        maxes = numpy.amax(w, axis=1)
+        maxes = maxes.reshape(maxes.shape[0], 1)
+        e = numpy.exp(w - maxes)
+        dist = e / numpy.sum(e, axis=1, keepdims=True)
+        return dist
+
+    def cost_debug(self, X, y):
+        p_y_given_x = self.softmax_debug(numpy.dot(X, self.W.get_value()) + self.b.get_value())
+        err = p_y_given_x - y
+        cost_weight = numpy.ones(shape=y.shape) + y * self.cost_weight
+        #print("err shape", err.shape)
+        err_weighted = numpy.multiply(err, cost_weight)
+        #print("err_weighted shape1", err_weighted.shape)
+        return numpy.mean(0.5*((err_weighted) **2))
         
     def errors(self, y):
         """fraction of errors in minibatch
@@ -93,7 +117,7 @@ class ReluLayer(object):
 
 
 class RNN(object):
-    def __init__(self, rng, X, Z, n_in, n_hidden, n_out):
+    def __init__(self, rng, X, Z, n_in, n_hidden, n_out, cost_weight=0):
         self.n_in = n_in
         self.n_hidden = n_hidden
         self.n_out = n_out
@@ -108,7 +132,8 @@ class RNN(object):
             rng=rng,
             X=self.reluLayer.output,
             n_in=n_hidden,
-            n_out=n_out
+            n_out=n_out,
+            cost_weight=cost_weight
         )
         # L1 norm ; one regularization option is to enforce L1 norm to
         # be small
@@ -171,10 +196,11 @@ def load(rnn, filename='model.save'):
         raise Exception("Version mismatch in rnn4.load")
     epoch = int(obj_list[1])
     acc =  float(obj_list[2])
-    rnn.reluLayer.W.set_value(obj_list[3])
-    rnn.reluLayer.b.set_value(obj_list[4])
-    rnn.regressionLayer.W.set_value(obj_list[5])
-    rnn.regressionLayer.b.set_value(obj_list[6])
+    #need to cast with astype if it was saved with different bit width (32 vs 64)
+    rnn.reluLayer.W.set_value(numpy.array(obj_list[3]).astype(dtype=theano.config.floatX))
+    rnn.reluLayer.b.set_value(numpy.array(obj_list[4]).astype(dtype=theano.config.floatX))
+    rnn.regressionLayer.W.set_value(numpy.array(obj_list[5]).astype(dtype=theano.config.floatX))
+    rnn.regressionLayer.b.set_value(numpy.array(obj_list[6]).astype(dtype=theano.config.floatX))
     #print("W[5,10] ", reg.reluLayer.W.get_value()[5,10])
     f.close()
     return (epoch, acc)
