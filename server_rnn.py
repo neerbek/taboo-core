@@ -203,17 +203,17 @@ class Trainer:
             
         validate_model = self.get_validation_model(rnnWrapper)
         
-        gparams = [T.grad(cost, param) for param in reg.params]
+        gparams = [(param, T.grad(cost, param)) for param in reg.params]
         updates = [
-            (param, param - self.learning_rate * gparam)
-            for param, gparam in zip(reg.params, gparams)
+            (param, -self.learning_rate * gparam)
+            for (param, gparam) in gparams
         ]
         
         cost_model = self.get_cost_model(rnnWrapper, cost)
-        
+
+        #note we can't output cost here as the updates depend on cost. Memory leak ensues on some platforms
         train_model = theano.function(
             inputs=[rnnWrapper.x,rnnWrapper.y,rnnWrapper.z],
-            outputs=cost,
             updates=updates
         )
         performanceMeasurerBest = PerformanceMeasurer()
@@ -237,7 +237,7 @@ class Trainer:
                 (roots, x_val, y_val) = rnn_enron.getInputArrays(reg, trees, evaluator)
                 z_val = rng.binomial(n=1, size=(x_val.shape[0], rnn_enron.Evaluator.HIDDEN_SIZE), p=self.retain_probability)
                 z_val = z_val.astype(dtype=theano.config.floatX)
-                minibatch_cost = train_model(x_val, y_val, z_val)
+                train_model(x_val, y_val, z_val)
                 it += 1
                 if it % train_report_frequency == 0:
                     #DEBUG memory
@@ -249,7 +249,7 @@ class Trainer:
                         #print(str(process.memory_info().rss/1000000) + " MB")                        
                         minibatch_acc = 1 - validate_model(x_val, y_val, z_val)
                         minibatch_zeros = 1 - rnn_enron.get_zeros(y_val)
-                        print("epoch {}. time is {}, minibatch {}/{}, On train set: cost {:.6f} batch acc {:.4f} %  ({:.4f} %)".format(epoch, datetime.now().strftime('%d-%m %H:%M'), minibatch_index + 1, self.n_train_batches, minibatch_cost*1.0, minibatch_acc*100.0, minibatch_zeros*100.0
+                        print("epoch {}. time is {}, minibatch {}/{}, On train set: batch acc {:.4f} %  ({:.4f} %)".format(epoch, datetime.now().strftime('%d-%m %H:%M'), minibatch_index + 1, self.n_train_batches, minibatch_acc*100.0, minibatch_zeros*100.0
                         ))
                 if it % validation_frequency == 0:
                     performanceMeasurer = PerformanceMeasurer()
