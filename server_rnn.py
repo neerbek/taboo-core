@@ -14,8 +14,8 @@ import theano.tensor as T
 from datetime import datetime
 import math
 #import objgraph
-import gc
-#.import sys
+#import gc
+#import sys
 
 import similarity.load_trees as load_trees
 
@@ -67,70 +67,47 @@ class PerformanceMeasurer:
             self.root_zeros = performanceMeasurer.root_zeros
             self.cost = performanceMeasurer.cost
         
-    def measure(me, state, trainer, rnn, validate_model, cost_model):
-        validation_losses = []
-        val_total_zeros = []
-        val_root_losses = []
-        val_root_zeros = []
-        validation_cost = []
-        evaluator = rnn_enron.Evaluator(rnn)
-        #c = prng.randint(n_valid_batches, size=n_valid_batches/train_times)
-        #print("valid_trees: {}, n_valid {} size_valid {}".format(len(state.valid_trees), trainer.n_valid_batches, trainer.valid_batch_size))
-        for i in range(trainer.n_valid_batches):
-            trees = state.valid_trees[i * trainer.valid_batch_size: (i + 1) * trainer.valid_batch_size]
-            (roots, x_val, y_val) = rnn_enron.getInputArrays(rnn, trees, evaluator)
-            z_val = numpy.ones(shape=(x_val.shape[0], rnn.n_hidden))
-            #print("valid count", x_val.shape[0])
-            z_val = z_val * trainer.retain_probability
-            z_val = z_val.astype(dtype=theano.config.floatX)
-            validation_losses.append(validate_model(x_val, y_val, z_val))
-            validation_cost.append(cost_model(x_val, y_val, z_val))
-            val_total_zeros.append(rnn_enron.get_zeros(y_val))
-            x_roots = []
-            y_roots = []
-            for r in roots:
-                x_roots.append(x_val[r,:])
-                y_roots.append(y_val[r,:])
-            z_roots = trainer.retain_probability*numpy.ones(shape=(len(x_roots), rnn.n_hidden))
-            z_roots = z_roots.astype(dtype=theano.config.floatX)
-            val_root_losses.append(validate_model(x_roots, y_roots, z_roots))
-            val_root_zeros.append(rnn_enron.get_zeros(y_roots))
-        me.total_acc = 1 - numpy.mean(validation_losses)
-        me.root_acc = 1  - numpy.mean(val_root_losses)
-        me.total_zeros = 1 - numpy.mean(val_total_zeros)
-        me.root_zeros = 1 - numpy.mean(val_root_zeros)
-        me.cost = numpy.mean(validation_cost)
+    def measure(self, state, trainer, rnn, validate_model, cost_model):
+        self.measure_trees(input_trees=state.valid_trees, batch_size=trainer.valid_batch_size, 
+                           retain_probability=trainer.retain_probability, rnn = rnn,
+                           validate_model = validate_model, cost_model = cost_model)
         
-    def measure_trees(self, input_trees, retain_probability, trainer, rnn, validate_model, cost_model):
-        validation_losses = []
-        val_total_zeros = []
-        val_root_losses = []
-        val_root_zeros = []
-        validation_cost = []
+    def measure_trees(self, input_trees, batch_size, retain_probability, rnn, validate_model, cost_model):
+        validation_losses = 0
+        val_total_zeros = 0
+        val_root_losses = 0
+        val_root_zeros = 0
+        validation_cost = 0
+        total_nodes = 0
+        total_root_nodes = 0
         evaluator = rnn_enron.Evaluator(rnn)
-        n_batches = int(math.ceil(len(input_trees) / trainer.valid_batch_size))
+        n_batches = int(math.ceil(len(input_trees) / batch_size))
         for i in range(n_batches):
-            trees = input_trees[i * trainer.valid_batch_size: (i + 1) * trainer.valid_batch_size]
+            trees = input_trees[i * batch_size: (i + 1) * batch_size]
             (roots, x_val, y_val) = rnn_enron.getInputArrays(rnn, trees, evaluator)
             z_val = numpy.ones(shape=(x_val.shape[0], rnn.n_hidden))
             z_val = z_val * retain_probability
             z_val = z_val.astype(dtype=theano.config.floatX)
-            validation_losses.append(validate_model(x_val, y_val, z_val))
-            validation_cost.append(cost_model(x_val, y_val, z_val))
-            val_total_zeros.append(rnn_enron.get_zeros(y_val))
+            n_nodes = x_val.shape[0]
+            validation_losses += validate_model(x_val, y_val, z_val) * n_nodes  #append mean fraction of errors
+            validation_cost += cost_model(x_val, y_val, z_val)*n_nodes        #append mean cost
+            val_total_zeros += rnn_enron.get_zeros(y_val)*n_nodes
+            total_nodes += n_nodes
             x_roots = []
             y_roots = []
             for r in roots:
                 x_roots.append(x_val[r,:])
                 y_roots.append(y_val[r,:])
             z_roots = retain_probability*numpy.ones(shape=(len(x_roots), rnn.n_hidden), dtype=theano.config.floatX)
-            val_root_losses.append(validate_model(x_roots, y_roots, z_roots))
-            val_root_zeros.append(rnn_enron.get_zeros(y_roots))
-        self.total_acc = 1 - numpy.mean(validation_losses)
-        self.root_acc = 1  - numpy.mean(val_root_losses)
-        self.total_zeros = 1 - numpy.mean(val_total_zeros)
-        self.root_zeros = 1 - numpy.mean(val_root_zeros)
-        self.cost = numpy.mean(validation_cost)
+            n_root_nodes = len(x_roots)
+            val_root_losses += validate_model(x_roots, y_roots, z_roots) * n_root_nodes
+            val_root_zeros += rnn_enron.get_zeros(y_roots) * n_root_nodes
+            total_root_nodes += n_root_nodes
+        self.total_acc = 1 - validation_losses/total_nodes
+        self.root_acc = 1  - val_root_losses/total_root_nodes
+        self.total_zeros = 1 - val_total_zeros/total_nodes
+        self.root_zeros = 1 - val_root_zeros/total_root_nodes
+        self.cost = validation_cost/total_nodes
         
     def report(self, msg = ""):
         print(msg + " total accuracy {:.4f} % ({:.4f} %) cost {:.6f}, root acc {:.4f} % ({:.4f} %)".format(self.total_acc*100., 
@@ -190,7 +167,8 @@ class Trainer:
         )
     def evaluate_model(self, trees, rnnWrapper, validation_model, cost_model):
         performanceMeasurer = PerformanceMeasurer()
-        performanceMeasurer.measure_trees(input_trees=trees, retain_probability = self.retain_probability, trainer = self,
+        performanceMeasurer.measure_trees(input_trees=trees, batch_size=self.valid_batch_size, 
+                                          retain_probability = self.retain_probability,
                                           rnn = rnnWrapper.rnn, validate_model=validation_model, 
                                           cost_model=cost_model)
         return performanceMeasurer
@@ -205,7 +183,7 @@ class Trainer:
         
         gparams = [(param, T.grad(cost, param)) for param in reg.params]
         updates = [
-            (param, -self.learning_rate * gparam)
+            (param, param-self.learning_rate * gparam)
             for (param, gparam) in gparams
         ]
         
@@ -222,6 +200,9 @@ class Trainer:
         performanceMeasurer = PerformanceMeasurer()
         performanceMeasurer.epoch = -1
 
+#        performanceMeasurer.measure(state, self,  reg, validate_model, cost_model)
+#        performanceMeasurer.report("test: validation:")
+
         while (n_epochs==-1 or epoch < n_epochs):
             perm = rng.permutation(len(state.train_trees))
             train_trees =  [state.train_trees[i] for i in perm]
@@ -237,7 +218,11 @@ class Trainer:
                 (roots, x_val, y_val) = rnn_enron.getInputArrays(reg, trees, evaluator)
                 z_val = rng.binomial(n=1, size=(x_val.shape[0], rnn_enron.Evaluator.HIDDEN_SIZE), p=self.retain_probability)
                 z_val = z_val.astype(dtype=theano.config.floatX)
+#                performanceMeasurer.measure(state, self,  reg, validate_model, cost_model)
+#                performanceMeasurer.report("test1: validation:")
                 train_model(x_val, y_val, z_val)
+#                performanceMeasurer.measure(state, self,  reg, validate_model, cost_model)
+#                performanceMeasurer.report("test2: validation:")
                 it += 1
                 if it % train_report_frequency == 0:
                     #DEBUG memory

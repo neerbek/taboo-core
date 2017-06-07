@@ -37,7 +37,7 @@ import server_enron_helper
 import server_rnn
 import rnn_enron
 
-import RunTimer
+import tests.RunTimer as RunTimer
 
 DEBUG_PRINT = False
 rnn_enron.MAX_SENTENCE_LENGTH=80  #approx 14secs, if =160 approx 30secs
@@ -46,18 +46,19 @@ rnn_enron.DEBUG_PRINT = DEBUG_PRINT
 
 state = {}
 
-def initialize_model(num_wordvectors=5000, num_trees=1000):
+def initialize_model(num_trees=1000):
+    num_wordvectors=5000
+    server_enron.serverState = server_enron_helper.ServerState(max_embedding_count=num_wordvectors)
+    server_rnn_state = server_enron.serverState.server_rnn_state
     if len(state)==0:
-        server_rnn_state = server_enron.serverState.server_rnn_state
-        state['LT'] = server_rnn_state.LT   #hack - we know serverState has been loaded the first time we are called
+        server_enron.keywordState = server_enron_helper.KeywordState()
+        state['LT'] = server_rnn_state.LT
         trainer = server_rnn.Trainer()
-        server_rnn_state.load_trees(trainer)
+        server_rnn_state.load_trees(trainer = trainer, max_tree_count = num_trees)
         state['trt'] = server_rnn_state.train_trees
         state['vat'] = server_rnn_state.valid_trees
         state['tet'] = server_rnn_state.test_trees
 
-    server_enron.serverState = server_enron_helper.ServerState(max_embedding_count=1)
-    server_rnn_state = server_enron.serverState.server_rnn_state
     
     server_rnn_state.LT = state['LT']
     server_enron.keywordState = server_enron_helper.KeywordState()
@@ -103,7 +104,7 @@ class ServiceTest(unittest.TestCase):
         self.assertTrue(d['predictions']!=None)
 
     def test_run_rnn3(self):
-        initialize_model(num_wordvectors=10000000, num_trees=11000)
+        initialize_model()
         server_enron.request = Request()
         server_enron.request.args.args['text'] = "Sentence fragments are representative of their quoted statement"
         res = server_enron.run_rnn()

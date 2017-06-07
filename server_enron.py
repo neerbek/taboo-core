@@ -24,14 +24,16 @@ import server_enron_helper
 
 import similarity.load_trees as load_trees
        
-serverState = server_enron_helper.ServerState()
-keywordState = server_enron_helper.KeywordState()
+serverState = None
+keywordState = None
 
 
 if __name__ == "__main__":
     rnn_enron.DEBUG_PRINT=True
     rnn_enron.DEBUG_PRINT_VERBOSE=True
     server_rnn_helper.DEBUG_PRINT=True
+    serverState = server_enron_helper.ServerState()
+    keywordState = server_enron_helper.KeywordState()
     serverState.initialize()   #loads trees
     serverState.load_model()
     keywordState.initialize(serverState.server_rnn_state)

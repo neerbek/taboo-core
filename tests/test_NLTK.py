@@ -15,7 +15,7 @@ import server_rnn_helper
 import rnn_enron
 import EnronDocument
 
-import RunTimer
+import tests.RunTimer as RunTimer
 
 DEBUG_PRINT = False
 rnn_enron.MAX_SENTENCE_LENGTH=80

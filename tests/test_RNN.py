@@ -134,7 +134,7 @@ class RNNTest(unittest.TestCase):
         
         performanceMeasurer = trainer.evaluate_model(trees=dev_trees, rnnWrapper=rnnWrapper, validation_model = eval_model, cost_model = cost_model)
         m = max(performanceMeasurer.total_acc, performanceMeasurer.total_zeros, 1-performanceMeasurer.total_zeros)
-        self.assertEquals(m, performanceMeasurer.total_acc, "expected total acc to be the strictly better than total_zeros/non_zeros")
+        self.assertEqual(m, performanceMeasurer.total_acc, "expected total acc to be the strictly better than total_zeros/non_zeros")
         
 
 
