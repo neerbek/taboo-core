@@ -25,7 +25,8 @@ class Regression(object):
             ),
             dtype=theano.config.floatX
         )
-        self.W = theano.shared(value=W_values, name='W', borrow=True)
+        #self.W = theano.shared(value=W_values, name='W_reg', borrow=True)
+        self.W = theano.shared(value=W_values, name='W_reg', borrow=False)
         # initialize the biases b as a vector of n_out 0s
         b_values = numpy.asarray(
             rng.uniform(
@@ -35,7 +36,8 @@ class Regression(object):
             ),
             dtype=theano.config.floatX
         )
-        self.b = theano.shared(value=b_values, name='b', borrow=True)
+        #self.b = theano.shared(value=b_values, name='b_reg', borrow=True)
+        self.b = theano.shared(value=b_values, name='b_reg', borrow=False)
         self.p_y_given_x = T.nnet.softmax(T.dot(X, self.W) + self.b)
         self.cost_weight = cost_weight
         self.y_pred = T.argmax(self.p_y_given_x, axis=1)
@@ -98,7 +100,8 @@ class ReluLayer(object):
             ),
             dtype=theano.config.floatX
         )
-        self.W = theano.shared(value=W_values, name='W', borrow=True)
+#        self.W = theano.shared(value=W_values, name='W_relu', borrow=True)
+        self.W = theano.shared(value=W_values, name='W_relu', borrow=False)
         b_values = numpy.asarray(
             rng.uniform(
                 low=-numpy.sqrt(6. / (n_out)),
@@ -107,7 +110,8 @@ class ReluLayer(object):
             ),
             dtype=theano.config.floatX
         )
-        self.b = theano.shared(value=b_values, name='b', borrow=True)
+#        self.b = theano.shared(value=b_values, name='b_relu', borrow=True)
+        self.b = theano.shared(value=b_values, name='b_relu', borrow=False)
         lin_output = T.dot(X, self.W) + self.b
         self.output = T.nnet.relu(lin_output)
         #dropout
@@ -160,7 +164,10 @@ class RNN(object):
 
         # the parameters of the model are the parameters of the two layer it is
         # made out of
-        self.params = self.reluLayer.params + self.regressionLayer.params
+        self.params = []
+        self.params.extend(self.reluLayer.params)
+        self.params.extend(self.regressionLayer.params)
+        
         self.X = X
         
     def get_representation(self, left_in, right_in):

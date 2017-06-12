@@ -13,9 +13,7 @@ import theano
 import theano.tensor as T
 from datetime import datetime
 import math
-#import objgraph
 #import gc
-#import sys
 
 import similarity.load_trees as load_trees
 
@@ -181,27 +179,40 @@ class Trainer:
             
         validate_model = self.get_validation_model(rnnWrapper)
         
-        gparams = [(param, T.grad(cost, param)) for param in reg.params]
-        updates = [
-            (param, param-self.learning_rate * gparam)
-            for (param, gparam) in gparams
-        ]
+#        gparams = [(param, T.grad(cost, param)) for param in reg.params]
+#        updates = [
+#            (param, param-self.learning_rate * gparam)
+#            for (param, gparam) in gparams
+#        ]
+        
+        #DEBUG
+        
+        #lr = self.learning_rate
+        #p = T.matrix('p', dtype=theano.config.floatX)  
+        #update_param = p-lr*T.grad(cost=cost, wrt=p)
+
+        params = [reg.reluLayer.W, reg.reluLayer.b, reg.regressionLayer.W, reg.regressionLayer.b]
+#        gparams = [(param,  T.grad(cost=cost, wrt=param, disconnected_inputs='raise', null_gradients='raise')) for param in params]        
+#        updates = [
+#            (param, param-self.learning_rate*gparam)
+#            for (param, gparam) in gparams
+#        ]
+        u_func = theano.function(
+            inputs=[rnnWrapper.x,rnnWrapper.y,rnnWrapper.z],
+            outputs=[self.learning_rate*T.grad(cost=cost, wrt=param) for param in params]
+        )
         
         cost_model = self.get_cost_model(rnnWrapper, cost)
 
-        #note we can't output cost here as the updates depend on cost. Memory leak ensues on some platforms
-        train_model = theano.function(
-            inputs=[rnnWrapper.x,rnnWrapper.y,rnnWrapper.z],
-            updates=updates
-        )
+#        train_model = theano.function(
+#            inputs=[rnnWrapper.x,rnnWrapper.y,rnnWrapper.z],
+#            updates=updates
+#        )
         performanceMeasurerBest = PerformanceMeasurer()
         performanceMeasurerBest.epoch=-1
         performanceMeasurerBest.running_epoch=-1
         performanceMeasurer = PerformanceMeasurer()
         performanceMeasurer.epoch = -1
-
-#        performanceMeasurer.measure(state, self,  reg, validate_model, cost_model)
-#        performanceMeasurer.report("test: validation:")
 
         while (n_epochs==-1 or epoch < n_epochs):
             perm = rng.permutation(len(state.train_trees))
@@ -218,20 +229,24 @@ class Trainer:
                 (roots, x_val, y_val) = rnn_enron.getInputArrays(reg, trees, evaluator)
                 z_val = rng.binomial(n=1, size=(x_val.shape[0], rnn_enron.Evaluator.HIDDEN_SIZE), p=self.retain_probability)
                 z_val = z_val.astype(dtype=theano.config.floatX)
-#                performanceMeasurer.measure(state, self,  reg, validate_model, cost_model)
-#                performanceMeasurer.report("test1: validation:")
-                train_model(x_val, y_val, z_val)
-#                performanceMeasurer.measure(state, self,  reg, validate_model, cost_model)
-#                performanceMeasurer.report("test2: validation:")
+                u = u_func(x_val, y_val, z_val)
+                #reg_updates = []
+                for i in range(len(params)):
+                     param = params[i]
+                     param.set_value(param.get_value() - u[i])
+#                train_model(x_val, y_val, z_val)
+#                if not numpy.allclose(reg.reluLayer.W.get_value(), reg_updates[0], atol=0.0000001):
+#                    raise Exception("Expected these to be equal 1")
+#                if not numpy.allclose(reg.reluLayer.b.get_value(), reg_updates[1], atol=0.0000001):
+#                    raise Exception("Expected these to be equal 2")
+#                if not numpy.allclose(reg.regressionLayer.W.get_value(), reg_updates[2], atol=0.0000001):
+#                    raise Exception("Expected these to be equal 3")
+#                if not numpy.allclose(reg.regressionLayer.b.get_value(), reg_updates[3], atol=0.0000001):
+#                    raise Exception("Expected these to be equal 4")
+                
                 it += 1
                 if it % train_report_frequency == 0:
-                    #DEBUG memory
-                    #objgraph.show_most_common_types()
-                    #objgraph.show_growth(limit=10)
-                    #print("len(gc)",  len(gc.get_objects()))
                     if DEBUG_PRINT:
-                        #process = psutil.Process(os.getpid())
-                        #print(str(process.memory_info().rss/1000000) + " MB")                        
                         minibatch_acc = 1 - validate_model(x_val, y_val, z_val)
                         minibatch_zeros = 1 - rnn_enron.get_zeros(y_val)
                         print("epoch {}. time is {}, minibatch {}/{}, On train set: batch acc {:.4f} %  ({:.4f} %)".format(epoch, datetime.now().strftime('%d-%m %H:%M'), minibatch_index + 1, self.n_train_batches, minibatch_acc*100.0, minibatch_zeros*100.0
@@ -241,8 +256,6 @@ class Trainer:
                     performanceMeasurer.epoch = epoch
                     performanceMeasurer.measure(state, self,  reg, validate_model, cost_model)
                     if DEBUG_PRINT:
-                        #process = psutil.Process(os.getpid())
-                        #print(str(process.memory_info().rss/1000000) + " MB")                        
                         performanceMeasurer.report(msg = "{} Epoch {}. On validation set: Best ({}, {:.6f}, {:.4f}%). Current: ".format( 
                                                    datetime.now().strftime('%d%m%y %H:%M'), epoch, performanceMeasurerBest.epoch, performanceMeasurerBest.cost*1.0, performanceMeasurerBest.root_acc*100.))
                         performanceMeasurerTrain = self.evaluate_model(train_trees, rnnWrapper, validate_model, cost_model)
@@ -259,6 +272,8 @@ class Trainer:
                             filename = "{}_running.txt".format(file_prefix)
                             self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
                             performanceMeasurerBest.running_epoch = epoch
+#                    while gc.collect() > 0:
+#                        pass
         filename = "{}_running.txt".format(file_prefix)
         self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
         
