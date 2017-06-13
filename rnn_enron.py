@@ -511,12 +511,16 @@ def addNodeRepresentations(reg, node, x_val, y_val, evaluator):
     # we need to reshape in_rep but this will add 150% to running time
     #Ctxt.appendtimer.end()
 
+getinputarraytimer = Timer("getInputArrays")
+looptimer = Timer("loop")
 def getInputArrays(reg, trees, evaluator):
     """Generates input representations for use with the rnn in training and in evaluation. I.e. 
     formats the input which encoded as trees into x_val and y_val flat list"""
+    getinputarraytimer.begin()
     list_x = []
     list_y = []
     list_root_indexes = []
+    looptimer.begin()
     for t in trees:
         if t is None:
             raise Exception("Received a none tree")
@@ -524,6 +528,7 @@ def getInputArrays(reg, trees, evaluator):
             raise Exception("one word tree")
         addNodeRepresentations(reg, t, list_x, list_y, evaluator)
         list_root_indexes.append(len(list_x)-1) #root is added last
+    looptimer.end()
     #train_set_x = theano.shared(numpy.asarray(train_set_x), borrow = True)
     #train_set_y = theano.shared(numpy.asarray(train_set_y), borrow = True)        
     #list_x = [e.reshape(-1) for e in list_x]
@@ -538,6 +543,7 @@ def getInputArrays(reg, trees, evaluator):
         raise Exception("error in numpy conversion of x, shape was {}".format(x_val.shape))
     if y_val.shape != (len(list_y), Evaluator.RES_SIZE):
         raise Exception("error in numpy conversion of y")
+    getinputarraytimer.end()
     return (list_root_indexes, x_val, y_val)
 
 
