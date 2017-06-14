@@ -113,9 +113,14 @@ class ReluLayer(object):
 #        self.b = theano.shared(value=b_values, name='b_relu', borrow=True)
         self.b = theano.shared(value=b_values, name='b_relu', borrow=False)
         lin_output = T.dot(X, self.W) + self.b
-        self.output = T.nnet.relu(lin_output)
+        self.output_no_dropout = T.nnet.relu(lin_output)
         #dropout
-        self.output = self.output*Z  #element-wise mult
+        self.output = self.output_no_dropout*Z  #element-wise mult
+        self.rep_generator = theano.function(
+            inputs=[self.X],
+            outputs=[self.output_no_dropout]
+        )
+
         # parameters of the model
         self.params = [self.W, self.b]
 

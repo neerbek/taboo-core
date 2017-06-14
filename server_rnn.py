@@ -31,8 +31,7 @@ class State:
         self.test_trees = None
         self.setWordSize(nx, nh)
         self.LT = rnn_enron.get_word_embeddings(os.path.join(glove_path, "glove.6B.{}d.txt".format(self.nx)), rng, max_embedding_count)
-        rnn_enron.Ctxt.evaltimer = ai_util.Timer("eval timer")
-        rnn_enron.Ctxt.appendtimer = ai_util.Timer("append timer")
+        rnn_enron.RNNTimers.init()  #reset timers
 
     def setWordSize(self, wordSize, hiddenSize):
         self.nx = wordSize
@@ -49,10 +48,10 @@ class State:
         rnn_enron.initializeTrees(self.valid_trees, self.LT)
         rnn_enron.initializeTrees(self.test_trees, self.LT)
         trainer.update_batch_size(self)
-
-totaltimer = ai_util.Timer("measure_trees")
-randomtimer = ai_util.Timer("random")
-calltheanotimer = ai_util.Timer("callTheano")
+class Timers:
+    totaltimer = ai_util.Timer("measure_trees")
+    randomtimer = ai_util.Timer("random")
+    calltheanotimer = ai_util.Timer("callTheano")
     
 class PerformanceMeasurer:
     def __init__(self, performanceMeasurer=None):
@@ -75,7 +74,7 @@ class PerformanceMeasurer:
                            validate_model = validate_model, cost_model = cost_model)
         
     def measure_trees(self, input_trees, batch_size, retain_probability, rnn, validate_model, cost_model):        
-        totaltimer.begin()
+        #Timers.totaltimer.begin()
         validation_losses = 0
         val_total_zeros = 0
         val_root_losses = 0
@@ -111,7 +110,7 @@ class PerformanceMeasurer:
         self.total_zeros = 1 - val_total_zeros/total_nodes
         self.root_zeros = 1 - val_root_zeros/total_root_nodes
         self.cost = validation_cost/total_nodes
-        totaltimer.end()
+        #Timers.totaltimer.end()
         
     def report(self, msg = ""):
         print(msg + " total accuracy {:.4f} % ({:.4f} %) cost {:.6f}, root acc {:.4f} % ({:.4f} %)".format(self.total_acc*100., 
@@ -221,9 +220,9 @@ class Trainer:
         performanceMeasurer.epoch = -1
 
         while (n_epochs==-1 or epoch < n_epochs):
-            randomtimer.begin()
+            #Timers.randomtimer.begin()
             perm = rng.permutation(len(state.train_trees))
-            randomtimer.end()
+            #Timers.randomtimer.end()
             train_trees =  [state.train_trees[i] for i in perm]            
             epoch += 1
             for minibatch_index in range(self.n_train_batches):
@@ -237,9 +236,9 @@ class Trainer:
                 (roots, x_val, y_val) = rnn_enron.getInputArrays(reg, trees, evaluator)
                 z_val = rng.binomial(n=1, size=(x_val.shape[0], rnn_enron.Evaluator.HIDDEN_SIZE), p=self.retain_probability)
                 z_val = z_val.astype(dtype=theano.config.floatX)
-                calltheanotimer.begin()
+                #Timers.calltheanotimer.begin()
                 u = u_func(x_val, y_val, z_val)
-                calltheanotimer.end()
+                #Timers.calltheanotimer.end()
                 #reg_updates = []
                 for i in range(len(params)):
                      param = params[i]

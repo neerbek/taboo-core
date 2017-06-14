@@ -13,6 +13,7 @@ import time
 
 import numpy
 import theano
+import theano.tensor as T
 
 import similarity.load_trees as load_trees
 from ai_util import Timer
@@ -24,7 +25,7 @@ DEBUG_PRINT = True
 DEBUG_PRINT_ON_SPLIT = False
 
 
-class Timers:
+class Timers:  #for parsing text
     def __init__(self):
         self.totalTimer = Timer("total time")
         self.gettreeTimer = Timer("gettree time")
@@ -48,7 +49,17 @@ class Timers:
         #for t in self.timers:
         #    t.report()
         return True
-        
+
+class RNNTimers: #timers for evaluating RNN
+    def init(): #resetting timers
+        RNNTimers.evaltimer2 = Timer("eval timer inner")
+        RNNTimers.evaltimer = Timer("eval timer")
+        RNNTimers.appendtimer = Timer("append timer")
+        RNNTimers.getinputarraytimer = Timer("getInputArrays")
+        RNNTimers.looptimer = Timer("loop")
+
+RNNTimers.init()
+
 def add_node(tree, child):
     t = load_trees.Node(None)
     t.left = child
@@ -371,13 +382,16 @@ class Evaluator:
         Evaluator.leaf_rep = numpy.zeros(Evaluator.SIZE)
         Evaluator.HIDDEN_SIZE = HIDDEN_SIZE
         Evaluator.hidden_rep = numpy.zeros(Evaluator.HIDDEN_SIZE)
-        
     def __init__(self, reg):
         self.W = reg.reluLayer.W.eval()
         self.b = reg.reluLayer.b.eval()
         self.in_rep = None
         #self.in_rep = numpy.random.uniform(-1, 1, size=100)
         self.reg=reg
+#        self.rep_generator = theano.function(
+#            inputs=[reg.reluLayer.X],
+#            outputs=[reg.reluLayer.output_no_dropout]
+#        )
     def get_representation(self, left, right):
         #print("shape is", left_in.shape)
         #        for i in range(Evaluator.SIZE):
@@ -399,12 +413,27 @@ class Evaluator:
             l.append(right.representation)
             l.append(Evaluator.leaf_rep)
         try:
-            self.in_rep = numpy.concatenate(l)   #.reshape(1, 2*Evaluator.SIZE)
+            #self.in_rep = numpy.concatenate(l)   #.reshape(1, 2*Evaluator.SIZE)
+            #for ll in l:
+            #    print(ll.shape)
+            self.in_rep = numpy.concatenate(l)
+            #self.in_rep = numpy.array(self.in_rep, copy=False, ndmin=2)
+            #self.in_rep = self.in_rep.reshape(1, 2*(Evaluator.SIZE+Evaluator.HIDDEN_SIZE))
         except Exception:
-            print("ups")
+            print("bad concatenation")
             raise
+        #RNNTimers.evaltimer2.begin()
         lin = numpy.dot(self.in_rep, self.W) + self.b        
         lin = numpy.maximum(lin, 0, lin)
+        #lin = self.reg.reluLayer.rep_generator(self.in_rep)
+        #print(len(lin[0][0]))
+        #lin = lin[0][0][0:Evaluator.HIDDEN_SIZE]
+        #lin = numpy.array(lin)  #, copy=False)
+        #lin = numpy.array(lin, copy=False)
+        #lin = lin.reshape(Evaluator.HIDDEN_SIZE)
+        #lin = lin.flatten()
+        #lin = numpy.transpose(lin)
+        #RNNTimers.evaltimer2.end()
         #lin = right_in
         #        
         #        lin2 = reg.get_representation(left_in.reshape(1,50), right_in.reshape(1,50)).reshape(-1)
@@ -485,10 +514,6 @@ class Evaluator:
 #        
             
 
-class Ctxt:
-    evaltimer = Timer("eval timer")
-    appendtimer = Timer("append timer")
-
 def addNodeRepresentations(reg, node, x_val, y_val, evaluator):
     if node == None:
         return
@@ -501,26 +526,24 @@ def addNodeRepresentations(reg, node, x_val, y_val, evaluator):
     addNodeRepresentations(reg, node.left, x_val, y_val, evaluator)
     addNodeRepresentations(reg, node.right, x_val, y_val, evaluator)
     
-    #Ctxt.evaltimer.begin()
+    #RNNTimers.evaltimer.begin()
     node.representation = evaluator.get_representation(node.left, node.right)
-    #Ctxt.evaltimer.end()
+    #RNNTimers.evaltimer.end()
     
-    #Ctxt.appendtimer.begin()
+    #RNNTimers.appendtimer.begin()
     y_val.append(node.label)
     x_val.append(evaluator.in_rep) 
     # we need to reshape in_rep but this will add 150% to running time
-    #Ctxt.appendtimer.end()
+    #RNNTimers.appendtimer.end()
 
-getinputarraytimer = Timer("getInputArrays")
-looptimer = Timer("loop")
 def getInputArrays(reg, trees, evaluator):
     """Generates input representations for use with the rnn in training and in evaluation. I.e. 
     formats the input which encoded as trees into x_val and y_val flat list"""
-    getinputarraytimer.begin()
+    #RNNTimers.getinputarraytimer.begin()
     list_x = []
     list_y = []
     list_root_indexes = []
-    looptimer.begin()
+    #RNNTimers.looptimer.begin()
     for t in trees:
         if t is None:
             raise Exception("Received a none tree")
@@ -528,7 +551,7 @@ def getInputArrays(reg, trees, evaluator):
             raise Exception("one word tree")
         addNodeRepresentations(reg, t, list_x, list_y, evaluator)
         list_root_indexes.append(len(list_x)-1) #root is added last
-    looptimer.end()
+    #RNNTimers.looptimer.end()
     #train_set_x = theano.shared(numpy.asarray(train_set_x), borrow = True)
     #train_set_y = theano.shared(numpy.asarray(train_set_y), borrow = True)        
     #list_x = [e.reshape(-1) for e in list_x]
@@ -543,7 +566,7 @@ def getInputArrays(reg, trees, evaluator):
         raise Exception("error in numpy conversion of x, shape was {}".format(x_val.shape))
     if y_val.shape != (len(list_y), Evaluator.RES_SIZE):
         raise Exception("error in numpy conversion of y")
-    getinputarraytimer.end()
+    #RNNTimers.getinputarraytimer.end()
     return (list_root_indexes, x_val, y_val)
 
 
