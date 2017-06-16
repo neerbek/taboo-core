@@ -13,7 +13,7 @@ import time
 
 import numpy
 import theano
-import theano.tensor as T
+#import theano.tensor as T
 
 import similarity.load_trees as load_trees
 from ai_util import Timer
@@ -294,27 +294,32 @@ def updateWordVectors(node, lookup_table, nodeCounter):
     nodeCounter.incNode()
     if node.is_leaf():
         nodeCounter.incWord()
-        #TODO: use lower
-        #word = node.word.lower()
-        word = node.word
-        if word == "-LRB-":
+        word = node.word.lower()
+        #word = node.word
+        if word[-1]==',' and len(word)>1:
+            word = word[:-1]  #remove trailing ,
+        if word == "-lrb-":
             word = "("
-        elif word == "-RRB-":
+        elif word == "-rrb-":
             word = ")"
-        elif word == "-LSB-":
+        elif word == "-lsb-":
             word = "("
-        elif word == "-RSB-":
+        elif word == "-rsb-":
             word = ")"
-        elif word == "-LCB-":
+        elif word == "-lcb-":
             word = "("
-        elif word == "-RCB-":
+        elif word == "-rcb-":
             word = ")"
+        elif word == "-amp-":
+            word = "&"
 
         if word in lookup_table:
             node.representation = lookup_table[word]
         else:
             nodeCounter.incUnknown()
             node.representation = lookup_table[UNKNOWN_WORD]
+            #if nodeCounter.unknown_count<100:
+            #    print("unknown word: \"" + word + "\"")
     else:
         updateWordVectors(node.left, lookup_table, nodeCounter)
         updateWordVectors(node.right, lookup_table, nodeCounter)
@@ -343,33 +348,7 @@ def initializeTrees(trees, LT):
         setTreeLabel(tree, label)
     if DEBUG_PRINT:
         print("Done with tree. Saw {} nodes, {} words and {} unknowns. Unknown ratio is {}".format(totalCounter.node_count, totalCounter.word_count, totalCounter.unknown_count, totalCounter.getRatio()))
-
-#def nodeForward(node, update_count, reg):
-#    # assumes is_binary and has_only_words_at_leafs
-#    if node.is_leaf():
-#        return  #don't update words representations
-#    else:
-#        if node.update_count < update_count:
-#            nodeForward(node.left, update_count, reg)
-#            nodeForward(node.right, update_count, reg)                
-#            node.representation = reg.get_representation(node.left.representation, node.right.representation)
-#            node.update_count = update_count
-
-#329225 + 56255
-#22017+3568
-#96141 + 16560
-#79063+13774
-## expected: lookups 385480 unknowns 92837
-## Unknown lookup ratio: 0.240835
-#
-#t = train_trees[0]
-#t.label
-#t.is_leaf()
-#t = t.left
-#t.representation
-######################
-# BUILD ACTUAL MODEL #
-######################
+    print("Done with tree. Saw {} nodes, {} words and {} unknowns. Unknown ratio is {}".format(totalCounter.node_count, totalCounter.word_count, totalCounter.unknown_count, totalCounter.getRatio()))
 
 class Evaluator:
     RES_SIZE=5
@@ -445,6 +424,7 @@ class Evaluator:
         #            raise Exception("Arrays not equal!")
         return lin
 
+#TODO: move to test
 #def softmax(w):
 #    #print("softmax: " , w.shape)
 #    maxes = numpy.amax(w, axis=1)
