@@ -43,9 +43,23 @@ class Regression(object):
         self.y_pred = T.argmax(self.p_y_given_x, axis=1)
         self.params = [self.W, self.b]
         self.X = X
+        self.cost = self.cost_RMS
 
         
-    def cost(self, y):
+    def cost_cross(self, y):
+        err = y * T.log(self.p_y_given_x)
+        cost_weight = T.ones_like(y.shape) + y * self.cost_weight
+        err_weighted = err * cost_weight
+        return -T.sum(err_weighted)
+
+    def cost_cross_debug(self, X, y):
+        p_y_given_x = self.softmax_debug(numpy.dot(X, self.W.get_value()) + self.b.get_value())
+        err = numpy.multiply(y, numpy.log(p_y_given_x))
+        cost_weight = numpy.ones(shape=y.shape) + numpy.multiply(y, self.cost_weight)
+        err_weighted = numpy.multiply(err, cost_weight)
+        return -numpy.sum(err_weighted)
+
+    def cost_RMS(self, y):
         err = (self.p_y_given_x - y)
         cost_weight = T.ones_like(y.shape) + y * self.cost_weight
         err_weighted = err * cost_weight
@@ -58,12 +72,14 @@ class Regression(object):
         dist = e / numpy.sum(e, axis=1, keepdims=True)
         return dist
 
-    def cost_debug(self, X, y):
+    def cost_RMS_debug(self, X, y):
         p_y_given_x = self.softmax_debug(numpy.dot(X, self.W.get_value()) + self.b.get_value())
         err = p_y_given_x - y
-        cost_weight = numpy.ones(shape=y.shape) + y * self.cost_weight
+        #cost_weight = numpy.ones(shape=y.shape) + numpy.multiply(y, self.cost_weight)
+        cost_weight = numpy.ones(shape=y.shape) + y* self.cost_weight
         #print("err shape", err.shape)
-        err_weighted = numpy.multiply(err, cost_weight)
+        #err_weighted = numpy.multiply(err, cost_weight)
+        err_weighted = err * cost_weight
         #print("err_weighted shape1", err_weighted.shape)
         return numpy.mean(0.5*((err_weighted) **2))
         
