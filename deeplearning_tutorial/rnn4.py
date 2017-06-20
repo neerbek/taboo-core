@@ -103,6 +103,20 @@ class Regression(object):
         else:
             raise NotImplementedError()
 
+    def confusion_matrix(self, y):
+        """ count of true and false preds
+        """
+        y_simple = T.argmax(y, axis=1)
+        all_t = T.eq(4, y_simple)
+        all_f = T.eq(0, y_simple) #since we _know_/require that labels are either 0 or 4
+        pred_t = T.eq(4, self.y_pred)
+        pred_f = T.neq(4, self.y_pred)  #since we can predict more than 0/4
+        tp = T.sum(T.eq(1, all_t*pred_t))  #all_t*pred_t=1 if tp
+        fp = T.sum(T.eq(1, all_f*pred_t))
+        tn = T.sum(T.eq(1, all_f*pred_f))
+        fn = T.sum(T.eq(1, all_t*pred_f))
+        return (tp, fp, tn, fn)
+
 #for dropout:
 #https://blog.wtf.sg/2014/07/23/dropout-using-theano/
 #http://stackoverflow.com/questions/29540592/why-does-my-dropout-function-in-theano-slow-down-convolution-greatly    

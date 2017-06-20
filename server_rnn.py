@@ -52,7 +52,11 @@ class Timers:
     totaltimer = ai_util.Timer("measure_trees")
     randomtimer = ai_util.Timer("random")
     calltheanotimer = ai_util.Timer("callTheano")
-    
+
+#for when we don't want to calc confusion matrix    
+def empty_confusion_matrix(x,y,z):
+    return (-1,-1,-1,-1)
+        
 class PerformanceMeasurer:
     def __init__(self, performanceMeasurer=None):
         if performanceMeasurer==None:
@@ -67,19 +71,21 @@ class PerformanceMeasurer:
             self.total_zeros = performanceMeasurer.total_zeros
             self.root_zeros = performanceMeasurer.root_zeros
             self.cost = performanceMeasurer.cost
-        
-    def measure(self, state, trainer, rnn, validate_model, cost_model):
+            
+    def measure(self, state, trainer, rnn, validate_model, cost_model, confusion_matrix = empty_confusion_matrix):
         self.measure_trees(input_trees=state.valid_trees, batch_size=trainer.valid_batch_size, 
                            retain_probability=trainer.retain_probability, rnn = rnn,
-                           validate_model = validate_model, cost_model = cost_model)
+                           validate_model = validate_model, cost_model = cost_model, confusion_matrix = confusion_matrix)
         
-    def measure_trees(self, input_trees, batch_size, retain_probability, rnn, validate_model, cost_model):        
+    def measure_trees(self, input_trees, batch_size, retain_probability, rnn, validate_model, cost_model, confusion_matrix = empty_confusion_matrix):        
         #Timers.totaltimer.begin()
-        validation_losses = 0
-        val_total_zeros = 0
+        validation_losses = 0  #errors
+        validation_cost = 0  #cost
+        validation_zeros = 0  #number of non-sensitive
+        validation_confusion_matrix = [0,0,0,0]
         val_root_losses = 0
         val_root_zeros = 0
-        validation_cost = 0
+        val_root_confusion_matrix = [0,0,0,0]
         total_nodes = 0
         total_root_nodes = 0
         evaluator = rnn_enron.Evaluator(rnn)
@@ -93,7 +99,10 @@ class PerformanceMeasurer:
             n_nodes = x_val.shape[0]
             validation_losses += validate_model(x_val, y_val, z_val) * n_nodes  #append mean fraction of errors
             validation_cost += cost_model(x_val, y_val, z_val)*n_nodes        #append mean cost
-            val_total_zeros += rnn_enron.get_zeros(y_val)*n_nodes
+            validation_zeros += rnn_enron.get_zeros(y_val)*n_nodes
+            a = confusion_matrix(x_val, y_val, z_val)
+            for i in range(len(validation_confusion_matrix)):
+                validation_confusion_matrix[i] += a[i]  #a is list of arrays (theano is weird)
             total_nodes += n_nodes
             x_roots = []
             y_roots = []
@@ -104,12 +113,19 @@ class PerformanceMeasurer:
             n_root_nodes = len(x_roots)
             val_root_losses += validate_model(x_roots, y_roots, z_roots) * n_root_nodes
             val_root_zeros += rnn_enron.get_zeros(y_roots) * n_root_nodes
+            a = confusion_matrix(x_roots, y_roots, z_roots)
+            for i in range(len(val_root_confusion_matrix)):
+                val_root_confusion_matrix[i] += a[i]  #a is list of arrays (theano is weird)
             total_root_nodes += n_root_nodes
         self.total_acc = 1 - validation_losses/total_nodes
         self.root_acc = 1  - val_root_losses/total_root_nodes
-        self.total_zeros = 1 - val_total_zeros/total_nodes
+        self.total_zeros = 1 - validation_zeros/total_nodes
+        self.total_nodes = total_nodes
         self.root_zeros = 1 - val_root_zeros/total_root_nodes
         self.cost = validation_cost/total_nodes
+        self.total_root_nodes = total_root_nodes
+        self.total_confusion_matrix = validation_confusion_matrix
+        self.root_confusion_matrix = val_root_confusion_matrix        
         #Timers.totaltimer.end()
         
     def report(self, msg = ""):
@@ -163,7 +179,15 @@ class Trainer:
         )
         return cost_model
 
+    def get_confusion_matrix(self, rnnWrapper):
+        #this is a function in order to be accessable from tests
+        return theano.function(
+            inputs=[rnnWrapper.x,rnnWrapper.y,rnnWrapper.z],
+            outputs=rnnWrapper.rnn.regressionLayer.confusion_matrix(rnnWrapper.y)
+        )
+
     def get_validation_model(self, rnnWrapper):
+        #this is a function in order to be accessable from tests
         return theano.function(
             inputs=[rnnWrapper.x,rnnWrapper.y,rnnWrapper.z],
             outputs=rnnWrapper.rnn.errors(rnnWrapper.y)
@@ -183,7 +207,7 @@ class Trainer:
         cost = self.get_cost(rnnWrapper)
             
         validate_model = self.get_validation_model(rnnWrapper)
-        
+        confusion_matrix = self.get_confusion_matrix(rnnWrapper)
 #        gparams = [(param, T.grad(cost, param)) for param in reg.params]
 #        updates = [
 #            (param, param-self.learning_rate * gparam)
@@ -263,10 +287,18 @@ class Trainer:
                 if it % validation_frequency == 0:
                     performanceMeasurer = PerformanceMeasurer()
                     performanceMeasurer.epoch = epoch
-                    performanceMeasurer.measure(state, self,  reg, validate_model, cost_model)
+                    performanceMeasurer.measure(state = state, trainer = self,  rnn = reg, validate_model = validate_model, cost_model = cost_model, confusion_matrix = confusion_matrix)
                     if DEBUG_PRINT:
                         performanceMeasurer.report(msg = "{} Epoch {}. On validation set: Best ({}, {:.6f}, {:.4f}%). Current: ".format( 
                                                    datetime.now().strftime('%d%m%y %H:%M'), epoch, performanceMeasurerBest.epoch, performanceMeasurerBest.cost*1.0, performanceMeasurerBest.root_acc*100.))
+                        cm = performanceMeasurer.total_confusion_matrix
+                        if performanceMeasurer.total_nodes != cm[0]+cm[1]+cm[2]+cm[3]:
+                            raise Exception("Expected total_node_count to be equal to sum", performanceMeasurer.total_nodes, cm[0]+cm[1]+cm[2]+cm[3])
+                        print("Confusion Matrix total (tp,fp,tn,fn)", cm[0],cm[1],cm[2],cm[3])
+                        cm = performanceMeasurer.root_confusion_matrix
+                        if performanceMeasurer.total_root_nodes != cm[0]+cm[1]+cm[2]+cm[3]:
+                            raise Exception("Expected total_root_node_count to be equal to sum", performanceMeasurer.total_root_nodes, cm[0]+cm[1]+cm[2]+cm[3])
+                        print("Confusion Matrix root (tp,fp,tn,fn)", cm[0],cm[1],cm[2],cm[3])
                         #performanceMeasurerTrain = self.evaluate_model(train_trees, rnnWrapper, validate_model, cost_model)
                         #performanceMeasurerTrain.report(msg = "{} Epoch {}. On train set: Current:".format( 
                         #                           datetime.now().strftime('%d%m%y %H:%M'), epoch))                          
