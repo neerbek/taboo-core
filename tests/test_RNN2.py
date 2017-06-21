@@ -13,7 +13,7 @@ from numpy.random import RandomState
 import theano
 import theano.tensor as T
 
-import deeplearning_tutorial.rnn4 as nn_model
+import rnn_model.rnn as nn_model
 
 import tests.RunTimer
 

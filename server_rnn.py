@@ -17,7 +17,7 @@ import math
 
 import similarity.load_trees as load_trees
 
-import deeplearning_tutorial.rnn4 as nn_model
+import rnn_model.rnn as nn_model
 import rnn_enron
 import ai_util
 

@@ -16,7 +16,6 @@ reload(os)  #to get rid of warning from reload being unused :)
 def set_working_dir():
     import os
     print(os.getcwd())
-    os.chdir('/home/neerbek/jan/phd/DLP/paraphrase/python/deeplearning_tutorial')
     os.chdir('/Users/neerbek/jan/phd/DLP/paraphrase/python')
     os.chdir('/Users/neerbek/jan/phd/DLP/paraphrase/python/embeddings')
     os.chdir('/home/neerbek/jan/phd/DLP/python')

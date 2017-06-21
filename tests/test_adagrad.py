@@ -13,7 +13,7 @@ import numpy
 import theano
 import theano.tensor as T
 
-import deeplearning_tutorial.rnn4 as nn_model
+import rnn_model.rnn as nn_model
 import server_rnn
 
 import tests.RunTimer
