@@ -340,10 +340,10 @@ class RNNWrapper:
             )
 
 
-    def load(self, filename='model.save'):
+    def load(self, filename='models/model.save'):
         return nn_model.load(rnn=self.rnn, filename=filename)
 
-    def save(self, filename='model.save', epoch=0, acc=0):
+    def save(self, filename='models/model.save', epoch=0, acc=0):
         nn_model.save(rnn=self.rnn, filename=filename, epoch=epoch, acc=acc)
 
 class IteratorGuard:
@@ -418,7 +418,7 @@ if __name__ == "__main__":
     import server_rnn_helper
     state = State()
     rnn = RNNWrapper()
-    rnn.load('model.save')
+    rnn.load('models/model.save')
     
     text = """Please have a look at enclosed worksheets.
     As we discussed we have proposed letters of credit for the approved form of collateral pending further discussion with Treasury regarding funding impact. This may impact the final decision.

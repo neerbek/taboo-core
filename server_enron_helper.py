@@ -31,7 +31,7 @@ class ServerState:
         self.rnn = server_rnn.RNNWrapper()
         #server_rnn.nn_model.load_v1(self.rnn.rnn, 'model_rootacc0.7469.v1.save')
         #self.rnn.save('model_rootacc0.7469.v2.save')
-        self.rnn.load('model_rootacc0.7469.v2.save')
+        self.rnn.load('models/model_rootacc0.7469.v2.save')
     def initialize(self, max_count=-1):
         if self.rnn==None:
             trainer = server_rnn.Trainer()
