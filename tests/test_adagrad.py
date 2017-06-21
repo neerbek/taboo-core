@@ -14,30 +14,12 @@ import theano
 import theano.tensor as T
 
 import rnn_model.rnn as nn_model
+import rnn_model.learn as learn
+
 import server_rnn
 
 import tests.RunTimer
 
-#https://stackoverflow.com/questions/29365370/how-to-code-adagrad-in-python-theano
-#https://github.com/Lasagne/Lasagne/blob/master/lasagne/updates.py#L385
-epsilon = 1e-8
-def adagrad(params, grads, lr):
-    updates = {}
-    for param, grad in zip(params, grads):
-        value = param.get_value(borrow=True)
-        accu = theano.shared(numpy.zeros(value.shape, dtype=value.dtype),
-                             broadcastable=param.broadcastable)
-        accu_new = accu + grad ** 2  #this is a function update to be used several times
-        updates[accu] = accu_new     #one per param
-        updates[param] = param - (lr * grad /
-                                  T.sqrt(accu_new + epsilon))
-    return updates
-
-def gd(params, grads, lr):
-    updates = {}
-    for param, grad in zip(params, grads):
-        updates[param] = param - (lr * grad)
-    return updates
 
 class RNNWrapper:
     def __init__(self):
@@ -103,7 +85,7 @@ class TreeTest(unittest.TestCase):
         rnnWrapper = RNNWrapper()
         rnnWrapper.create_rnn()
 
-        updates = gd(params = rnnWrapper.params, grads = rnnWrapper.grads, lr = lr)
+        updates = learn.gd(params = rnnWrapper.params, grads = rnnWrapper.grads, lr = lr)
         rnnWrapper.add_updates(updates)
         rnnWrapper.create_data()
         x_val = rnnWrapper.x_val
@@ -112,9 +94,9 @@ class TreeTest(unittest.TestCase):
         
         for i in range(n_loops):
             if i % 1000 == 0:
-                print("error ratio", rnnWrapper.validate_model(x_val, y_val, z_val))
+                print("gd error ratio", rnnWrapper.validate_model(x_val, y_val, z_val))
             rnnWrapper.do_train(x_val, y_val, z_val) 
-        print("error ratio", rnnWrapper.validate_model(x_val, y_val, z_val))
+        print("gd error ratio", rnnWrapper.validate_model(x_val, y_val, z_val))
 
     def test_adaGrad(self):
         lr = 0.025
@@ -122,7 +104,7 @@ class TreeTest(unittest.TestCase):
         rnnWrapper = RNNWrapper()
         rnnWrapper.create_rnn()
 
-        updates = adagrad(params = rnnWrapper.params, grads = rnnWrapper.grads, lr = lr)
+        updates = learn.adagrad(params = rnnWrapper.params, grads = rnnWrapper.grads, lr = lr)
         rnnWrapper.add_updates(updates)
         rnnWrapper.create_data()
         x_val = rnnWrapper.x_val
@@ -131,9 +113,29 @@ class TreeTest(unittest.TestCase):
         
         for i in range(n_loops):
             if i % 400 == 0:
-                print("error ratio", rnnWrapper.validate_model(x_val, y_val, z_val))
+                print("adagrad error ratio", rnnWrapper.validate_model(x_val, y_val, z_val))
             rnnWrapper.do_train(x_val, y_val, z_val) 
-        print("error ratio", rnnWrapper.validate_model(x_val, y_val, z_val))
+        print("adagrad error ratio", rnnWrapper.validate_model(x_val, y_val, z_val))
+
+    def test_gd_momentum(self):
+        lr = 0.75
+        mc = 0.0009
+        n_loops = 3000
+        rnnWrapper = RNNWrapper()
+        rnnWrapper.create_rnn()
+
+        updates = learn.gd_momentum(params = rnnWrapper.params, grads = rnnWrapper.grads, lr = lr, mc = mc)
+        rnnWrapper.add_updates(updates)
+        rnnWrapper.create_data()
+        x_val = rnnWrapper.x_val
+        y_val = rnnWrapper.y_val
+        z_val = rnnWrapper.z_val
+        
+        for i in range(n_loops):
+            if i % 600 == 0:
+                print("gd_m error ratio", rnnWrapper.validate_model(x_val, y_val, z_val))
+            rnnWrapper.do_train(x_val, y_val, z_val) 
+        print("gd_m error ratio", rnnWrapper.validate_model(x_val, y_val, z_val))
 
 
 if __name__ == "__main__":
