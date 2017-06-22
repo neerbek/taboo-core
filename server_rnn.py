@@ -18,6 +18,7 @@ import math
 import similarity.load_trees as load_trees
 
 import rnn_model.rnn as nn_model
+import rnn_model.learn
 import rnn_enron
 import ai_util
 
@@ -146,6 +147,8 @@ class Trainer:
             self.valid_batch_size = trainer.valid_batch_size
             self.n_valid_batches = trainer.n_valid_batches
             self.n_test_batches = trainer.n_test_batches
+            self.cm = trainer.cm
+            self.learn = trainer.learn
         else:
             self.learning_rate = 0.01
             self.L1_reg = 0.0
@@ -157,6 +160,8 @@ class Trainer:
             self.valid_batch_size = 0
             self.n_valid_batches = 0
             self.n_test_batches = 0
+            self.cm = 0
+            self.learn = "gd"
 
     def update_batch_size(self, state):
         # compute number of minibatches for training, validation and testing
@@ -191,6 +196,16 @@ class Trainer:
             outputs=rnnWrapper.rnn.errors(rnnWrapper.y)
         )
 
+    def get_updates(self, params, grads):
+        if self.learn == 'gd':
+            return rnn_model.learn.gd(params=params, grads=grads, lr=self.learning_rate)
+        elif self.learn == 'gdm':
+            return rnn_model.learn.gd_momentum(params=params, grads=grads, lr=self.learning_rate, mc=self.mc)
+        elif self.learn == 'adagrad':
+            return rnn_model.learn.adagrad(params=params, grads=grads, lr=self.learning_rate)
+        else:
+            raise Exception("unknown learner: " + self.learn)
+
     def evaluate_model(self, trees, rnnWrapper, validation_model, cost_model):
         performanceMeasurer = PerformanceMeasurer()
         performanceMeasurer.measure_trees(input_trees=trees, batch_size=self.valid_batch_size,
@@ -207,35 +222,19 @@ class Trainer:
 
         validate_model = self.get_validation_model(rnnWrapper)
         confusion_matrix = self.get_confusion_matrix(rnnWrapper)
-#        gparams = [(param, T.grad(cost, param)) for param in reg.params]
-#        updates = [
-#            (param, param-self.learning_rate * gparam)
-#            for (param, gparam) in gparams
-#        ]
-#
-        # DEBUG
-        #
-        # lr = self.learning_rate
-        # p = T.matrix('p', dtype=theano.config.floatX)
-        # update_param = p-lr*T.grad(cost=cost, wrt=p)
 
-        params = [reg.reluLayer.W, reg.reluLayer.b, reg.regressionLayer.W, reg.regressionLayer.b]
-#        gparams = [(param,  T.grad(cost=cost, wrt=param, disconnected_inputs='raise', null_gradients='raise')) for param in params]
-#        updates = [
-#            (param, param-self.learning_rate*gparam)
-#            for (param, gparam) in gparams
-#        ]
-        u_func = theano.function(
+        params = reg.params
+        grads = [T.grad(cost=cost, wrt=param) for param in params]
+        updates = self.get_updates(params=params, grads=grads)
+
+        update_keys = [k for k in updates.keys()]
+
+        train = theano.function(
             inputs=[rnnWrapper.x, rnnWrapper.y, rnnWrapper.z],
-            outputs=[self.learning_rate * T.grad(cost=cost, wrt=param) for param in params]
-        )
+            outputs=[updates[k] for k in update_keys])
 
         cost_model = self.get_cost_model(rnnWrapper, cost)
 
-#        train_model = theano.function(
-#            inputs=[rnnWrapper.x,rnnWrapper.y,rnnWrapper.z],
-#            updates=updates
-#        )
         performanceMeasurerBest = PerformanceMeasurer()
         performanceMeasurerBest.epoch = -1
         performanceMeasurerBest.running_epoch = -1
@@ -260,12 +259,11 @@ class Trainer:
                 z_val = rng.binomial(n=1, size=(x_val.shape[0], rnn_enron.Evaluator.HIDDEN_SIZE), p=self.retain_probability)
                 z_val = z_val.astype(dtype=theano.config.floatX)
                 # Timers.calltheanotimer.begin()
-                u = u_func(x_val, y_val, z_val)
+                values = train(x_val, y_val, z_val)
+                for index, param in enumerate(update_keys):
+                    param.set_value(values[index])
                 # Timers.calltheanotimer.end()
                 # reg_updates = []
-                for i in range(len(params)):
-                    param = params[i]
-                    param.set_value(param.get_value() - u[i])
 #                train_model(x_val, y_val, z_val)
 #                if not numpy.allclose(reg.reluLayer.W.get_value(), reg_updates[0], atol=0.0000001):
 #                    raise Exception("Expected these to be equal 1")
