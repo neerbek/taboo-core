@@ -51,7 +51,7 @@ class Regression(object):
         err = y * log_prob
         cost_weight = T.ones_like(y.shape) + y * self.cost_weight
         err_weighted = err * cost_weight
-        return -T.sum(err_weighted)
+        return -T.mean(err_weighted)
 
     def cost_cross_debug(self, X, y):
         p_y_given_x = self.softmax_debug(numpy.dot(X, self.W.get_value()) + self.b.get_value())
@@ -59,7 +59,7 @@ class Regression(object):
         err = numpy.multiply(y, log_prob)
         cost_weight = numpy.ones(shape=y.shape) + numpy.multiply(y, self.cost_weight)
         err_weighted = numpy.multiply(err, cost_weight)
-        return -numpy.sum(err_weighted)
+        return -numpy.mean(err_weighted)
 
     def cost_RMS(self, y):
         err = (self.p_y_given_x - y)

@@ -219,8 +219,10 @@ class Trainer:
         batch_size = self.batch_size
         reg = rnnWrapper.rnn
         cost = self.get_cost(rnnWrapper)
+        vali = rnnWrapper.rnn.errors(rnnWrapper.y)
 
         validate_model = self.get_validation_model(rnnWrapper)
+        cost_model = self.get_cost_model(rnnWrapper, cost)
         confusion_matrix = self.get_confusion_matrix(rnnWrapper)
 
         params = reg.params
@@ -229,11 +231,10 @@ class Trainer:
 
         update_keys = [k for k in updates.keys()]
 
+        outputs = [vali, cost] + [updates[k] for k in update_keys]
         train = theano.function(
             inputs=[rnnWrapper.x, rnnWrapper.y, rnnWrapper.z],
-            outputs=[updates[k] for k in update_keys])
-
-        cost_model = self.get_cost_model(rnnWrapper, cost)
+            outputs=outputs)
 
         performanceMeasurerBest = PerformanceMeasurer()
         performanceMeasurerBest.epoch = -1
@@ -247,6 +248,10 @@ class Trainer:
             # Timers.randomtimer.end()
             train_trees = [state.train_trees[i] for i in perm]
             epoch += 1
+            train_cost = 0
+            train_acc = 0
+            # train_zeros = 0
+            train_count = 0
             for minibatch_index in range(self.n_train_batches):
                 trees = train_trees[minibatch_index * batch_size: (minibatch_index + 1) * batch_size]
                 if balance_trees:
@@ -260,8 +265,12 @@ class Trainer:
                 z_val = z_val.astype(dtype=theano.config.floatX)
                 # Timers.calltheanotimer.begin()
                 values = train(x_val, y_val, z_val)
+                train_acc += (1 - values[0]) * x_val.shape[0]
+                train_cost += values[1] * x_val.shape[0]
+                # train_zeros += minibatch_zeros * x_val.shape[0]
+                train_count += x_val.shape[0]
                 for index, param in enumerate(update_keys):
-                    param.set_value(values[index])
+                    param.set_value(values[index + 2])
                 # Timers.calltheanotimer.end()
                 # reg_updates = []
 #                train_model(x_val, y_val, z_val)
@@ -277,9 +286,12 @@ class Trainer:
                 it += 1
                 if it % train_report_frequency == 0:
                     if DEBUG_PRINT:
-                        minibatch_acc = 1 - validate_model(x_val, y_val, z_val)
                         minibatch_zeros = 1 - rnn_enron.get_zeros(y_val)
+                        minibatch_acc = 1 - values[0]  # validate_model(x_val, y_val, z_val)
                         print("epoch {}. time is {}, minibatch {}/{}, On train set: batch acc {:.4f} %  ({:.4f} %)".format(epoch, datetime.now().strftime('%d-%m %H:%M'), minibatch_index + 1, self.n_train_batches, minibatch_acc * 100.0, minibatch_zeros * 100.0))
+                        print("{} Epoch {}. On train set : Node count {}, avg cost {:.6f}, avg acc {:.4f}%".format(
+                            datetime.now().strftime('%d%m%y %H:%M'), epoch, train_count, train_cost / train_count, train_acc / train_count * 100.))
+
                 if it % validation_frequency == 0:
                     performanceMeasurer = PerformanceMeasurer()
                     performanceMeasurer.epoch = epoch
@@ -296,8 +308,8 @@ class Trainer:
                             raise Exception("Expected total_root_node_count to be equal to sum", performanceMeasurer.total_root_nodes, cm[0] + cm[1] + cm[2] + cm[3])
                         print("Confusion Matrix root (tp,fp,tn,fn)", cm[0], cm[1], cm[2], cm[3])
                         # performanceMeasurerTrain = self.evaluate_model(train_trees, rnnWrapper, validate_model, cost_model)
-                        # performanceMeasurerTrain.report(msg = "{} Epoch {}. On train set: Current:".format(
-                        #                           datetime.now().strftime('%d%m%y %H:%M'), epoch))
+                        # performanceMeasurerTrain.report(msg="{} Epoch {}. On train set: Current:".format(
+                        #     datetime.now().strftime('%d%m%y %H:%M'), epoch))
                     if performanceMeasurerBest.root_acc < performanceMeasurer.root_acc:
                         filename = "{}_best.txt".format(file_prefix)
                         self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
