@@ -8,9 +8,10 @@ Created on Thu Dec 29 13:03:20 2016
 import numpy
 
 import theano
-#import theano.printing as printing
-#import theano.function as function
+# import theano.printing as printing
+# import theano.function as function
 import theano.tensor as T
+from six.moves import cPickle
 
 class Regression(object):
     """ Inspired by logistic_sgd.py: http://deeplearning.net/tutorial/code/logistic_sgd.py
@@ -25,7 +26,7 @@ class Regression(object):
             ),
             dtype=theano.config.floatX
         )
-        #self.W = theano.shared(value=W_values, name='W_reg', borrow=True)
+        # self.W = theano.shared(value=W_values, name='W_reg', borrow=True)
         self.W = theano.shared(value=W_values, name='W_reg', borrow=False)
         # initialize the biases b as a vector of n_out 0s
         b_values = numpy.asarray(
@@ -36,7 +37,7 @@ class Regression(object):
             ),
             dtype=theano.config.floatX
         )
-        #self.b = theano.shared(value=b_values, name='b_reg', borrow=True)
+        # self.b = theano.shared(value=b_values, name='b_reg', borrow=True)
         self.b = theano.shared(value=b_values, name='b_reg', borrow=False)
         self.p_y_given_x = T.nnet.softmax(T.dot(X, self.W) + self.b)
         self.cost_weight = cost_weight
@@ -45,9 +46,8 @@ class Regression(object):
         self.X = X
         self.cost = self.cost_RMS
 
-        
     def cost_cross(self, y):
-        log_prob = T.switch(T.eq(self.p_y_given_x, 0), 0, T.log(self.p_y_given_x)) #log if p>0, 0 ow.
+        log_prob = T.switch(T.eq(self.p_y_given_x, 0), 0, T.log(self.p_y_given_x))  # log if p>0, 0 ow.
         err = y * log_prob
         cost_weight = T.ones_like(y.shape) + y * self.cost_weight
         err_weighted = err * cost_weight
@@ -55,7 +55,7 @@ class Regression(object):
 
     def cost_cross_debug(self, X, y):
         p_y_given_x = self.softmax_debug(numpy.dot(X, self.W.get_value()) + self.b.get_value())
-        log_prob = numpy.where(p_y_given_x>0, numpy.log(p_y_given_x), 0)
+        log_prob = numpy.where(p_y_given_x > 0, numpy.log(p_y_given_x), 0)
         err = numpy.multiply(y, log_prob)
         cost_weight = numpy.ones(shape=y.shape) + numpy.multiply(y, self.cost_weight)
         err_weighted = numpy.multiply(err, cost_weight)
@@ -65,7 +65,7 @@ class Regression(object):
         err = (self.p_y_given_x - y)
         cost_weight = T.ones_like(y.shape) + y * self.cost_weight
         err_weighted = err * cost_weight
-        return T.mean(0.5 *((err_weighted) ** 2))
+        return T.mean(0.5 * ((err_weighted) ** 2))
 
     def softmax_debug(self, w):
         maxes = numpy.amax(w, axis=1)
@@ -77,14 +77,14 @@ class Regression(object):
     def cost_RMS_debug(self, X, y):
         p_y_given_x = self.softmax_debug(numpy.dot(X, self.W.get_value()) + self.b.get_value())
         err = p_y_given_x - y
-        #cost_weight = numpy.ones(shape=y.shape) + numpy.multiply(y, self.cost_weight)
-        cost_weight = numpy.ones(shape=y.shape) + y* self.cost_weight
-        #print("err shape", err.shape)
-        #err_weighted = numpy.multiply(err, cost_weight)
+        # cost_weight = numpy.ones(shape=y.shape) + numpy.multiply(y, self.cost_weight)
+        cost_weight = numpy.ones(shape=y.shape) + y * self.cost_weight
+        # print("err shape", err.shape)
+        # err_weighted = numpy.multiply(err, cost_weight)
         err_weighted = err * cost_weight
-        #print("err_weighted shape1", err_weighted.shape)
-        return numpy.mean(0.5*((err_weighted) **2))
-        
+        # print("err_weighted shape1", err_weighted.shape)
+        return numpy.mean(0.5 * ((err_weighted) ** 2))
+
     def errors(self, y):
         """fraction of errors in minibatch
         """
@@ -108,18 +108,18 @@ class Regression(object):
         """
         y_simple = T.argmax(y, axis=1)
         all_t = T.eq(4, y_simple)
-        all_f = T.eq(0, y_simple) #since we _know_/require that labels are either 0 or 4
+        all_f = T.eq(0, y_simple)  # since we _know_/require that labels are either 0 or 4
         pred_t = T.eq(4, self.y_pred)
-        pred_f = T.neq(4, self.y_pred)  #since we can predict more than 0/4
-        tp = T.sum(T.eq(1, all_t*pred_t))  #all_t*pred_t=1 if tp
-        fp = T.sum(T.eq(1, all_f*pred_t))
-        tn = T.sum(T.eq(1, all_f*pred_f))
-        fn = T.sum(T.eq(1, all_t*pred_f))
+        pred_f = T.neq(4, self.y_pred)  # since we can predict more than 0/4
+        tp = T.sum(T.eq(1, all_t * pred_t))  # all_t*pred_t=1 if tp
+        fp = T.sum(T.eq(1, all_f * pred_t))
+        tn = T.sum(T.eq(1, all_f * pred_f))
+        fn = T.sum(T.eq(1, all_t * pred_f))
         return (tp, fp, tn, fn)
 
-#for dropout:
-#https://blog.wtf.sg/2014/07/23/dropout-using-theano/
-#http://stackoverflow.com/questions/29540592/why-does-my-dropout-function-in-theano-slow-down-convolution-greatly    
+# for dropout:
+# https://blog.wtf.sg/2014/07/23/dropout-using-theano/
+# http://stackoverflow.com/questions/29540592/why-does-my-dropout-function-in-theano-slow-down-convolution-greatly
 class ReluLayer(object):
     def __init__(self, rng, X, Z, n_in, n_out):
         self.X = X
@@ -146,8 +146,8 @@ class ReluLayer(object):
         self.b = theano.shared(value=b_values, name='b_relu', borrow=False)
         lin_output = T.dot(X, self.W) + self.b
         self.output_no_dropout = T.nnet.relu(lin_output)
-        #dropout
-        self.output = self.output_no_dropout*Z  #element-wise mult
+        # dropout
+        self.output = self.output_no_dropout * Z  # element-wise mult
         self.rep_generator = theano.function(
             inputs=[self.X],
             outputs=[self.output_no_dropout]
@@ -179,19 +179,15 @@ class RNN(object):
         # L1 norm ; one regularization option is to enforce L1 norm to
         # be small
         self.L1 = (
-            abs(self.reluLayer.W).sum()
-            + abs(self.regressionLayer.W).sum()
+            abs(self.reluLayer.W).sum() + abs(self.regressionLayer.W).sum()
         )
         # square of L2 norm ; one regularization option is to enforce
         # square of L2 norm to be small
-        self.L2_sqr = (
-            (self.reluLayer.W ** 2).sum()
-            + (self.regressionLayer.W ** 2).sum()
-        )
+        self.L2_sqr = (self.reluLayer.W ** 2).sum() + (self.regressionLayer.W ** 2).sum()
 
-        #A NxM matrix of probabilities
+        # A NxM matrix of probabilities
         self.p_y_given_x = self.regressionLayer.p_y_given_x
-        #A list of N indexes (e.g. predictions of values of y)
+        # A list of N indexes (e.g. predictions of values of y)
         self.y_pred = self.regressionLayer.y_pred
         # cost of RNN is given by the cost of the output of the model, computed in the
         # regression layer
@@ -204,18 +200,17 @@ class RNN(object):
         self.params = []
         self.params.extend(self.reluLayer.params)
         self.params.extend(self.regressionLayer.params)
-        
+
         self.X = X
-        
+
     def get_representation(self, left_in, right_in):
-        return self.reluLayer.output.eval({ self.X : numpy.concatenate([left_in, right_in]).reshape(1, 2*left_in.shape[1])})
-        
-        
-from six.moves import cPickle
-VERSION_1="RNN_SERIALIZED_VERSION_1"
-VERSION="RNN_SERIALIZED_VERSION_2"
+        return self.reluLayer.output.eval({self.X: numpy.concatenate([left_in, right_in]).reshape(1, 2 * left_in.shape[1])})
+
+
+VERSION_1 = "RNN_SERIALIZED_VERSION_1"
+VERSION = "RNN_SERIALIZED_VERSION_2"
 def get_object_list(reg, epoch, acc):
-    obj_list = [ VERSION, "{}".format(epoch), "{:.4f}".format(acc), reg.reluLayer.W, reg.reluLayer.b, reg.regressionLayer.W, reg.regressionLayer.b]
+    obj_list = [VERSION, "{}".format(epoch), "{:.4f}".format(acc), reg.reluLayer.W, reg.reluLayer.b, reg.regressionLayer.W, reg.regressionLayer.b]
     return obj_list
 
 def save(rnn, filename='model.save', epoch=0, acc=0):
@@ -223,8 +218,8 @@ def save(rnn, filename='model.save', epoch=0, acc=0):
     f = open(filename, 'wb')
     for obj in obj_list[:3]:
         cPickle.dump(obj, f, protocol=cPickle.HIGHEST_PROTOCOL)
-        
-    for obj in obj_list[3:]:  #theano tensor variables
+
+    for obj in obj_list[3:]:  # theano tensor variables
         cPickle.dump(obj.get_value(), f, protocol=cPickle.HIGHEST_PROTOCOL)
     f.close()
 
@@ -236,16 +231,16 @@ def load(rnn, filename='model.save'):
     for i in range(len(obj_list)):
         v = cPickle.load(f)
         obj_list[i] = v
-    if obj_list[0]!=VERSION:
+    if obj_list[0] != VERSION:
         raise Exception("Version mismatch in rnn4.load")
     epoch = int(obj_list[1])
-    acc =  float(obj_list[2])
-    #need to cast with astype if it was saved with different bit width (32 vs 64)
+    acc = float(obj_list[2])
+    # need to cast with astype if it was saved with different bit width (32 vs 64)
     rnn.reluLayer.W.set_value(numpy.array(obj_list[3]).astype(dtype=theano.config.floatX))
     rnn.reluLayer.b.set_value(numpy.array(obj_list[4]).astype(dtype=theano.config.floatX))
     rnn.regressionLayer.W.set_value(numpy.array(obj_list[5]).astype(dtype=theano.config.floatX))
     rnn.regressionLayer.b.set_value(numpy.array(obj_list[6]).astype(dtype=theano.config.floatX))
-    #print("W[5,10] ", reg.reluLayer.W.get_value()[5,10])
+    # print("W[5,10] ", reg.reluLayer.W.get_value()[5,10])
     f.close()
     return (epoch, acc)
 
@@ -257,15 +252,15 @@ def load_v1(rnn, filename='model.save'):
     for i in range(len(obj_list)):
         v = cPickle.load(f)
         obj_list[i] = v
-    if obj_list[0]!=VERSION_1:
+    if obj_list[0] != VERSION_1:
         raise Exception("Version mismatch in rnn4.load")
     epoch = obj_list[1]
-    acc =  obj_list[2]
+    acc = obj_list[2]
     rnn.reluLayer.W.set_value(obj_list[3])
     rnn.reluLayer.b.set_value(obj_list[4])
     rnn.regressionLayer.W.set_value(obj_list[5])
     rnn.regressionLayer.b.set_value(obj_list[6])
-    #print("W[5,10] ", reg.reluLayer.W.get_value()[5,10])
+    # print("W[5,10] ", reg.reluLayer.W.get_value()[5,10])
     f.close()
     return (epoch, acc)
 
@@ -282,7 +277,7 @@ def load_v0(reg, name='model.save'):
     reg.reluLayer.b.set_value(obj_list[1])
     reg.regressionLayer.W.set_value(obj_list[2])
     reg.regressionLayer.b.set_value(obj_list[3])
-    #print("W[5,10] ", reg.reluLayer.W.get_value()[5,10])
+    # print("W[5,10] ", reg.reluLayer.W.get_value()[5,10])
     f.close()
     return (epoch, acc)
 
