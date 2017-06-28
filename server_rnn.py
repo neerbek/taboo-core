@@ -231,7 +231,17 @@ class Trainer:
 
         update_keys = [k for k in updates.keys()]
 
+        # mem leak:
+        # reported: https://github.com/Theano/Theano/issues/5810
+        # fixed: https://github.com/Theano/Theano/pull/5832
+
+        for k in update_keys:
+            print("key:" + str(k.name))
+        # for k in update_keys2:
+        #     print("key2:" + str(k.name))
+
         outputs = [vali, cost] + [updates[k] for k in update_keys]
+
         train = theano.function(
             inputs=[rnnWrapper.x, rnnWrapper.y, rnnWrapper.z],
             outputs=outputs)
@@ -250,7 +260,6 @@ class Trainer:
             epoch += 1
             train_cost = 0
             train_acc = 0
-            # train_zeros = 0
             train_count = 0
             for minibatch_index in range(self.n_train_batches):
                 trees = train_trees[minibatch_index * batch_size: (minibatch_index + 1) * batch_size]
@@ -267,22 +276,10 @@ class Trainer:
                 values = train(x_val, y_val, z_val)
                 train_acc += (1 - values[0]) * x_val.shape[0]
                 train_cost += values[1] * x_val.shape[0]
-                # train_zeros += minibatch_zeros * x_val.shape[0]
                 train_count += x_val.shape[0]
                 for index, param in enumerate(update_keys):
                     param.set_value(values[index + 2])
                 # Timers.calltheanotimer.end()
-                # reg_updates = []
-#                train_model(x_val, y_val, z_val)
-#                if not numpy.allclose(reg.reluLayer.W.get_value(), reg_updates[0], atol=0.0000001):
-#                    raise Exception("Expected these to be equal 1")
-#                if not numpy.allclose(reg.reluLayer.b.get_value(), reg_updates[1], atol=0.0000001):
-#                    raise Exception("Expected these to be equal 2")
-#                if not numpy.allclose(reg.regressionLayer.W.get_value(), reg_updates[2], atol=0.0000001):
-#                    raise Exception("Expected these to be equal 3")
-#                if not numpy.allclose(reg.regressionLayer.b.get_value(), reg_updates[3], atol=0.0000001):
-#                    raise Exception("Expected these to be equal 4")
-
                 it += 1
                 if it % train_report_frequency == 0:
                     if DEBUG_PRINT:
