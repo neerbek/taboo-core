@@ -5,56 +5,56 @@ Created on Wed Sep 28 10:27:38 2016
 @author: neerbek
 """
 
-import os
 import io
 from collections import defaultdict
-
-if __name__ == "__main__":
-    #os.chdir('/Users/neerbek/jan/phd/DLP/paraphrase/python')
-    os.chdir('/home/neerbek/jan/phd/DLP/paraphrase/python')
 
 import similarity.load_trees as load_trees
 from server_rnn_helper import IndexSentence
 
-    
-#t = trees[3]
-#print(load_trees.output(t))
-#print(t.syntax)
-#print(load_trees.output_sentence(t))
+# t = trees[3]
+# print(load_trees.output(t))
+# print(t.syntax)
+# print(load_trees.output_sentence(t))
+
 
 def normalize_word(w):
-    #w = w.lower()
-    #    if w=="as":
-    #        return w    
-    #    if w.endswith("ies"):
-    #        w = w[:-3] + "y"
-    #    elif w.endswith("s"):
-    #        w = w[:-1]
-    #    elif w.endswith("ed"):
-    #        w = w[:-2]
-    #    #    elif w.endswith("paid"):
-    #    #        w = w[:-2] + "y"
+    # w = w.lower()
+    #     if w=="as":
+    #         return w
+    #     if w.endswith("ies"):
+    #         w = w[:-3] + "y"
+    #     elif w.endswith("s"):
+    #         w = w[:-1]
+    #     elif w.endswith("ed"):
+    #         w = w[:-2]
+    #     #    elif w.endswith("paid"):
+    #     #        w = w[:-2] + "y"
     return w
+
 
 def tree_contains_word(node, w):
     """ outputs true if w is in tree (normalized)"""
-    if (node==None):
+    if (node == None):
         return False
-    if (node.word != None) and normalize_word(node.word)==w:
+    if (node.word != None) and normalize_word(node.word) == w:
         return True
-    return tree_contains_word(node.left, w) or tree_contains_word(node.right, w)
+    return tree_contains_word(node.left, w) or tree_contains_word(
+        node.right, w)
+
 
 def tree_contains_words(node, s):
     """ outputs true if any of s is in tree (normalized)"""
-    if (node==None):
+    if (node == None):
         return False
     if (node.word != None) and normalize_word(node.word) in s:
         return True
-    return tree_contains_words(node.left, s) or tree_contains_words(node.right, s)
-    
+    return tree_contains_words(node.left, s) or tree_contains_words(
+        node.right, s)
+
+
 def output_word_counts(node, word_counts):
     """ outputs the words in the node and it's children"""
-    if (node==None):
+    if (node == None):
         return
     output_word_counts(node.left, word_counts)
     if (node.word != None):
@@ -62,18 +62,20 @@ def output_word_counts(node, word_counts):
         word_counts.add(w)
     output_word_counts(node.right, word_counts)
 
-#def split_trees(trees):
-#    y = []
-#    n = []
-#    for t in trees:
-#        if (t.syntax=="0"):
-#            n.append(t)
-#        else:
-#            y.append(t)
-#    return (y,n)
-#        
-#(yes_trees, no_trees) = split_trees(trees)
-#len(yes_trees), len(no_trees) #Out[54]: (2985, 6015)
+
+# def split_trees(trees):
+#     y = []
+#     n = []
+#     for t in trees:
+#         if (t.syntax=="0"):
+#             n.append(t)
+#         else:
+#             y.append(t)
+#     return (y,n)
+#
+# (yes_trees, no_trees) = split_trees(trees)
+# len(yes_trees), len(no_trees) #Out[54]: (2985, 6015)
+
 
 def get_word_counts(trees):
     word_counts = {}
@@ -88,31 +90,32 @@ def get_word_counts(trees):
             word_counts[w][t.syntax] += 1
     return word_counts
 
+
 def get_weights(word_counts):
     yes_weights = defaultdict(list)
     no_weights = defaultdict(list)
     for w in word_counts.keys():
         yc = word_counts[w]["4"]
         nc = word_counts[w]["0"]
-        if (yc+nc) < 9:
+        if (yc + nc) < 9:
             continue
-        if (yc>nc):
+        if (yc > nc):
             yes_weights[yc / (yc + nc)].append(w)
         else:
             no_weights[nc / (yc + nc)].append(w)
     return (yes_weights, no_weights)
 
- 
 
 def get_indicators(confidence, weights):
     k = weights.keys()
     k = sorted(k, reverse=True)
     indicators = set()
     for key in k:
-        if key>confidence:
+        if key > confidence:
             for w in weights[key]:
                 indicators.add(w)
     return indicators
+
 
 def get_accuracy(ttrees, indicators):
     acc = 0
@@ -122,9 +125,9 @@ def get_accuracy(ttrees, indicators):
         res = "{}".format(count) + "\t"
         is_sensitive = tree_contains_words(t, indicators)
         count += 1
-        if count%500 == 0:
+        if count % 500 == 0:
             print("Compared: ", count)
-        if (t.syntax=="4") == is_sensitive:   # e.g. is label equal to prediction
+        if (t.syntax == "4") == is_sensitive:  # e.g. is label equal to prediction
             res += "1\t"
             acc += 1
         else:
@@ -136,10 +139,11 @@ def get_accuracy(ttrees, indicators):
             res += "0\t"
         res += load_trees.output_sentence(t)
         output.append(res)
-    return acc/count
+    return acc / count
+
 
 def get_confusion_numbers(ttrees, indicators):
-    tp = 0    #true == sensitive
+    tp = 0  # true == sensitive
     fp = 0
     tn = 0
     fn = 0
@@ -147,19 +151,20 @@ def get_confusion_numbers(ttrees, indicators):
     for t in ttrees:
         is_sensitive = tree_contains_words(t, indicators)
         count += 1
-        if count%500 == 0:
+        if count % 500 == 0:
             print("Compared: ", count)
-        if (t.syntax=="4"):
+        if (t.syntax == "4"):
             if is_sensitive:
-                tp +=1
+                tp += 1
             else:
                 fn += 1
         else:
             if is_sensitive:
-                fp +=1
+                fp += 1
             else:
                 tn += 1
-    return (tp,fp,tn,fn)
+    return (tp, fp, tn, fn)
+
 
 def get_predictions(text, indicators):
     e = text.split()
@@ -170,10 +175,10 @@ def get_predictions(text, indicators):
     res = []
     for w in e:
         is_sensitive = (w in indicators)
-        if is_sensitive!= sent.pred:            
+        if is_sensitive != sent.pred:
             sent.sentence = text[sent.beginIndex:index]
             sent.endIndex = index
-            res.append(sent)            
+            res.append(sent)
             sent = IndexSentence(index, w)
             sent.pred = is_sensitive
         i = cur.find(w) + len(w)
@@ -181,27 +186,26 @@ def get_predictions(text, indicators):
         index += i
     sent.sentence = text[sent.beginIndex:index]
     sent.endIndex = index
-    res.append(sent)            
+    res.append(sent)
     return res
-    
-            
 
 
-# conf | acc
-#  0.6 | 0.7119
-#  0.7 | 0.7441
-#  0.8 | 0.7378
-# 0.65 | 0.7406
-# 0.75 | 0.7434
-# 0.725 | 0.7420
-# 0.675 | 0.7476
-# 0.6875 | 0.7461
-# 0.676 | 0.7476
-# 0.674 | 0.7476
+#  conf | acc
+#   0.6 | 0.7119
+#   0.7 | 0.7441
+#   0.8 | 0.7378
+#  0.65 | 0.7406
+#  0.75 | 0.7434
+#  0.725 | 0.7420
+#  0.675 | 0.7476
+#  0.6875 | 0.7461
+#  0.676 | 0.7476
+#  0.674 | 0.7476
 def save_report(output, filename="report_inference.txt"):
-    with io.open(filename,'w',encoding='utf8') as f:
+    with io.open(filename, 'w', encoding='utf8') as f:
         for t in output:
             f.write(t + "\n")
+
 
 def list_best_non_sensitive_keywords(no_weights, word_counts):
     k = no_weights.keys()
@@ -216,16 +220,16 @@ def list_best_non_sensitive_keywords(no_weights, word_counts):
 if __name__ == "__main__":
     trees = load_trees.get_trees("trees/train.txt")
     word_counts = get_word_counts(trees)
-    print(len(word_counts.keys()))    #9260 (normalized) 10463 (lowercase), 13083
-    (yes_weights, no_weights)    = get_weights(word_counts)
+    print(len(word_counts.keys()))  # 9260 (normalized) 10463 (lowercase), 13083
+    (yes_weights, no_weights) = get_weights(word_counts)
     k = yes_weights.keys()
     k = sorted(k, reverse=True)
     len(yes_weights), len(no_weights)
     print("Best yes'es")
     for i in range(10):
         for w in yes_weights[k[i]]:
-            print(i, k[i], w, word_counts[w]["4"])    
-            
+            print(i, k[i], w, word_counts[w]["4"])
+
     indicators = get_indicators(0.7, yes_weights)
     len(indicators)
     "Transaction" in indicators
@@ -237,15 +241,16 @@ if __name__ == "__main__":
     count = 0
     for w in e:
         w = normalize_word(w)
-        if w=="":
+        if w == "":
             continue
-        weight = word_counts[w]["4"]/(word_counts[w]["0"] + word_counts[w]["4"])
+        weight = word_counts[w]["4"] / (
+            word_counts[w]["0"] + word_counts[w]["4"])
         total_weight += weight
         print(w, weight, w, word_counts[w]["4"])
         count += 1
-    
-    print("average: ", total_weight/count)
-    
+
+    print("average: ", total_weight / count)
+
     ttrees = load_trees.get_trees("trees/test.txt")
     indicators = get_indicators(0.675, yes_weights)
-    print("accuracy: " , get_accuracy(ttrees, indicators))
+    print("accuracy: ", get_accuracy(ttrees, indicators))
