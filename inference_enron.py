@@ -11,14 +11,8 @@ from collections import defaultdict
 import similarity.load_trees as load_trees
 from server_rnn_helper import IndexSentence
 
-# t = trees[3]
-# print(load_trees.output(t))
-# print(t.syntax)
-# print(load_trees.output_sentence(t))
-
-
 def normalize_word(w):
-    # w = w.lower()
+    w = w.lower()
     #     if w=="as":
     #         return w
     #     if w.endswith("ies"):
@@ -107,13 +101,13 @@ def get_weights(word_counts):
 
 
 def get_indicators(confidence, weights):
-    k = weights.keys()
-    k = sorted(k, reverse=True)
+    sorted_weights = weights.keys()
+    sorted_weights = sorted(sorted_weights, reverse=True)
     indicators = set()
-    for key in k:
-        if key > confidence:
-            for w in weights[key]:
-                indicators.add(w)
+    for w in sorted_weights:
+        if w > confidence:
+            for word in weights[w]:
+                indicators.add(word)
     return indicators
 
 
@@ -125,8 +119,6 @@ def get_accuracy(ttrees, indicators):
         res = "{}".format(count) + "\t"
         is_sensitive = tree_contains_words(t, indicators)
         count += 1
-        if count % 500 == 0:
-            print("Compared: ", count)
         if (t.syntax == "4") == is_sensitive:  # e.g. is label equal to prediction
             res += "1\t"
             acc += 1
@@ -151,8 +143,6 @@ def get_confusion_numbers(ttrees, indicators):
     for t in ttrees:
         is_sensitive = tree_contains_words(t, indicators)
         count += 1
-        if count % 500 == 0:
-            print("Compared: ", count)
         if (t.syntax == "4"):
             if is_sensitive:
                 tp += 1
