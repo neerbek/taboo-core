@@ -58,7 +58,15 @@ class RNNTest(unittest.TestCase):
     def get_RMS_cost(reg, x_val, y_val):
         x = reg.X
         y = T.matrix('y', dtype=theano.config.floatX)
-        cost = reg.cost(y)
+        cost = reg.cost_RMS(y)
+        cost_model = theano.function(inputs=[x, y], outputs=cost)
+        c = cost_model(x_val, y_val)
+        return c
+
+    def get_cross_cost(reg, x_val, y_val):
+        x = reg.X
+        y = T.matrix('y', dtype=theano.config.floatX)
+        cost = reg.cost_cross(y)
         cost_model = theano.function(inputs=[x, y], outputs=cost)
         c = cost_model(x_val, y_val)
         return c
@@ -112,6 +120,10 @@ class RNNTest(unittest.TestCase):
         self.assertAlmostEqual(cost_debug, c, places=12)
         c = reg.cost_cross_debug(x_val, y_val)
         self.assertAlmostEqual(cost_debug, c, places=12)
+
+    def test_weighted_cost8(self):
+        self.weighted_cost_eval(RNNTest.get_cross_cost,
+                                [12.5945, 14.8833, 37.7835, 25.1890])
 
     def test_weighted_cost6(self):
         self.weighted_cost_eval(RNNTest.get_RMS_cost,
