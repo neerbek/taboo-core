@@ -5,6 +5,10 @@ if [ "$1" = "" ]; then
   exit
 fi
 
+if [ "$2" != "" ]; then
+  echo "going to clean up directory"
+fi
+
 if [ ! -f $1.log ]; then
   echo "log file $1.log not found!"
   exit 1
@@ -30,3 +34,9 @@ zip $1.zip $1.log save_$1_*
 mv $1.zip ../taboo-jan/functionality/logs/
 svn add ../taboo-jan/functionality/logs/$1.zip
 svn ci -m "added log for $1" ..
+if [ "$2" != "" ]; then
+    rm $1rc
+    rm $1.log
+    rm save_$1_best.txt
+    rm save_$1_running.txt
+fi
