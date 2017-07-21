@@ -94,9 +94,7 @@ class PerformanceMeasurer:
         for i in range(n_batches):
             trees = input_trees[i * batch_size: (i + 1) * batch_size]
             (roots, x_val, y_val) = rnn_enron.getInputArrays(rnn, trees, evaluator)
-            z_val = numpy.ones(shape=(x_val.shape[0], rnn.n_hidden))
-            z_val = z_val * retain_probability
-            z_val = z_val.astype(dtype=theano.config.floatX)
+            z_val = retain_probability * numpy.ones(shape=(x_val.shape[0], rnn.n_hidden), dtype=theano.config.floatX)
             n_nodes = x_val.shape[0]
             validation_losses += validate_model(x_val, y_val, z_val) * n_nodes  # append mean fraction of errors
             validation_cost += cost_model(x_val, y_val, z_val) * n_nodes        # append mean cost
@@ -128,6 +126,21 @@ class PerformanceMeasurer:
         self.total_confusion_matrix = validation_confusion_matrix
         self.root_confusion_matrix = val_root_confusion_matrix
         # Timers.totaltimer.end()
+
+    def measure_roots(self, input_trees, batch_size, retain_probability, rnn, measure_wrapper):
+        "Measure wrapper/function here receives x, y and z values and also the list of trees. This allow the wrapper of doing corpus specific measures"
+        evaluator = rnn_enron.Evaluator(rnn)
+        n_batches = int(math.ceil(len(input_trees) / batch_size))
+        for i in range(n_batches):
+            trees = input_trees[i * batch_size: (i + 1) * batch_size]
+            (roots, x_val, y_val) = rnn_enron.getInputArrays(rnn, trees, evaluator)
+            x_roots = []
+            y_roots = []
+            for r in roots:
+                x_roots.append(x_val[r, :])
+                y_roots.append(y_val[r, :])
+            z_roots = retain_probability * numpy.ones(shape=(len(x_roots), rnn.n_hidden), dtype=theano.config.floatX)
+            measure_wrapper(x_roots, y_roots, z_roots, trees)
 
     def report(self, msg=""):
         print(msg + " total accuracy {:.4f} % ({:.4f} %) cost {:.6f}, root acc {:.4f} % ({:.4f} %)".format(self.total_acc * 100.,
