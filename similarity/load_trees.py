@@ -251,6 +251,26 @@ def parse_line(l, index, node):
             word += c
     return i
 
+def get_tree(line, fn="get_tree"):
+    if not line.startswith(" ("):
+        raise Exception(fn + " line does not start with \" (\"")
+    tree = Node(None)
+    # print("Line is " + line)
+    i = parse_line(line, 2, tree)
+    if i < len(line) - 1:  # Not all of line parsed
+        raise Exception(
+            fn +
+            " parsing line failed. There was more than one tree in the line. {}".
+            format(i))
+    l2 = output(tree)
+    if l2 != line:  # Lines differ
+        raise Exception(fn + " marshall and unmarshalling differs" +
+                        "\n" + line + "\n" + l2)
+    if not tree.is_binary():
+        raise Exception(fn + " tree is not binary")
+    if not tree.has_only_words_at_leafs():
+        raise Exception(fn + " tree is not properly normalized")
+    return tree
 
 def get_trees(file, max_count=-1):
     count = 0
@@ -261,24 +281,7 @@ def get_trees(file, max_count=-1):
             if max_count > -1 and count > max_count:
                 break
             line = line[:-1]  # strips newline. But consider: http://stackoverflow.com/questions/509446/python-reading-lines-w-o-n
-            if not line.startswith(" ("):
-                raise Exception(fn + " line does not start with \" (\"")
-            tree = Node(None)
-            # print("Line is " + line)
-            i = parse_line(line, 2, tree)
-            if i < len(line) - 1:  # Not all of line parsed
-                raise Exception(
-                    fn +
-                    " parsing line failed. There was more than one tree in the line. {}".
-                    format(i))
-            l2 = output(tree)
-            if l2 != line:  # Lines differ
-                raise Exception(fn + " marshall and unmarshalling differs" +
-                                "\n" + line + "\n" + l2)
-            if not tree.is_binary():
-                raise Exception(fn + " tree is not binary")
-            if not tree.has_only_words_at_leafs():
-                raise Exception(fn + " tree is not properly normalized")
+            tree = get_tree(line, fn)
             if tree.is_leaf():
                 print("tree is one word. Ignoring")
                 continue
