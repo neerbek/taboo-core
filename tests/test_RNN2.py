@@ -99,14 +99,14 @@ class RNNTest(unittest.TestCase):
         cost = reg.cost_cross(y)
         cost_model = theano.function(inputs=[x, y], outputs=cost)
         c = cost_model(x_val, y_val)
-        self.assertAlmostEqual(cost_debug, c, places=12)
+        self.assertAlmostEqual(cost_debug, c, places=8)  # 8 for float32, 12 for float64
         c = reg.cost_cross_debug(x_val, y_val)
-        self.assertAlmostEqual(cost_debug, c, places=12)
+        self.assertAlmostEqual(cost_debug, c, places=8)  # 8 for float32, 12 for float64
         reg.cost = reg.cost_cross
         cost = reg.cost(y)
         cost_model = theano.function(inputs=[x, y], outputs=cost)
         c = cost_model(x_val, y_val)
-        self.assertAlmostEqual(cost_debug, c, places=12)
+        self.assertAlmostEqual(cost_debug, c, places=8)  # 8 for float32, 12 for float64
 
         reg.cost_weight = [0.25, 0, 0, 0, 4]
         cost_debug = 0
@@ -117,9 +117,9 @@ class RNNTest(unittest.TestCase):
         cost = reg.cost_cross(y)
         cost_model = theano.function(inputs=[x, y], outputs=cost)
         c = cost_model(x_val, y_val)
-        self.assertAlmostEqual(cost_debug, c, places=12)
+        self.assertAlmostEqual(cost_debug, c, places=8)  # 8 for float32, 12 for float64
         c = reg.cost_cross_debug(x_val, y_val)
-        self.assertAlmostEqual(cost_debug, c, places=12)
+        self.assertAlmostEqual(cost_debug, c, places=7)  # 7 for float32, 12 for float64
 
     def test_weighted_cost8(self):
         self.weighted_cost_eval(RNNTest.get_cross_cost,
