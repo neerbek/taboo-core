@@ -1,7 +1,8 @@
 #!/bin/sh
 
 if [ "$1" = "" ]; then
-  echo "store_experiment.sh <name>"
+    echo "store_experiment.sh <name> [<y>]"
+    echo "if second argument is set, then log files and such are goind to be deleted after this script completes"
   exit
 fi
 
