@@ -1,5 +1,11 @@
 # Taboo-core
 
+To clone:
+
+```
+git clone https://bitbucket.alexandra.dk/scm/tab/taboo-core.git
+```
+
 ## Notes:
 
 Runs python3(!)
