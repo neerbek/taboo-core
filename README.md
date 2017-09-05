@@ -17,7 +17,8 @@ pip3 install theano nltk flask
 
 ## Glove
 Download glove word embeddings: (not necessary for running tests)
-```./download_glove.sh
+```
+./download_glove.sh
 ```
 
 ## NLTK
