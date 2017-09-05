@@ -22,13 +22,13 @@ sys.setrecursionlimit(10000)
 
 
 class ServerState:
-    def __init__(self, max_embedding_count=-1):
+    def __init__(self, max_embedding_count=-1, glove_path="../code/glove/"):
         self.enronLabels = None
         self.rnn = None
         self.rng = RandomState(1234)
         self.server_rnn_state = None
         self.server_rnn_state = server_rnn.State(
-            max_embedding_count=max_embedding_count)
+            max_embedding_count=max_embedding_count, glove_path=glove_path)
 
     def load_model(self):
         self.rnn = server_rnn.RNNWrapper()
