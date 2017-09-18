@@ -117,6 +117,17 @@ class EmbeddingTest(unittest.TestCase):
         x = T.dmatrix('x')
         self.cos_distance_matrix3(theano.function([x], embedding.cos_distance_theano_matrix(x)))
 
+    def test_cos_distance_numpy_matrix4(self):
+        rng = RandomState(8726)
+        m = rng.uniform(-1000, 1000, size=12 * 6)
+        m = m.reshape(12, 6)
+        d = embedding.cos_distance_numpy_matrix(m)
+        d.shape
+        for i in range(m.shape[0] - 1):
+            for j in range(i + 1, m.shape[0]):
+                angle = embedding.cos_distance_numpy_vector(m[i, :], m[j, :])
+                self.assertAlmostEqual(angle, d[i, j], places=5, msg="similarity meaurre unequal for {}, {}".format(i, j))
+
     def test_get_min(self):
         e1 = [3, 4]
         e2 = [4, 2]

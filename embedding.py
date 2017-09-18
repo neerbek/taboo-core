@@ -48,6 +48,16 @@ def cos_distance_theano_matrix(m1):
     res = T.extra_ops.fill_diagonal(res, 0)  # note different than for numpy
     return res
 
+def cos_distance_numpy_vector(v1, v2):
+    """get cos angle (similarity) between two vectors"""
+    d1 = numpy.sum(v1 * v1)
+    d1 = numpy.sqrt(d1)      # magnitude of v1
+    d2 = numpy.sum(v2 * v2)
+    d2 = numpy.sqrt(d2)      # magnitude of v2
+    n1 = v1 / d1
+    n2 = v2 / d2
+    return numpy.sum(n1 * n2)
+
 
 def cos_distance_numpy_matrix(m1):
     """Assumes that the rows are embeddings.
@@ -115,7 +125,14 @@ def apply_sort_indices(dist, indices):
     for i in range(l):
         tmp = dist[:, i][indices[:, i]]  # I would like to do this on whole matrix dist at once
         res.append(tmp)                  # but my numpy-fu is only strong enough for column based
-    t3 = numpy.array(res)                # indexing. Which means array have to do a concatanation here
-    t3 = t3.T                            # array concatanate the "wrong" way
+    t3 = numpy.array(res)                # indexing. Which means array have to do a concatanation here.
+    t3 = t3.T                            # array concatanates the "wrong" way
     return t3
+
+def euclid_distance_numpy_vector(v1, v2):
+    """get euclidean distance between"""
+    d1 = v1 - v2
+    d1 = d1 * d1  # squared
+    s = numpy.sum(d1)  # summed
+    return numpy.sqrt(s)
 

@@ -325,7 +325,7 @@ distributions or just show max
     if show:
         pylab.show()
 
-def plot_graphs(x, tp, fp, tn, fn, name=None, show=False):
+def new_graph():
     fig_width_pt = 246.0  # Get this from LaTeX using \showthe\columnwidth
     fig_width_pt = 490.0  # fullwidth (maybe)
     inches_per_pt = 1.0 / 72.27               # Convert pt to inch
@@ -345,6 +345,14 @@ def plot_graphs(x, tp, fp, tn, fn, name=None, show=False):
     # Plot data
     pylab.figure(1)
     pylab.clf()
+    # pylab.plot(x, tp, 'g:', label='\emph{tp}')
+    # pylab.xlabel('Sensitivity Score')
+    # pylab.ylabel('Accumelated Counts')
+    # pylab.legend()
+    # pylab.show()
+
+def plot_graphs(x, tp, fp, tn, fn, name, show=False):
+    new_graph()
     pylab.plot(x, tp, 'g:', label='\emph{tp}')
     pylab.plot(x, fp, '-m', label='\emph{fp}')
     pylab.plot(x, tn, 'k:', label='\emph{tn}')
