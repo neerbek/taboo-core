@@ -103,9 +103,9 @@ def load_labels(labelfile):
             relevance = int(relevanceS)
             db.add_label(problem, fileid, strata, relevance)
             count += 1
-            if count % 50000 == 0:
-                print("added {} labels".format(count), relevanceS
-                )  # file has 5M labels (8 questions x 0.65M labels)
+            if count % 100000 == 0:
+                print("added {} labels".format(count), relevanceS)
+                # file has 5M labels (8 questions x 0.65M labels)
     print("Done. added {} labels".format(count))
     return db
 
