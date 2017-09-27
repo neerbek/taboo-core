@@ -325,7 +325,7 @@ distributions or just show max
     if show:
         pylab.show()
 
-def new_graph():
+def new_graph(xlabel, ylabel):
     fig_width_pt = 246.0  # Get this from LaTeX using \showthe\columnwidth
     fig_width_pt = 490.0  # fullwidth (maybe)
     inches_per_pt = 1.0 / 72.27               # Convert pt to inch
@@ -345,22 +345,20 @@ def new_graph():
     # Plot data
     pylab.figure(1)
     pylab.clf()
+    pylab.xlabel(xlabel)
+    pylab.ylabel(ylabel)
     # pylab.plot(x, tp, 'g:', label='\emph{tp}')
-    # pylab.xlabel('Sensitivity Score')
-    # pylab.ylabel('Accumelated Counts')
     # pylab.legend()
     # pylab.show()
 
 def plot_graphs(x, tp, fp, tn, fn, name, show=False):
-    new_graph()
+    new_graph(xlabel='Sensitivity Score', ylabel='Accumelated Counts')
     pylab.plot(x, tp, 'g:', label='\emph{tp}')
     pylab.plot(x, fp, '-m', label='\emph{fp}')
     pylab.plot(x, tn, 'k:', label='\emph{tn}')
     pylab.plot(x, fn, '-r', label='\emph{fn}')
     # pylab.axvline(x=0.38)
     # pylab.axvline(x=0.98)
-    pylab.xlabel('Sensitivity Score')
-    pylab.ylabel('Accumelated Counts')
     pylab.legend()
     if name != None:
         pylab.savefig(name + '.eps')
@@ -507,7 +505,7 @@ def read_embeddings(inputfile, max_line_count=-1):
     print("Done. Count={} Len={} Len(nan_indexes)={}".format(count, len(lines), len(nan_indexes)))
     return lines
 
-def get_embedding_matrix(lines):
+def get_embedding_matrix(lines, normalize=False):
     first_emb = None
     embeddings = []
     for l in lines:
@@ -521,4 +519,20 @@ def get_embedding_matrix(lines):
     for i in range(len(first_emb)):
         if not numpy.isclose(a[0, i], first_emb[i]):
             print("{}: {} and {} are different".format(i, a[i, 0], first_emb[i]))
+    # ## normalize vectors
+    if normalize is True:
+        mag = numpy.max(a, axis=1)
+        a = a / mag.reshape(len(mag), 1)  # first divide by max. max*max might be inf
+        mag = numpy.sum(a * a, axis=1)
+        for i in range(len(mag)):
+            if numpy.isinf(mag[i]):
+                raise Exception("magitude is inf for: {}".format(i))
+        mag = numpy.sqrt(mag)
+        a = a / mag.reshape(len(mag), 1)  # unit vectors
     return a  # a is expected to contain rows of embeddings
+
+def verify_matrix_normalized(m, atol=0.00001):
+    mag = numpy.sum(m * m, axis=1)
+    for i in range(len(mag)):
+        if not numpy.isclose(mag[i], 1, atol=atol):
+            raise Exception("magitude is wrong for: {}".format(i))
