@@ -209,9 +209,39 @@ class RNN(object):
 
 VERSION_1 = "RNN_SERIALIZED_VERSION_1"
 VERSION = "RNN_SERIALIZED_VERSION_2"
+VERSION_LAYERED = "RNN_SERIALIZED_LAYERED_VERSION_1"
 def get_object_list(reg, epoch, acc):
     obj_list = [VERSION, "{}".format(epoch), "{:.4f}".format(acc), reg.reluLayer.W, reg.reluLayer.b, reg.regressionLayer.W, reg.regressionLayer.b]
     return obj_list
+
+def layeredSave(model, filename='model.save', epoch=0, acc=0):
+    headerObjects = [VERSION_LAYERED, "{}".format(epoch), "{:.4f}".format(acc)]
+    params = model.getParams()
+    with open(filename, 'wb') as f:
+        for obj in headerObjects:
+            cPickle.dump(obj, f, protocol=cPickle.HIGHEST_PROTOCOL)
+        for param in params:  # theano tensor variables
+            cPickle.dump(str(param.name), f, protocol=cPickle.HIGHEST_PROTOCOL)    # name
+            cPickle.dump(param.get_value(), f, protocol=cPickle.HIGHEST_PROTOCOL)  # value
+
+def layeredLoad(model, filename='model.save'):
+    epoch = 0
+    acc = 0
+    with open(filename, 'rb') as f:
+        value = cPickle.load(f)
+        if value != VERSION_LAYERED:
+            raise Exception("Version mismatch in rnn.layeredLoad, expected: " + VERSION + " got: " + value)
+        epoch = int(cPickle.load(f))
+        acc = float(cPickle.load(f))
+        params = model.getParams()
+        for param in params:
+            name = cPickle.load(f)
+            if name != str(param.name):
+                raise Exception("param name mismatch, expected: " + str(param.name) + " got: " + name)
+            value = cPickle.load(f)
+            # need to cast with astype if it was saved with different bit width (32 vs 64)
+            param.set_value(numpy.array(value).astype(dtype=theano.config.floatX))
+    return (epoch, acc)
 
 def save(rnn, filename='model.save', epoch=0, acc=0):
     obj_list = get_object_list(rnn, epoch, acc)

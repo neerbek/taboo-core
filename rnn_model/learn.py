@@ -24,6 +24,15 @@ def adagrad(params, grads, lr, epsilon=1e-8):
         updates[param] = param - (lr * grad / T.sqrt(accu_new + epsilon))
     return updates
 
+class AdagradLearner:
+    def __init__(self, lr, epsilon=1e-8):
+        self.lr = lr
+        self.epsilon = epsilon
+
+    def getUpdates(self, params, cost):
+        grads = [T.grad(cost=cost, wrt=param) for param in params]
+        return adagrad(params, grads, self.lr, self.epsilon)
+
 
 def gd(params, grads, lr):  # gradient decent
     updates = {}
@@ -31,6 +40,13 @@ def gd(params, grads, lr):  # gradient decent
         updates[param] = param - (lr * grad)
     return updates
 
+class GradientDecentLearner:
+    def __init__(self, lr):
+        self.lr = lr
+
+    def getUpdates(self, params, cost):
+        grads = [T.grad(cost=cost, wrt=param) for param in params]
+        return gd(params, grads, self.lr)
 
 def gd_momentum(params, grads, lr, mc):  # gradient decent with momentum
     updates = {}
@@ -45,3 +61,12 @@ def gd_momentum(params, grads, lr, mc):  # gradient decent with momentum
         # https://www.mathworks.com/help/nnet/ref/traingdm.html
         updates[param_prev] = param
     return updates
+
+class GradientDecentWithMomentumLearner:
+    def __init__(self, lr, mc):
+        self.lr = lr
+        self.mc = mc
+
+    def getUpdates(self, params, cost):
+        grads = [T.grad(cost=cost, wrt=param) for param in params]
+        return gd_momentum(params, grads, self.lr, self.mc)

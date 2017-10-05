@@ -21,7 +21,6 @@ class Line:
         self.is_correct = is_correct
         self.sen_score = sen_score
 
-
 class ConfusionMatrix:
     TYPE_TP = 0
     TYPE_FP = 1
