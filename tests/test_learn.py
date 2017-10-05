@@ -114,14 +114,38 @@ class RNNWrapper2:
             self.y_val[i][truth_val[i]] = 1
         self.y_val = self.y_val.astype(dtype=theano.config.floatX)
 
-        # self.z_val = self.model.rng.binomial(
-        #     n=1,
-        #     size=(self.x_val.shape[0], self.n_hidden),
-        #     p=self.retain_probability)
-        # self.z_val = self.z_val.astype(dtype=theano.config.floatX)
+        self.z_val = self.model.rng.binomial(
+            n=1,
+            size=(self.x_val.shape[0], self.n_hidden),
+            p=self.retain_probability)
+        self.z_val = self.z_val.astype(dtype=theano.config.floatX)
 
     def do_train(self, x_val, y_val, z_val=None):
         values = self.train(x_val, y_val)
+        for index, param in enumerate(self.keys):
+            param.set_value(values[index])
+
+class RNNWrapper2_withdropout(RNNWrapper2):
+    def __init__(self):
+        RNNWrapper2.__init__(self)
+
+    def create_rnn(self):
+        self.model = rnn_model.FlatTrainer.RNNContainer(nIn=10, rng=RandomState(1234))
+        dropout = rnn_model.FlatTrainer.DropoutLayer(self.model.z, rnn_model.FlatTrainer.ReluLayer(nOut=self.n_hidden))
+        self.model.addLayer(dropout)
+        self.model.addLayer(rnn_model.FlatTrainer.RegressionLayer(nOut=5))
+        self.trainParam = rnn_model.FlatTrainer.TrainParam()
+        self.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(self.model, self.trainParam, withDropout=True)
+
+    def add_updates(self, updates):
+        self.keys = [k for k in updates.keys()]
+
+        self.train = theano.function(
+            inputs=[self.model.x, self.model.y, self.model.z],
+            outputs=[updates[k] for k in self.keys])
+
+    def do_train(self, x_val, y_val, z_val=None):
+        values = self.train(x_val, y_val, z_val)
         for index, param in enumerate(self.keys):
             param.set_value(values[index])
 
@@ -195,6 +219,25 @@ class TreeTest(unittest.TestCase):
             rnnWrapper.do_train(x_val, y_val)
         self.assertEqual(0.04, numpy.around(1 - rnnWrapper.modelEvaluator.accuracyFunction(x_val, y_val), 2), "Mismatch in final expected gd2 error ratio")
 
+    def test_gd2_withdropout(self):
+        n_loops = 5000
+        rnnWrapper = RNNWrapper2_withdropout()
+        rnnWrapper.create_rnn()
+        rnnWrapper.trainParam.learner = rnn_model.learn.GradientDecentLearner(lr=0.4)
+        updates = rnnWrapper.trainParam.learner.getUpdates(rnnWrapper.model.getParams(), rnnWrapper.modelEvaluator.cost())
+        rnnWrapper.add_updates(updates)
+        rnnWrapper.create_data()
+        x_val = rnnWrapper.x_val
+        y_val = rnnWrapper.y_val
+        z_val = rnnWrapper.z_val
+
+        for i in range(n_loops):
+            # if i % 1000 == 0:
+            #     print("gd error ratio",
+            #           rnnWrapper.validate_model(x_val, y_val, z_val))
+            rnnWrapper.do_train(x_val, y_val, z_val)
+        self.assertEqual(0.1000, numpy.around(1 - rnnWrapper.modelEvaluator.accuracyFunction(x_val, y_val, z_val), 4), "Mismatch in final expected gd2_withdropout error ratio")
+
     def test_adaGrad(self):
         lr = 0.025
         n_loops = 2200
@@ -256,6 +299,26 @@ class TreeTest(unittest.TestCase):
                       rnnWrapper.modelEvaluator.accuracyFunction(x_val, y_val))
             rnnWrapper.do_train(x_val, y_val)
         self.assertEqual(0.10, numpy.around(1 - rnnWrapper.modelEvaluator.accuracyFunction(x_val, y_val), 3), "Mismatch in final expected adagrad error ratio")
+
+    def test_adaGrad_withdropout2(self):
+        lr = 0.025
+        n_loops = 2200
+        rnnWrapper = RNNWrapper2_withdropout()
+        rnnWrapper.create_rnn()
+        rnnWrapper.trainParam.learner = rnn_model.learn.AdagradLearner(lr)
+        updates = rnnWrapper.trainParam.learner.getUpdates(rnnWrapper.model.getParams(), rnnWrapper.modelEvaluator.cost())
+        rnnWrapper.add_updates(updates)
+        rnnWrapper.create_data()
+        x_val = rnnWrapper.x_val
+        y_val = rnnWrapper.y_val
+        z_val = rnnWrapper.z_val
+
+        for i in range(n_loops):
+            # if i % 400 == 0:
+            #     print("adagrad error ratio",
+            #           rnnWrapper.modelEvaluator.accuracyFunction(x_val, y_val))
+            rnnWrapper.do_train(x_val, y_val, z_val)
+        self.assertEqual(0.0400, numpy.around(1 - rnnWrapper.modelEvaluator.accuracyFunction(x_val, y_val, z_val), 4), "Mismatch in final expected adagrad error ratio")
 
     @unittest.skip
     def test_adaGrad_nodropout_large(self):
@@ -369,6 +432,28 @@ class TreeTest(unittest.TestCase):
             #           rnnWrapper.validate_model(x_val, y_val, z_val))
             rnnWrapper.do_train(x_val, y_val)
         self.assertEqual(0.08, numpy.around(1 - rnnWrapper.modelEvaluator.accuracyFunction(x_val, y_val), 2), "Mismatch in final expected gdm error")
+
+    def test_gd_momentum_withdropout2(self):
+        lr = 0.75
+        mc = 0.0009
+        n_loops = 3000
+        rnnWrapper = RNNWrapper2_withdropout()
+        rnnWrapper.create_rnn()
+
+        rnnWrapper.trainParam.learner = rnn_model.learn.GradientDecentWithMomentumLearner(lr, mc)
+        updates = rnnWrapper.trainParam.learner.getUpdates(rnnWrapper.model.getParams(), rnnWrapper.modelEvaluator.cost())
+        rnnWrapper.add_updates(updates)
+        rnnWrapper.create_data()
+        x_val = rnnWrapper.x_val
+        y_val = rnnWrapper.y_val
+        z_val = rnnWrapper.z_val
+
+        for i in range(n_loops):
+            # if i % 600 == 0:
+            #     print("gd_m error ratio",
+            #           rnnWrapper.validate_model(x_val, y_val, z_val))
+            rnnWrapper.do_train(x_val, y_val, z_val)
+        self.assertEqual(0.0400, numpy.around(1 - rnnWrapper.modelEvaluator.accuracyFunction(x_val, y_val, z_val), 4), "Mismatch in final expected gdm error")
 
 
 if __name__ == "__main__":

@@ -89,6 +89,7 @@ class ReluLayer:
         self.W = None
         self.b = None
         self.params = []
+        self.regularizedParams = []
 
     def setInputSize(self, nIn, x, layerNumber, rng):
         self.nIn = nIn
@@ -122,6 +123,26 @@ class ReluLayer:
         # TODO: add dropout
         return T.nnet.relu(T.dot(self.x, self.W) + self.b)
 
+
+class DropoutLayer:
+    def __init__(self, z, innerLayer):
+        self.z = z
+        self.nOut = innerLayer.nOut
+        self.params = []
+        self.regularizedParams = []
+        self.rng = None
+        self.nIn = None
+        self.innerLayer = innerLayer
+
+    def setInputSize(self, nIn, x, layerNumber, rng):
+        self.rng = rng
+        self.nIn = nIn
+        self.innerLayer.setInputSize(nIn, x, layerNumber, rng)
+        self.params = self.innerLayer.params
+        self.regularizedParams = self.innerLayer.regularizedParams
+
+    def getPrediction(self):
+        return self.z * self.innerLayer.getPrediction()
 
 class RNNContainer:
     def __init__(self, nIn, rng=RandomState(1234)):
@@ -183,19 +204,22 @@ class FlatPerformanceMeasurer:
         print(msg + " total accuracy {:.4f} % ({:.4f} %) cost {:.6f}".format(self.accuracy * 100., self.countZeros * 100., self.cost * 1.0))
 
 class ModelEvaluator:
-    def __init__(self, model, trainParam):
+    def __init__(self, model, trainParam, withDropout=False):
         self.model = model
         self.trainParam = trainParam
+        inputs = [model.x, model.y]
+        if withDropout:
+            inputs = [model.x, model.y, model.z]
         self.costFunction = theano.function(
-            inputs=[model.x, model.y],
+            inputs=inputs,
             outputs=self.cost()
         )
         self.accuracyFunction = theano.function(
-            inputs=[model.x, model.y],
+            inputs=inputs,
             outputs=self.accuracy()
         )
         self.confusionMatrixFunction = theano.function(
-            inputs=[model.x, model.y],
+            inputs=inputs,
             outputs=self.confusionMatrix()
         )
 
