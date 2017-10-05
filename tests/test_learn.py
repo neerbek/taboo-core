@@ -149,6 +149,29 @@ class RNNWrapper2_withdropout(RNNWrapper2):
         for index, param in enumerate(self.keys):
             param.set_value(values[index])
 
+class RNNWrapper2_withrunningdropout(RNNWrapper2_withdropout):
+    def __init__(self):
+        RNNWrapper2_withdropout.__init__(self)
+
+    def create_data(self):
+        n_input_max_range = 10
+        self.x_val = self.model.rng.randint(
+            n_input_max_range, size=(self.n_examples, self.model.nIn))
+        self.x_val = self.x_val.astype(dtype=theano.config.floatX)
+        truth_val = self.model.rng.randint(self.model.nOut, size=self.n_examples)
+        self.y_val = numpy.zeros(
+            shape=(self.n_examples, self.model.nOut), dtype=theano.config.floatX)
+        for i in range(len(truth_val)):
+            self.y_val[i][truth_val[i]] = 1
+        self.y_val = self.y_val.astype(dtype=theano.config.floatX)
+
+    def get_next_dropout(self):
+        self.z_val = self.model.rng.binomial(
+            n=1,
+            size=(self.x_val.shape[0], self.n_hidden),
+            p=self.retain_probability)
+        self.z_val = self.z_val.astype(dtype=theano.config.floatX)
+        return self.z_val
 
 class TreeTest(unittest.TestCase):
     def setUp(self):
@@ -452,6 +475,29 @@ class TreeTest(unittest.TestCase):
             # if i % 600 == 0:
             #     print("gd_m error ratio",
             #           rnnWrapper.validate_model(x_val, y_val, z_val))
+            rnnWrapper.do_train(x_val, y_val, z_val)
+        self.assertEqual(0.0400, numpy.around(1 - rnnWrapper.modelEvaluator.accuracyFunction(x_val, y_val, z_val), 4), "Mismatch in final expected gdm error")
+
+    def test_gd_momentum_withrunningdropout2(self):
+        lr = 0.75
+        mc = 0.0009
+        n_loops = 3000
+        rnnWrapper = RNNWrapper2_withrunningdropout()
+        rnnWrapper.create_rnn()
+
+        rnnWrapper.trainParam.learner = rnn_model.learn.GradientDecentWithMomentumLearner(lr, mc)
+        updates = rnnWrapper.trainParam.learner.getUpdates(rnnWrapper.model.getParams(), rnnWrapper.modelEvaluator.cost())
+        rnnWrapper.add_updates(updates)
+        rnnWrapper.create_data()
+        x_val = rnnWrapper.x_val
+        y_val = rnnWrapper.y_val
+
+        z_val = None
+        for i in range(n_loops):
+            # if i % 600 == 0:
+            #     print("gd_m error ratio",
+            #           rnnWrapper.validate_model(x_val, y_val, z_val))
+            z_val = rnnWrapper.get_next_dropout()
             rnnWrapper.do_train(x_val, y_val, z_val)
         self.assertEqual(0.0400, numpy.around(1 - rnnWrapper.modelEvaluator.accuracyFunction(x_val, y_val, z_val), 4), "Mismatch in final expected gdm error")
 
