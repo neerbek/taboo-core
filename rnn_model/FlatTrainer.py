@@ -1,8 +1,9 @@
 import numpy
 from numpy.random import RandomState
 import theano
-from theano.ifelse import ifelse
+# from theano.ifelse import ifelse
 import theano.tensor as T
+from theano.tensor.shared_randomstreams import RandomStreams
 from datetime import datetime
 
 import rnn_model.rnn
@@ -20,12 +21,17 @@ class TrainParam:
         self.L2param = 0
 
 class Layer:
+    """A generic layer, use it as inspiration for later layers"""
     def __init__(self, nOut):
         self.nIn = None
         self.x = None
         self.nOut = nOut
         self.params = []
         self.regularizedParams = []
+
+    def clone(self, container):
+        clone = Layer(self.nOut)
+        return clone
 
     def getL1(self):
         return 0
@@ -42,6 +48,7 @@ class Layer:
         return T.sum(self.x)
 
 class RegressionLayer:
+    """softmax layer"""
     def __init__(self, nOut):
         self.nOut = nOut
         self.nIn = None
@@ -49,6 +56,10 @@ class RegressionLayer:
         self.W = None
         self.b = None
         self.params = []
+
+    def clone(self, container):
+        clone = RegressionLayer(self.nOut)
+        return clone
 
     def setInputSize(self, nIn, x, layerNumber, rng):
         self.nIn = nIn
@@ -91,6 +102,9 @@ class ReluLayer:
         self.params = []
         self.regularizedParams = []
 
+    def clone(self, container):
+        return ReluLayer(self.nOut)
+
     def setInputSize(self, nIn, x, layerNumber, rng):
         self.nIn = nIn
         self.x = x
@@ -120,39 +134,85 @@ class ReluLayer:
         self.regularizedParams = [self.W]
 
     def getPrediction(self):
-        # TODO: add dropout
         return T.nnet.relu(T.dot(self.x, self.W) + self.b)
 
+def getMatrixShape(x):
+    # print("just", type(x) is T.var.TensorVariable)
+    lx = T.cast(T.sum(T.ones_like(x[:, 0])), dtype='int32')
+    ly = T.cast(T.sum(T.ones_like(x[0, :])), dtype='int32')
+    return [lx, ly]
 
 class DropoutLayer:
-    def __init__(self, z, innerLayer):
-        self.z = z
+    def __init__(self, container, retain_probability, innerLayer):
+        self.container = container
+        self.retain_probability = retain_probability
         self.nOut = innerLayer.nOut
         self.params = []
         self.regularizedParams = []
         self.rng = None
         self.nIn = None
         self.innerLayer = innerLayer
+        self.isTraining = True
+        self.x = None
+
+    def clone(self, container):
+        innerLayerClone = self.innerLayer.clone(container)
+        return DropoutLayer(container, self.retain_probability, innerLayerClone)
 
     def setInputSize(self, nIn, x, layerNumber, rng):
-        self.rng = rng
+        self.x = x
+        self.rng = RandomStreams(seed=rng.randint(1000000))
         self.nIn = nIn
         self.innerLayer.setInputSize(nIn, x, layerNumber, rng)
         self.params = self.innerLayer.params
         self.regularizedParams = self.innerLayer.regularizedParams
 
+    def setIsTraining(self, isTraining=True):
+        self.isTraining = isTraining
+
+    def getNewRandom(self):
+        rngDropout = self.rng.binomial(n=1,
+                                       size=(getMatrixShape(self.x)[0], self.nOut),
+                                       p=self.retain_probability)
+        rngDropout = T.cast(rngDropout, dtype='float32')
+        return rngDropout
+
     def getPrediction(self):
-        return self.z * self.innerLayer.getPrediction()
+        pred = self.innerLayer.getPrediction()
+        dropout = 0
+        if self.container.isDropoutEnabled:
+            dropout = self.getNewRandom()
+        else:
+            scale = T.ones_like(pred)
+            scale = self.retain_probability * scale
+            dropout = scale
+        return dropout * pred
 
 class RNNContainer:
-    def __init__(self, nIn, rng=RandomState(1234)):
+    def __init__(self, nIn, isDropoutEnabled, rng=RandomState(1234)):
         self.x = T.matrix('x', dtype=theano.config.floatX)
         self.y = T.matrix('y', dtype=theano.config.floatX)
-        self.z = T.matrix('z', dtype=theano.config.floatX)    # for dropout
         self.layers = []
         self.nIn = nIn
         self.nOut = None
         self.rng = rng
+        self.isDropoutEnabled = isDropoutEnabled
+
+    def clone(self, isDropoutEnabled, rng=RandomState(1234)):
+        clone = RNNContainer(self.nIn, isDropoutEnabled, rng)
+        # note the cloning of the layers somehow tricker the theano
+        # graph building so you need to set isDropoutEnabled before you clone layers
+        for l in self.layers:
+            lClone = l.clone(clone)
+            clone.addLayer(lClone)
+            params = l.params
+            cloneParams = lClone.params
+            for i in range(len(params)):
+                cloneParams[i].set_value(params[i].get_value())
+        return clone
+
+    def setDropoutEnabled(self, enabled):
+        self.isDropoutEnabled = enabled
 
     def addLayer(self, layer):
         if len(self.layers) == 0:
@@ -204,12 +264,12 @@ class FlatPerformanceMeasurer:
         print(msg + " total accuracy {:.4f} % ({:.4f} %) cost {:.6f}".format(self.accuracy * 100., self.countZeros * 100., self.cost * 1.0))
 
 class ModelEvaluator:
-    def __init__(self, model, trainParam, withDropout=False):
+    def __init__(self, model, trainParam, inputs=None):
+        if inputs is None:
+            inputs = [model.x, model.y]
         self.model = model
+        model.setDropoutEnabled(True)
         self.trainParam = trainParam
-        inputs = [model.x, model.y]
-        if withDropout:
-            inputs = [model.x, model.y, model.z]
         self.costFunction = theano.function(
             inputs=inputs,
             outputs=self.cost()
@@ -265,7 +325,7 @@ class ModelEvaluator:
         FALSE_CONSTANT = 1
         all_t = T.eq(TRUE_CONSTANT, y_simple)
         all_f = T.eq(FALSE_CONSTANT, y_simple)  # since we _know_ that labels are either TRUE or FALSE
-        count_ones = T.ones_like(y_simple)
+        # count_ones = T.ones_like(y_simple)
         # isOk = ifelse(T.sum(all_t) + T.sum(all_f) == T.sum(count_ones), True, False)
         # if T.neq(T.sum(all_t) + T.sum(all_f), T.sum(count_ones)):
         #      raise Exception("Expected only true-false predictions. (t={}, f={}), count={}, size={}".format(TRUE_CONSTANT, FALSE_CONSTANT, T.sum(all_t) + T.sum(all_f), T.sum(count_ones)))
@@ -345,7 +405,6 @@ def train(trainParam, rnnContainer, file_prefix="save", n_epochs=1, rng=RandomSt
             if currentSize == 0:
                 print("empty train iteration")
                 continue
-            # TODO: add dropout
             # z_in = rng.binomial(n=1, size=(current_size, rep_size), p=retain_probability)
             # z_in = z_in.astype(dtype=theano.config.floatX)
             values = train(xIn, yIn)
