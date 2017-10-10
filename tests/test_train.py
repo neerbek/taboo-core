@@ -8,6 +8,7 @@ Created on October 9, 2017
 
 import unittest
 
+import os
 import numpy
 from numpy.random import RandomState
 import theano
@@ -88,6 +89,7 @@ class TrainTest(unittest.TestCase):
         self.timer.report(self, __file__)
 
     def test_train(self):
+        os.remove("save_running.txt")
         rnnWrapper = RNNWrapper2()
         rnnWrapper.create_rnn()
         rnnWrapper.create_data()

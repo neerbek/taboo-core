@@ -13,7 +13,7 @@ import numpy
 import theano
 import theano.tensor as T
 # from theano import pp
-from theano.tensor.shared_randomstreams import RandomStreams
+# from theano.tensor.shared_randomstreams import RandomStreams
 
 import rnn_model.rnn as nn_model
 import rnn_model.learn as learn
@@ -193,48 +193,48 @@ class DropoutLayerOriginal:
         return self.z * self.innerLayer.getPrediction()
 
 
-class DropoutLayerV2:
-    def __init__(self, container, retain_probability, innerLayer):
-        self.container = container
-        self.z = container.z
-        self.retain_probability = retain_probability
-        self.nOut = innerLayer.nOut
-        self.params = []
-        self.regularizedParams = []
-        self.rng = None
-        self.nIn = None
-        self.innerLayer = innerLayer
-        self.isTraining = True
+# class DropoutLayerV2:
+#     def __init__(self, container, retain_probability, innerLayer):
+#         self.container = container
+#         self.z = container.z
+#         self.retain_probability = retain_probability
+#         self.nOut = innerLayer.nOut
+#         self.params = []
+#         self.regularizedParams = []
+#         self.rng = None
+#         self.nIn = None
+#         self.innerLayer = innerLayer
+#         self.isTraining = True
 
-    def clone(self, container):
-        innerLayerClone = self.innerLayer.clone(container)
-        return DropoutLayerV2(container, self.retain_probability, innerLayerClone)
+#     def clone(self, container):
+#         innerLayerClone = self.innerLayer.clone(container)
+#         return DropoutLayerV2(container, self.retain_probability, innerLayerClone)
 
-    def setInputSize(self, nIn, x, layerNumber, rng):
-        self.rng = RandomStreams(seed=rng.randint(1000000))  # RandomStreams(seed=234)
-        self.rngDropout = self.rng.binomial(n=1,
-                                            size=(T.cast(self.z, dtype='int32'), self.nOut),
-                                            p=self.retain_probability)
-        self.rngDropout = T.cast(self.rngDropout, dtype='float32')
+#     def setInputSize(self, nIn, x, layerNumber, rng):
+#         self.rng = RandomStreams(seed=rng.randint(1000000))  # RandomStreams(seed=234)
+#         self.rngDropout = self.rng.binomial(n=1,
+#                                             size=(T.cast(self.z, dtype='int32'), self.nOut),
+#                                             p=self.retain_probability)
+#         self.rngDropout = T.cast(self.rngDropout, dtype='float32')
 
-        self.nIn = nIn
-        self.innerLayer.setInputSize(nIn, x, layerNumber, rng)
-        self.params = self.innerLayer.params
-        self.regularizedParams = self.innerLayer.regularizedParams
+#         self.nIn = nIn
+#         self.innerLayer.setInputSize(nIn, x, layerNumber, rng)
+#         self.params = self.innerLayer.params
+#         self.regularizedParams = self.innerLayer.regularizedParams
 
-    def setIsTraining(self, isTraining=True):
-        self.isTraining = isTraining
+#     def setIsTraining(self, isTraining=True):
+#         self.isTraining = isTraining
 
-    def getPrediction(self):
-        pred = self.innerLayer.getPrediction()
-        dropout = 0
-        if self.container.isDropoutEnabled:
-            dropout = self.rngDropout
-        else:
-            scale = T.ones(shape=(T.cast(self.z, dtype='int32'), self.nOut))
-            scale = self.retain_probability * scale
-            dropout = scale
-        return dropout * pred
+#     def getPrediction(self):
+#         pred = self.innerLayer.getPrediction()
+#         dropout = 0
+#         if self.container.isDropoutEnabled:
+#             dropout = self.rngDropout
+#         else:
+#             scale = T.ones(shape=(T.cast(self.z, dtype='int32'), self.nOut))
+#             scale = self.retain_probability * scale
+#             dropout = scale
+#         return dropout * pred
 
 
 class RNNContainer2(rnn_model.FlatTrainer.RNNContainer):
@@ -272,32 +272,32 @@ class RNNContainer3(rnn_model.FlatTrainer.RNNContainer):
         return clone
 
 
-class RNNWrapper2_withrunningdropout2(RNNWrapper2_withdropout):
-    def __init__(self, retain_probability):
-        RNNWrapper2_withdropout.__init__(self)
-        self.retain_probability = retain_probability
+# class RNNWrapper2_withrunningdropout2(RNNWrapper2_withdropout):
+#     def __init__(self, retain_probability):
+#         RNNWrapper2_withdropout.__init__(self)
+#         self.retain_probability = retain_probability
 
-    def create_rnn(self):
-        self.model = RNNContainer2(nIn=10, isDropoutEnabled=True, rng=RandomState(1234))
+#     def create_rnn(self):
+#         self.model = RNNContainer2(nIn=10, isDropoutEnabled=True, rng=RandomState(1234))
 
-        dropout = DropoutLayerV2(self.model, self.retain_probability, rnn_model.FlatTrainer.ReluLayer(nOut=self.n_hidden))
-        self.model.addLayer(dropout)
-        self.model.addLayer(rnn_model.FlatTrainer.RegressionLayer(nOut=5))
-        self.trainParam = rnn_model.FlatTrainer.TrainParam()
-        self.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(self.model, self.trainParam, inputs=[self.model.x, self.model.y, self.model.z])
+#         dropout = DropoutLayerV2(self.model, self.retain_probability, rnn_model.FlatTrainer.ReluLayer(nOut=self.n_hidden))
+#         self.model.addLayer(dropout)
+#         self.model.addLayer(rnn_model.FlatTrainer.RegressionLayer(nOut=5))
+#         self.trainParam = rnn_model.FlatTrainer.TrainParam()
+#         self.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(self.model, self.trainParam, inputs=[self.model.x, self.model.y, self.model.z])
 
-    def do_train(self, x_val, y_val, z_val=None):
-        if z_val is None:
-            z_val = x_val.shape[0]
-        values = self.train(x_val, y_val, z_val)
-        for index, param in enumerate(self.keys):
-            param.set_value(values[index])
+#     def do_train(self, x_val, y_val, z_val=None):
+#         if z_val is None:
+#             z_val = x_val.shape[0]
+#         values = self.train(x_val, y_val, z_val)
+#         for index, param in enumerate(self.keys):
+#             param.set_value(values[index])
 
-    def get_next_dropout(self):
-        return self.x_val.shape[0]
+#     def get_next_dropout(self):
+#         return self.x_val.shape[0]
 
-    def getAccuracy(self, x_val, y_val):
-        return self.modelEvaluator.accuracyFunction(x_val, y_val, x_val.shape[0])
+#     def getAccuracy(self, x_val, y_val):
+#         return self.modelEvaluator.accuracyFunction(x_val, y_val, x_val.shape[0])
 
 
 class RNNWrapper2_withrunningdropout3(RNNWrapper2_withdropout):
@@ -660,27 +660,27 @@ class TreeTest(unittest.TestCase):
         z_val = z_val.astype(dtype=theano.config.floatX)
         self.assertEqual(0.1200, numpy.around(1 - rnnWrapper.modelEvaluator.accuracyFunction(x_val, y_val, z_val), 4), "Mismatch in final expected gdm error")
 
-    def test_gd_momentum_withrunningdropout2_2(self):
-        lr = 0.75
-        mc = 0.0009
-        n_loops = 3000
-        rnnWrapper = RNNWrapper2_withrunningdropout2(retain_probability=0.8)
-        rnnWrapper.create_rnn()
+    # def test_gd_momentum_withrunningdropout2_2(self):
+    #     lr = 0.75
+    #     mc = 0.0009
+    #     n_loops = 3000
+    #     rnnWrapper = RNNWrapper2_withrunningdropout2(retain_probability=0.8)
+    #     rnnWrapper.create_rnn()
 
-        rnnWrapper.trainParam.learner = rnn_model.learn.GradientDecentWithMomentumLearner(lr, mc)
-        updates = rnnWrapper.trainParam.learner.getUpdates(rnnWrapper.model.getParams(), rnnWrapper.modelEvaluator.cost())
-        rnnWrapper.add_updates(updates)
-        rnnWrapper.create_data()
-        x_val = rnnWrapper.x_val
-        y_val = rnnWrapper.y_val
+    #     rnnWrapper.trainParam.learner = rnn_model.learn.GradientDecentWithMomentumLearner(lr, mc)
+    #     updates = rnnWrapper.trainParam.learner.getUpdates(rnnWrapper.model.getParams(), rnnWrapper.modelEvaluator.cost())
+    #     rnnWrapper.add_updates(updates)
+    #     rnnWrapper.create_data()
+    #     x_val = rnnWrapper.x_val
+    #     y_val = rnnWrapper.y_val
 
-        z_val = rnnWrapper.get_next_dropout()
-        for i in range(n_loops):
-            # if i % 600 == 0:
-            #     print("gd_m error ratio",
-            #           rnnWrapper.validate_model(x_val, y_val, z_val))
-            rnnWrapper.do_train(x_val, y_val, z_val)
-        self.assertEqual(0.2800, numpy.around(1 - rnnWrapper.modelEvaluator.accuracyFunction(x_val, y_val, z_val), 4), "Mismatch in final expected gdm error")
+    #     z_val = rnnWrapper.get_next_dropout()
+    #     for i in range(n_loops):
+    #         # if i % 600 == 0:
+    #         #     print("gd_m error ratio",
+    #         #           rnnWrapper.validate_model(x_val, y_val, z_val))
+    #         rnnWrapper.do_train(x_val, y_val, z_val)
+    #     self.assertEqual(0.2800, numpy.around(1 - rnnWrapper.modelEvaluator.accuracyFunction(x_val, y_val, z_val), 4), "Mismatch in final expected gdm error")
 
     def test_gd_momentum_withrunningdropout2_3(self):
         lr = 0.75
@@ -723,52 +723,52 @@ class TreeTest(unittest.TestCase):
 
     def test_momentumWrapper(self):
         self.gd_momentum_run_validator(RNNWrapper2_withrunningdropout3(retain_probability=0.8), 0.75, 0.0009, 0.2800)
-        self.gd_momentum_run_validator(RNNWrapper2_withrunningdropout2(retain_probability=0.8), 0.75, 0.0009, 0.2800)
+        # self.gd_momentum_run_validator(RNNWrapper2_withrunningdropout2(retain_probability=0.8), 0.75, 0.0009, 0.2800)
         self.gd_momentum_run_validator(RNNWrapper2_withrunningdropout3(retain_probability=0.9), 0.75, 0.0009, 0.1800)
-        self.gd_momentum_run_validator(RNNWrapper2_withrunningdropout2(retain_probability=0.9), 0.75, 0.0009, 0.1800)
+        # self.gd_momentum_run_validator(RNNWrapper2_withrunningdropout2(retain_probability=0.9), 0.75, 0.0009, 0.1800)
         self.gd_momentum_run_validator(RNNWrapper2_withrunningdropout3(retain_probability=1.0), 0.75, 0.0009, 0.1200)
-        self.gd_momentum_run_validator(RNNWrapper2_withrunningdropout2(retain_probability=1.0), 0.75, 0.0009, 0.1200)
+        # self.gd_momentum_run_validator(RNNWrapper2_withrunningdropout2(retain_probability=1.0), 0.75, 0.0009, 0.1200)
 
-    def test_momentumWrapper2(self):
-        rnnWrapper2 = RNNWrapper2_withrunningdropout2(retain_probability=0.8)
-        self.gd_momentum_run_validator(rnnWrapper2, 0.75, 0.0009, 0.2800)
-        rnnWrapper3 = RNNWrapper2_withrunningdropout3(retain_probability=0.8)
-        self.gd_momentum_run_validator(rnnWrapper3, 0.75, 0.0009, 0.2800)
-        self.assertEqual(0.2600, numpy.around(1 - rnnWrapper2.getAccuracy(rnnWrapper2.x_val, rnnWrapper2.y_val), 4))
-        self.assertEqual(0.2600, numpy.around(1 - rnnWrapper3.getAccuracy(rnnWrapper3.x_val, rnnWrapper3.y_val), 4))
-        self.assertEqual(0.2800, numpy.around(1 - rnnWrapper2.getAccuracy(rnnWrapper2.x_val, rnnWrapper2.y_val), 4))
-        self.assertEqual(0.2800, numpy.around(1 - rnnWrapper3.getAccuracy(rnnWrapper3.x_val, rnnWrapper3.y_val), 4))
-        self.assertEqual(0.2600, numpy.around(1 - rnnWrapper2.getAccuracy(rnnWrapper2.x_val, rnnWrapper2.y_val), 4))
-        self.assertEqual(0.2600, numpy.around(1 - rnnWrapper3.getAccuracy(rnnWrapper3.x_val, rnnWrapper3.y_val), 4))
-        rnnWrapper2Clone = RNNWrapper2_withrunningdropout2(retain_probability=0.8)
-        rnnWrapper2Clone.model = rnnWrapper2.model.clone(isDropoutEnabled=False)
-        rnnWrapper2Clone.trainParam = rnnWrapper2.trainParam
-        rnnWrapper2Clone.x_val = rnnWrapper2.x_val
-        rnnWrapper2Clone.y_val = rnnWrapper2.y_val
-        rnnWrapper2 = rnnWrapper2Clone
-        rnnWrapper2.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(rnnWrapper2.model, rnnWrapper2.trainParam, inputs=[rnnWrapper2.model.x, rnnWrapper2.model.y, rnnWrapper2.model.z])
-        rnnWrapper3Clone = RNNWrapper2_withrunningdropout3(retain_probability=0.8)
-        rnnWrapper3Clone.model = rnnWrapper3.model.clone(isDropoutEnabled=False)
-        rnnWrapper3Clone.trainParam = rnnWrapper3.trainParam
-        rnnWrapper3Clone.x_val = rnnWrapper3.x_val
-        rnnWrapper3Clone.y_val = rnnWrapper3.y_val
-        rnnWrapper3 = rnnWrapper3Clone
-        rnnWrapper3.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(rnnWrapper3.model, rnnWrapper3.trainParam)
-        # print(pp(rnnWrapper2.modelEvaluator.accuracy()))
-        # rnnWrapper3.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(rnnWrapper3.model, rnnWrapper3.trainParam, withDropout=False)
+    # def test_momentumWrapper2(self):
+    #     rnnWrapper2 = RNNWrapper2_withrunningdropout2(retain_probability=0.8)
+    #     self.gd_momentum_run_validator(rnnWrapper2, 0.75, 0.0009, 0.2800)
+    #     rnnWrapper3 = RNNWrapper2_withrunningdropout3(retain_probability=0.8)
+    #     self.gd_momentum_run_validator(rnnWrapper3, 0.75, 0.0009, 0.2800)
+    #     self.assertEqual(0.2600, numpy.around(1 - rnnWrapper2.getAccuracy(rnnWrapper2.x_val, rnnWrapper2.y_val), 4))
+    #     self.assertEqual(0.2600, numpy.around(1 - rnnWrapper3.getAccuracy(rnnWrapper3.x_val, rnnWrapper3.y_val), 4))
+    #     self.assertEqual(0.2800, numpy.around(1 - rnnWrapper2.getAccuracy(rnnWrapper2.x_val, rnnWrapper2.y_val), 4))
+    #     self.assertEqual(0.2800, numpy.around(1 - rnnWrapper3.getAccuracy(rnnWrapper3.x_val, rnnWrapper3.y_val), 4))
+    #     self.assertEqual(0.2600, numpy.around(1 - rnnWrapper2.getAccuracy(rnnWrapper2.x_val, rnnWrapper2.y_val), 4))
+    #     self.assertEqual(0.2600, numpy.around(1 - rnnWrapper3.getAccuracy(rnnWrapper3.x_val, rnnWrapper3.y_val), 4))
+    #     rnnWrapper2Clone = RNNWrapper2_withrunningdropout2(retain_probability=0.8)
+    #     rnnWrapper2Clone.model = rnnWrapper2.model.clone(isDropoutEnabled=False)
+    #     rnnWrapper2Clone.trainParam = rnnWrapper2.trainParam
+    #     rnnWrapper2Clone.x_val = rnnWrapper2.x_val
+    #     rnnWrapper2Clone.y_val = rnnWrapper2.y_val
+    #     rnnWrapper2 = rnnWrapper2Clone
+    #     rnnWrapper2.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(rnnWrapper2.model, rnnWrapper2.trainParam, inputs=[rnnWrapper2.model.x, rnnWrapper2.model.y, rnnWrapper2.model.z])
+    #     rnnWrapper3Clone = RNNWrapper2_withrunningdropout3(retain_probability=0.8)
+    #     rnnWrapper3Clone.model = rnnWrapper3.model.clone(isDropoutEnabled=False)
+    #     rnnWrapper3Clone.trainParam = rnnWrapper3.trainParam
+    #     rnnWrapper3Clone.x_val = rnnWrapper3.x_val
+    #     rnnWrapper3Clone.y_val = rnnWrapper3.y_val
+    #     rnnWrapper3 = rnnWrapper3Clone
+    #     rnnWrapper3.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(rnnWrapper3.model, rnnWrapper3.trainParam)
+    #     # print(pp(rnnWrapper2.modelEvaluator.accuracy()))
+    #     # rnnWrapper3.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(rnnWrapper3.model, rnnWrapper3.trainParam, withDropout=False)
 
-        self.assertEqual(0.2200, numpy.around(1 - rnnWrapper2.getAccuracy(rnnWrapper2.x_val, rnnWrapper2.y_val), 4))
-        # self.assertEqual(0.2200, numpy.around(1 - rnnWrapper3.getAccuracy(rnnWrapper3.x_val, rnnWrapper3.y_val), 4))
-        self.assertEqual(0.2200, numpy.around(1 - rnnWrapper2.getAccuracy(rnnWrapper2.x_val, rnnWrapper2.y_val), 4))
-        # self.assertEqual(0.2800, numpy.around(1 - rnnWrapper3.getAccuracy(rnnWrapper3.x_val, rnnWrapper3.y_val), 4))
-        self.assertEqual(0.2200, numpy.around(1 - rnnWrapper2.getAccuracy(rnnWrapper2.x_val, rnnWrapper2.y_val), 4))
-        # self.assertEqual(0.2200, numpy.around(1 - rnnWrapper3.getAccuracy(rnnWrapper3.x_val, rnnWrapper3.y_val), 4))
-        self.assertEqual(0.2200, numpy.around(1 - rnnWrapper2.getAccuracy(rnnWrapper2.x_val, rnnWrapper2.y_val), 4))
-        # self.assertEqual(0.2200, numpy.around(1 - rnnWrapper3.getAccuracy(rnnWrapper3.x_val, rnnWrapper3.y_val), 4))
-        self.assertEqual(0.2200, numpy.around(1 - rnnWrapper2.getAccuracy(rnnWrapper2.x_val, rnnWrapper2.y_val), 4))
-        # self.assertEqual(0.2200, numpy.around(1 - rnnWrapper3.getAccuracy(rnnWrapper3.x_val, rnnWrapper3.y_val), 4))
-        self.assertEqual(0.2200, numpy.around(1 - rnnWrapper2.getAccuracy(rnnWrapper2.x_val, rnnWrapper2.y_val), 4))
-        # self.assertEqual(0.2200, numpy.around(1 - rnnWrapper3.getAccuracy(rnnWrapper3.x_val, rnnWrapper3.y_val), 4))
+    #     self.assertEqual(0.2200, numpy.around(1 - rnnWrapper2.getAccuracy(rnnWrapper2.x_val, rnnWrapper2.y_val), 4))
+    #     # self.assertEqual(0.2200, numpy.around(1 - rnnWrapper3.getAccuracy(rnnWrapper3.x_val, rnnWrapper3.y_val), 4))
+    #     self.assertEqual(0.2200, numpy.around(1 - rnnWrapper2.getAccuracy(rnnWrapper2.x_val, rnnWrapper2.y_val), 4))
+    #     # self.assertEqual(0.2800, numpy.around(1 - rnnWrapper3.getAccuracy(rnnWrapper3.x_val, rnnWrapper3.y_val), 4))
+    #     self.assertEqual(0.2200, numpy.around(1 - rnnWrapper2.getAccuracy(rnnWrapper2.x_val, rnnWrapper2.y_val), 4))
+    #     # self.assertEqual(0.2200, numpy.around(1 - rnnWrapper3.getAccuracy(rnnWrapper3.x_val, rnnWrapper3.y_val), 4))
+    #     self.assertEqual(0.2200, numpy.around(1 - rnnWrapper2.getAccuracy(rnnWrapper2.x_val, rnnWrapper2.y_val), 4))
+    #     # self.assertEqual(0.2200, numpy.around(1 - rnnWrapper3.getAccuracy(rnnWrapper3.x_val, rnnWrapper3.y_val), 4))
+    #     self.assertEqual(0.2200, numpy.around(1 - rnnWrapper2.getAccuracy(rnnWrapper2.x_val, rnnWrapper2.y_val), 4))
+    #     # self.assertEqual(0.2200, numpy.around(1 - rnnWrapper3.getAccuracy(rnnWrapper3.x_val, rnnWrapper3.y_val), 4))
+    #     self.assertEqual(0.2200, numpy.around(1 - rnnWrapper2.getAccuracy(rnnWrapper2.x_val, rnnWrapper2.y_val), 4))
+    #     # self.assertEqual(0.2200, numpy.around(1 - rnnWrapper3.getAccuracy(rnnWrapper3.x_val, rnnWrapper3.y_val), 4))
 
 
 if __name__ == "__main__":

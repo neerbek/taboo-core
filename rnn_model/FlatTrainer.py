@@ -201,7 +201,7 @@ class RNNContainer:
         self.isDropoutEnabled = isDropoutEnabled
 
     def clone(self, isDropoutEnabled, rng=RandomState(1234)):
-        clone = RNNContainer(self.nIn, isDropoutEnabled, rng) 
+        clone = RNNContainer(self.nIn, isDropoutEnabled, rng)
         # note the cloning of the layers somehow tricker the theano
         # graph building so you need to set isDropoutEnabled before you clone layers
         for l in self.layers:
