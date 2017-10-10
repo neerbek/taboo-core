@@ -181,8 +181,10 @@ class DropoutLayer:
         pred = self.innerLayer.getPrediction()
         dropout = 0
         if self.container.isDropoutEnabled:
+            print("dropout  with random")
             dropout = self.getNewRandom()
         else:
+            print("dropout  without random")
             scale = T.ones_like(pred)
             scale = self.retain_probability * scale
             dropout = scale
@@ -199,17 +201,21 @@ class RNNContainer:
         self.isDropoutEnabled = isDropoutEnabled
 
     def clone(self, isDropoutEnabled, rng=RandomState(1234)):
-        clone = RNNContainer(self.nIn, isDropoutEnabled, rng)
+        clone = RNNContainer(self.nIn, isDropoutEnabled, rng) 
         # note the cloning of the layers somehow tricker the theano
         # graph building so you need to set isDropoutEnabled before you clone layers
         for l in self.layers:
             lClone = l.clone(clone)
             clone.addLayer(lClone)
-            params = l.params
-            cloneParams = lClone.params
-            for i in range(len(params)):
-                cloneParams[i].set_value(params[i].get_value())
+        self.updateClone(clone)
         return clone
+
+    def updateClone(self, clone):
+        for i in range(len(self.layers)):
+            params = self.layers[i].params
+            cloneParams = clone.layers[i].params
+            for j in range(len(params)):
+                cloneParams[j].set_value(params[j].get_value())
 
     def setDropoutEnabled(self, enabled):
         self.isDropoutEnabled = enabled
@@ -219,6 +225,7 @@ class RNNContainer:
             layer.setInputSize(self.nIn, self.x, 0, self.rng)
         else:
             previousLayer = self.layers[-1]
+            # next line generates the theano graph, i.e. all constants will be loaded into theano now
             layer.setInputSize(previousLayer.nOut, previousLayer.getPrediction(), len(self.layers), self.rng)
         self.nOut = layer.nOut
         self.layers.append(layer)
@@ -268,7 +275,7 @@ class ModelEvaluator:
         if inputs is None:
             inputs = [model.x, model.y]
         self.model = model
-        model.setDropoutEnabled(True)
+        # model.setDropoutEnabled(True)
         self.trainParam = trainParam
         self.costFunction = theano.function(
             inputs=inputs,
@@ -316,13 +323,13 @@ class ModelEvaluator:
         return self.accuracyFunction(X, Y)
 
     def confusionMatrix(self):
-        """ count of true and false preds
+        """ count of true and false preds. Assumes that first and last column are the classes we are interested in. Fails somewhat if there are more than two layers
         """
         y_pred = T.argmax(self.model.getOutputPrediction(), axis=1)
         y_simple = T.argmax(self.model.y, axis=1)
-        first_row = T.ones_like(self.model.y[0, :])
-        TRUE_CONSTANT = T.sum(first_row)
-        FALSE_CONSTANT = 1
+        shape = getMatrixShape(self.model.y)
+        TRUE_CONSTANT = shape[1] - 1  # maximum column
+        FALSE_CONSTANT = 0            # minimum column
         all_t = T.eq(TRUE_CONSTANT, y_simple)
         all_f = T.eq(FALSE_CONSTANT, y_simple)  # since we _know_ that labels are either TRUE or FALSE
         # count_ones = T.ones_like(y_simple)
@@ -340,14 +347,13 @@ class ModelEvaluator:
     def getConfusionMatrix(self, X, Y):
         return self.confusionMatrixFunction(X, Y)
 
-def measure(X, Y, batchSize, modelEvaluator):
-    perf = FlatPerformanceMeasurer()
+def measure(X, Y, batchSize, modelEvaluator, epoch):
+    perf = FlatPerformanceMeasurer(epoch)
     n = X.shape[0]
     nBatches = int(numpy.ceil(n / batchSize))
     for i in range(nBatches):
         xIn = X[i * batchSize: (i + 1) * batchSize]
         yIn = Y[i * batchSize: (i + 1) * batchSize]
-        # z_val = retain_probability * numpy.ones(shape=(x_val.shape[0], rnn.n_hidden), dtype=theano.config.floatX)
         currentSize = xIn.shape[0]
         perf.accuracy += modelEvaluator.getAccuracy(xIn, yIn) * currentSize  # append fraction accuracy
         perf.cost += modelEvaluator.getCost(xIn, yIn) * currentSize        # append fraction cost
@@ -360,7 +366,7 @@ def measure(X, Y, batchSize, modelEvaluator):
     perf.cost = perf.cost / n
     return perf
 
-def train(trainParam, rnnContainer, file_prefix="save", n_epochs=1, rng=RandomState(1234), epoch=0, validationFrequency=1, trainReportFrequency=1):
+def train(trainParam, rnnContainer, n_epochs=1, trainReportFrequency=1, validationFrequency=1, file_prefix="save", rng=RandomState(1234), epoch=0):
     it = 0
     n = trainParam.X.shape[0]  # number of examples
     repSize = trainParam.X.shape[1]  # size of representations
@@ -373,17 +379,24 @@ def train(trainParam, rnnContainer, file_prefix="save", n_epochs=1, rng=RandomSt
 
     modelEvaluator = ModelEvaluator(rnnContainer, trainParam)
 
-    updates = trainParam.learner.getUpdates(rnnContainer.getParams(), modelEvaluator.cost)
+    updates = trainParam.learner.getUpdates(rnnContainer.getParams(), modelEvaluator.cost())
     updateKeys = [k for k in updates.keys()]  # updateKeys are needed for updating learning
 
-    outputs = [modelEvaluator.accuracy, modelEvaluator.cost] + [updates[k] for k in updateKeys]
+    outputs = [modelEvaluator.accuracy(), modelEvaluator.cost()] + [updates[k] for k in updateKeys]
 
-    train = theano.function(inputs=[rnnContainer.X, rnnContainer.Y],
+    train = theano.function(inputs=[rnnContainer.x, rnnContainer.y],
                             outputs=outputs)
 
-    performanceMeasurerBest = FlatPerformanceMeasurer()
-    performanceMeasurerBest.runningEpoch = -1
     performanceMeasurer = FlatPerformanceMeasurer(-1)
+    print("calculating validation score")
+    valModel = rnnContainer.clone(isDropoutEnabled=False)  # copy model
+    valModelEvaluator = ModelEvaluator(valModel, trainParam)
+    performanceMeasurer = measure(trainParam.valX, trainParam.valY, nValidBatches, valModelEvaluator, epoch)
+    performanceMeasurer.report(msg="{} Epoch {}. On validation set: (this is new best): ".format(
+        datetime.now().strftime('%d%m%y %H:%M'), epoch))
+    performanceMeasurerBest = performanceMeasurer
+    performanceMeasurerBest.epoch = epoch
+    performanceMeasurerBest.runningEpoch = epoch
 
     while (n_epochs == -1 or epoch < n_epochs):
         perm = rng.permutation(n)
@@ -416,14 +429,18 @@ def train(trainParam, rnnContainer, file_prefix="save", n_epochs=1, rng=RandomSt
             # Timers.calltheanotimer.end()
             it += 1
             if it % trainReportFrequency == 0:
-                minibatchZeros = yIn.shape[0] - numpy.sum(yIn[:, 0])
+                minibatchZeros = (yIn.shape[0] - numpy.sum(yIn[:, 0])) / yIn.shape[0]
                 minibatchAcc = values[0]  # validate_model(x_val, y_val, z_val)
                 print("{} Epoch {}. On train set : Node count {}, avg cost {:.6f}, avg acc {:.4f}%".format(
                     datetime.now().strftime('%d%m%y %H:%M'), epoch, trainCount, trainCost / trainCount, trainAcc / trainCount * 100.))
                 print("minibatch {}/{}, On train set: batch acc {:.4f} %  ({:.4f} %)".format(minibatchIndex + 1, nTrainBatches, minibatchAcc * 100.0, minibatchZeros * 100.0))
 
             if it % validationFrequency == 0:
-                performanceMeasurer = measure(trainParam.valX, trainParam.valY, nValidBatches, modelEvaluator)
+                # valModel = rnnContainer.clone(isDropoutEnabled=False)  # copy model
+                # valModelEvaluator = ModelEvaluator(valModel, trainParam)
+                rnnContainer.updateClone(valModel)
+                # valModelEvaluator = ModelEvaluator(valModel, trainParam)
+                performanceMeasurer = measure(trainParam.valX, trainParam.valY, nValidBatches, valModelEvaluator, epoch)
                 performanceMeasurer.report(msg="{} Epoch {}. On validation set: Best ({}, {:.6f}, {:.4f}%). Current: ".format(
                     datetime.now().strftime('%d%m%y %H:%M'), epoch, performanceMeasurerBest.epoch, performanceMeasurerBest.cost * 1.0, performanceMeasurerBest.accuracy * 100.))
                 cm = performanceMeasurer.confusionMatrix
@@ -451,7 +468,7 @@ def saveBest(model, filePrefix, epoch, performanceMeasurer, performanceMeasurerB
     save(model, filename, epoch, performanceMeasurer, performanceMeasurerBest)
 
 def save(model, filename, epoch, performanceMeasurer, performanceMeasurerBest):
-    print("Saving flat model. Previous {};{:.4f}. New {};{:.4f}".format(performanceMeasurerBest.epoch, performanceMeasurerBest.accuracy, performanceMeasurer.epoch, performanceMeasurer.accuracy))
+    print("Saving flat model. Previous {};{:.4f}. New {};{:.4f}".format(performanceMeasurerBest.epoch, performanceMeasurerBest.accuracy, epoch, performanceMeasurer.accuracy))
     print("Saving as " + filename)
     model.save(filename=filename, epoch=epoch, acc=performanceMeasurer.accuracy)
 
