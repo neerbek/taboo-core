@@ -565,7 +565,7 @@ def addNodeRepresentations(reg, node, x_val, y_val, evaluator):
 
 
 def getInputArrays(reg, trees, evaluator):
-    """Generates input representations for use with the rnn in training and in evaluation. I.e. 
+    """Generates input representations for use with the rnn in training and in evaluation. I.e.
     formats the input which encoded as trees into x_val and y_val flat list"""
     # RNNTimers.getinputarraytimer.begin()
     list_x = []

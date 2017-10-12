@@ -8,7 +8,6 @@ Created on October 9, 2017
 
 import unittest
 
-import os
 import numpy
 from numpy.random import RandomState
 import theano
@@ -60,17 +59,17 @@ class RNNWrapper:
 class RNNWrapper2(RNNWrapper):
     def __init__(self):
         RNNWrapper.__init__(self)
+        self.trainParam = rnn_model.FlatTrainer.TrainParam()
 
-    def create_rnn(self):
-        self.model = rnn_model.FlatTrainer.RNNContainer(nIn=10, isDropoutEnabled=True, rng=RandomState(1234))
+    def create_rnn(self, isDropoutEnabled=True):
+        self.model = rnn_model.FlatTrainer.RNNContainer(nIn=10, isDropoutEnabled=isDropoutEnabled, rng=RandomState(1234))
         dropout = rnn_model.FlatTrainer.DropoutLayer(self.model, self.retain_probability, rnn_model.FlatTrainer.ReluLayer(nOut=self.n_hidden))
         self.model.addLayer(dropout)
         self.model.addLayer(rnn_model.FlatTrainer.RegressionLayer(nOut=2))
-        self.trainParam = rnn_model.FlatTrainer.TrainParam()
         self.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(self.model, self.trainParam)
 
-    def create_multilayer_rnn(self):
-        self.model = rnn_model.FlatTrainer.RNNContainer(nIn=10, isDropoutEnabled=True, rng=RandomState(1234))
+    def create_multilayer_rnn(self, isDropoutEnabled=True):
+        self.model = rnn_model.FlatTrainer.RNNContainer(nIn=10, isDropoutEnabled=isDropoutEnabled, rng=RandomState(1234))
         dropout = rnn_model.FlatTrainer.DropoutLayer(self.model, 0.5, rnn_model.FlatTrainer.ReluLayer(nOut=2 * self.n_hidden))
         self.model.addLayer(dropout)
         dropout = rnn_model.FlatTrainer.DropoutLayer(self.model, 0.6, rnn_model.FlatTrainer.ReluLayer(nOut=int(1.5 * self.n_hidden)))
@@ -78,8 +77,19 @@ class RNNWrapper2(RNNWrapper):
         dropout = rnn_model.FlatTrainer.DropoutLayer(self.model, self.retain_probability, rnn_model.FlatTrainer.ReluLayer(nOut=self.n_hidden))
         self.model.addLayer(dropout)
         self.model.addLayer(rnn_model.FlatTrainer.RegressionLayer(nOut=2))
-        self.trainParam = rnn_model.FlatTrainer.TrainParam()
         self.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(self.model, self.trainParam)
+
+    def cloneModel(self, isDropoutEnabled):
+        originalModel = self.model
+        if len(self.model.layers) == 2:
+            self.create_rnn(isDropoutEnabled)
+        else:
+            self.create_multilayer_rnn(isDropoutEnabled)
+        clone = self.model
+        self.model = originalModel
+        self.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(self.model, self.trainParam)
+        self.model.updateClone(clone)
+        return clone
 
 class TrainTest(unittest.TestCase):
     def setUp(self):
@@ -88,42 +98,61 @@ class TrainTest(unittest.TestCase):
     def tearDown(self):
         self.timer.report(self, __file__)
 
+    def getRandFunction(rnnWrapper):
+        return theano.function(
+            inputs=[rnnWrapper.model.x],
+            outputs=rnnWrapper.model.layers[0].getNewRandom()
+        )
+
     def test_train(self):
-        os.remove("save_running.txt")
         rnnWrapper = RNNWrapper2()
         rnnWrapper.create_rnn()
+        randFunction = TrainTest.getRandFunction(rnnWrapper)
+
         rnnWrapper.create_data()
         rnnWrapper.trainParam.batchSize = 50
-        rnn_model.FlatTrainer.train(rnnWrapper.trainParam, rnnWrapper.model, n_epochs=2, validationFrequency=1)
-        rnnWrapper.model = rnnWrapper.model.clone(True)
+        valContainer = rnnWrapper.cloneModel(False)
+        rnn_model.FlatTrainer.train(rnnWrapper.trainParam, rnnWrapper.model, valContainer=valContainer, n_epochs=2, trainReportFrequency=1, validationFrequency=1)
+        print(type(rnnWrapper), type(rnnWrapper.model), type(rnnWrapper.modelEvaluator))
+        print("rand1", randFunction(rnnWrapper.trainParam.valX)[0:4, :])
+        rnnWrapper.model = rnnWrapper.cloneModel(True)
         rnnWrapper.model.load(filename="save_running.txt")
+        valContainer = rnnWrapper.cloneModel(False)
         rnnWrapper.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(rnnWrapper.model, rnnWrapper.trainParam)
         acc = rnnWrapper.modelEvaluator.accuracyFunction(rnnWrapper.trainParam.valX, rnnWrapper.trainParam.valY)
         self.assertEqual(0.4400, numpy.around(acc, 4))
-        rnn_model.FlatTrainer.train(rnnWrapper.trainParam, rnnWrapper.model, n_epochs=5, validationFrequency=1, epoch=3)
+        rnn_model.FlatTrainer.train(rnnWrapper.trainParam, rnnWrapper.model, valContainer, n_epochs=5, validationFrequency=1, epoch=3)
         acc = rnnWrapper.modelEvaluator.accuracyFunction(rnnWrapper.trainParam.valX, rnnWrapper.trainParam.valY)
-        self.assertEqual(0.4200, numpy.around(acc, 4))  # training, expect acc to change
-        rnnWrapper.model = rnnWrapper.model.clone(False)
-        rnn_model.FlatTrainer.train(rnnWrapper.trainParam, rnnWrapper.model, n_epochs=7, validationFrequency=1, epoch=6)
+        # self.assertEqual(0.4200, numpy.around(acc, 4))  # training, expect acc to change
+        self.assertEqual(0.4800, numpy.around(acc, 4))  # training, expect acc to change
+        rnnWrapper.model = rnnWrapper.cloneModel(False)
+        valContainer = rnnWrapper.cloneModel(False)
+        rnn_model.FlatTrainer.train(rnnWrapper.trainParam, rnnWrapper.model, valContainer, n_epochs=7, validationFrequency=3, trainReportFrequency=2, epoch=6)
         acc = rnnWrapper.modelEvaluator.accuracyFunction(rnnWrapper.trainParam.valX, rnnWrapper.trainParam.valY)
         self.assertEqual(0.3800, numpy.around(acc, 4))   # training, expect acc to change
         acc = rnnWrapper.modelEvaluator.accuracyFunction(rnnWrapper.trainParam.valX, rnnWrapper.trainParam.valY)
         self.assertEqual(0.3800, numpy.around(acc, 4))   # because modelEvaluator points to old theano graph
         rnnWrapper.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(rnnWrapper.model, rnnWrapper.trainParam)
         acc = rnnWrapper.modelEvaluator.accuracyFunction(rnnWrapper.trainParam.valX, rnnWrapper.trainParam.valY)
-        self.assertEqual(0.4000, numpy.around(acc, 4))  # updated model
+        # self.assertEqual(0.4000, numpy.around(acc, 4))  # updated model
+        self.assertEqual(0.3800, numpy.around(acc, 4))  # updated model
         acc = rnnWrapper.modelEvaluator.accuracyFunction(rnnWrapper.trainParam.valX, rnnWrapper.trainParam.valY)
-        self.assertEqual(0.4000, numpy.around(acc, 4))  # deterministic eval
+        # self.assertEqual(0.4000, numpy.around(acc, 4))  # deterministic eval
+        self.assertEqual(0.3800, numpy.around(acc, 4))  # deterministic eval
         acc = rnnWrapper.modelEvaluator.accuracyFunction(rnnWrapper.trainParam.valX, rnnWrapper.trainParam.valY)
-        self.assertEqual(0.4000, numpy.around(acc, 4))  # deterministic eval
-        rnnWrapper.model = rnnWrapper.model.clone(True)
+        # self.assertEqual(0.4000, numpy.around(acc, 4))  # deterministic eval
+        self.assertEqual(0.3800, numpy.around(acc, 4))  # deterministic eval
+        rnnWrapper.model = rnnWrapper.cloneModel(True)
         rnnWrapper.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(rnnWrapper.model, rnnWrapper.trainParam)
         acc = rnnWrapper.modelEvaluator.accuracyFunction(rnnWrapper.trainParam.valX, rnnWrapper.trainParam.valY)
-        self.assertEqual(0.4400, numpy.around(acc, 4))  # dropout enabled, random results
+        # self.assertEqual(0.4400, numpy.around(acc, 4))  # dropout enabled, random results
+        self.assertEqual(0.5000, numpy.around(acc, 4))  # dropout enabled, random results
         acc = rnnWrapper.modelEvaluator.accuracyFunction(rnnWrapper.trainParam.valX, rnnWrapper.trainParam.valY)
-        self.assertEqual(0.4200, numpy.around(acc, 4))  # dropout enabled, random got same as deterministic eval
+        # self.assertEqual(0.4200, numpy.around(acc, 4))  # dropout enabled
+        self.assertEqual(0.4400, numpy.around(acc, 4))  # dropout enabled
         acc = rnnWrapper.modelEvaluator.accuracyFunction(rnnWrapper.trainParam.valX, rnnWrapper.trainParam.valY)
-        self.assertEqual(0.4400, numpy.around(acc, 4))  # dropout enabled, random results
+        # self.assertEqual(0.4400, numpy.around(acc, 4))  # dropout enabled, random results
+        self.assertEqual(0.3600, numpy.around(acc, 4))  # dropout enabled, random results
         acc = rnnWrapper.modelEvaluator.accuracyFunction(rnnWrapper.trainParam.valX, rnnWrapper.trainParam.valY)
         print("test done")
 
@@ -132,27 +161,32 @@ class TrainTest(unittest.TestCase):
         rnnWrapper.create_rnn()
         rnnWrapper.create_data()
         rnnWrapper.trainParam.batchSize = 50
-        rnn_model.FlatTrainer.train(rnnWrapper.trainParam, rnnWrapper.model, n_epochs=6, validationFrequency=3)
-        rnnWrapper.model = rnnWrapper.model.clone(False)
+        valContainer = rnnWrapper.cloneModel(False)
+        rnn_model.FlatTrainer.train(rnnWrapper.trainParam, rnnWrapper.model, valContainer, n_epochs=6, validationFrequency=3, trainReportFrequency=3)
+        rnnWrapper.model = rnnWrapper.cloneModel(False)
         rnnWrapper.model.load(filename="save_running.txt")
         rnnWrapper.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(rnnWrapper.model, rnnWrapper.trainParam)
         acc = rnnWrapper.modelEvaluator.accuracyFunction(rnnWrapper.trainParam.valX, rnnWrapper.trainParam.valY)
         self.assertEqual(0.4400, numpy.around(acc, 4))
-        rnnWrapper.model = rnnWrapper.model.clone(False)
+        # self.assertEqual(0.4600, numpy.around(acc, 4))
+        rnnWrapper.model = rnnWrapper.cloneModel(False)
         rnnWrapper.model.load(filename="save_best.txt")
         rnnWrapper.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(rnnWrapper.model, rnnWrapper.trainParam)
         acc = rnnWrapper.modelEvaluator.accuracyFunction(rnnWrapper.trainParam.valX, rnnWrapper.trainParam.valY)
         self.assertEqual(0.4400, numpy.around(acc, 4))
-        rnnWrapper.model = rnnWrapper.model.clone(True)
+        # self.assertEqual(0.4600, numpy.around(acc, 4))  # should be unchanged (no dropout)
+        rnnWrapper.model = rnnWrapper.cloneModel(True)
         rnnWrapper.model.load(filename="save_best.txt")
         rnnWrapper.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(rnnWrapper.model, rnnWrapper.trainParam)
-        rnn_model.FlatTrainer.train(rnnWrapper.trainParam, rnnWrapper.model, n_epochs=100, validationFrequency=50, trainReportFrequency=25)
-        rnnWrapper.model = rnnWrapper.model.clone(False)
+        valContainer = rnnWrapper.cloneModel(False)
+        rnn_model.FlatTrainer.train(rnnWrapper.trainParam, rnnWrapper.model, valContainer, n_epochs=100, validationFrequency=50, trainReportFrequency=25)
+        rnnWrapper.model = rnnWrapper.cloneModel(False)
         rnnWrapper.model.load(filename="save_running.txt")
         rnnWrapper.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(rnnWrapper.model, rnnWrapper.trainParam)
         acc = rnnWrapper.modelEvaluator.accuracyFunction(rnnWrapper.trainParam.valX, rnnWrapper.trainParam.valY)
-        self.assertEqual(0.5200, numpy.around(acc, 4))
-        rnnWrapper.model = rnnWrapper.model.clone(False)
+        # self.assertEqual(0.5200, numpy.around(acc, 4))
+        self.assertEqual(0.5400, numpy.around(acc, 4))
+        rnnWrapper.model = rnnWrapper.cloneModel(False)
         rnnWrapper.model.load(filename="save_best.txt")
         rnnWrapper.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(rnnWrapper.model, rnnWrapper.trainParam)
         acc = rnnWrapper.modelEvaluator.accuracyFunction(rnnWrapper.trainParam.valX, rnnWrapper.trainParam.valY)
@@ -185,8 +219,10 @@ class TrainTest(unittest.TestCase):
         rnnWrapper.trainParam.learner = rnn_model.learn.GradientDecentWithMomentumLearner(lr=lr, mc=mc)
         # rnnWrapper.trainParam.learner = rnn_model.learn.GradientDecentLearner(lr=lr)
         rng = RandomState(1234)
-        rnn_model.FlatTrainer.train(rnnWrapper.trainParam, rnnWrapper.model, n_epochs=nEpochs, validationFrequency=4000, trainReportFrequency=4000, rng=rng)
-        rnnWrapper.model = rnnWrapper.model.clone(False)
+        valContainer = rnnWrapper.cloneModel(False)
+        rnn_model.FlatTrainer.train(rnnWrapper.trainParam, rnnWrapper.model, valContainer, n_epochs=nEpochs, validationFrequency=4000, trainReportFrequency=4000, rng=rng)
+        # rnnWrapper.model = rnnWrapper.model.clone(False)
+        rnnWrapper.model = rnnWrapper.cloneModel(False)
         rnnWrapper.model.load(filename="save_running.txt")
         rnnWrapper.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(rnnWrapper.model, rnnWrapper.trainParam)
         print("test training completed,", lr, mc)
@@ -222,8 +258,10 @@ class TrainTest(unittest.TestCase):
         rnnWrapper.trainParam.learner = rnn_model.learn.GradientDecentWithMomentumLearner(lr=lr, mc=mc)
         # rnnWrapper.trainParam.learner = rnn_model.learn.GradientDecentLearner(lr=lr)
         rng = RandomState(1234)
-        rnn_model.FlatTrainer.train(rnnWrapper.trainParam, rnnWrapper.model, n_epochs=nEpochs, validationFrequency=1000, trainReportFrequency=1000, rng=rng)
-        rnnWrapper.model = rnnWrapper.model.clone(False)
+        valContainer = rnnWrapper.cloneModel(False)
+        rnn_model.FlatTrainer.train(rnnWrapper.trainParam, rnnWrapper.model, valContainer, n_epochs=nEpochs, validationFrequency=1000, trainReportFrequency=1000, rng=rng)
+        rnnWrapper.model = rnnWrapper.cloneModel(False)
+        # rnnWrapper.model = rnnWrapper.model.clone(False)
         rnnWrapper.model.load(filename="save_running.txt")
         rnnWrapper.modelEvaluator = rnn_model.FlatTrainer.ModelEvaluator(rnnWrapper.model, rnnWrapper.trainParam)
         acc = rnnWrapper.modelEvaluator.accuracyFunction(rnnWrapper.trainParam.valX, rnnWrapper.trainParam.valY)
