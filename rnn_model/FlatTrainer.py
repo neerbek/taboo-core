@@ -10,6 +10,9 @@ import rnn_model.rnn
 import rnn_enron
 
 class TrainParam:
+    COST_RMS = 'rms'
+    COST_CROSS = 'cross entropy'
+
     def __init__(self):
         self.X = None
         self.Y = None
@@ -20,6 +23,7 @@ class TrainParam:
         self.validBatchSize = 0
         self.L1param = 0
         self.L2param = 0
+        self.cost = TrainParam.COST_RMS
 
     def getDataCount(self):
         return self.X.shape[0]
@@ -105,6 +109,7 @@ class TreeTrainParam:
         self.validBatchSize = 0
         self.L1param = 0
         self.L2param = 0
+        self.cost = TrainParam.COST_RMS
         # tree stuff
         self.rnnContainer = None
         self.nx = None
@@ -348,6 +353,24 @@ class RNNContainer:
         self.nOut = layer.nOut
         self.layers.append(layer)
 
+    def addTrainUpdates(self, trainParam, modelEvaluator, extraOutputs=[]):
+        updates = trainParam.learner.getUpdates(self.getParams(), modelEvaluator.cost())
+        self.keys = [k for k in updates.keys()]
+        self.trainOutputOffset = len(extraOutputs)
+        outputs = []
+        outputs.extend(extraOutputs)
+        for k in self.keys:
+            outputs.append(updates[k])
+        self.trainFunction = theano.function(
+            inputs=[self.x, self.y],
+            outputs=outputs)
+
+    def doTrain(self, xMatrix, yMatrix):
+        values = self.trainFunction(xMatrix, yMatrix)
+        for index, param in enumerate(self.keys):
+            param.set_value(values[index + self.trainOutputOffset])
+        return values[:self.trainOutputOffset]  # return extraOutputs
+
     def getParams(self):
         params = []
         for l in self.layers:
@@ -393,11 +416,16 @@ class ModelEvaluator:
         if inputs is None:
             inputs = [model.x, model.y]
         self.model = model
-        # model.setDropoutEnabled(True)
         self.trainParam = trainParam
+        if trainParam.cost == TrainParam.COST_RMS:
+            self.cost = self.RMSCost
+        elif trainParam.cost == TrainParam.COST_CROSS:
+            self.cost = self.crossCost
+        else:
+            raise Exception("Unknown option for trainParam.cost {}".format(trainParam.cost))
         self.costFunction = theano.function(
             inputs=inputs,
-            outputs=self.cost()
+            outputs=self.cost()   # either RMS or cross selected above
         )
         self.accuracyFunction = theano.function(
             inputs=inputs,
@@ -408,10 +436,19 @@ class ModelEvaluator:
             outputs=self.confusionMatrix()
         )
 
-    def cost(self):  # RMS cost, theano
+    def RMSCost(self):  # RMS cost, theano
         pred = self.model.getOutputPrediction()
         err = pred - self.model.y
         c = T.mean(0.5 * ((err) ** 2))
+        c += self.trainParam.L1param * self.model.getL1()
+        c += self.trainParam.L2param * self.model.getL2()
+        return c
+
+    def crossCost(self):  # cross entropy cost, theano
+        pred = self.model.getOutputPrediction()
+        log_prob = T.switch(T.eq(pred, 0), 0, T.log(pred))  # log if p>0, 0 ow.
+        err = self.model.y * log_prob
+        c = -T.sum(T.mean(err, axis=0))
         c += self.trainParam.L1param * self.model.getL1()
         c += self.trainParam.L2param * self.model.getL2()
         return c
@@ -468,6 +505,8 @@ class ModelEvaluator:
 def measure(X, Y, batchSize, modelEvaluator, epoch=-1):
     perf = FlatPerformanceMeasurer(epoch)
     n = X.shape[0]
+    if batchSize == 0:
+        batchSize = n
     nBatches = int(numpy.ceil(n / batchSize))
     for i in range(nBatches):
         xIn = X[i * batchSize: (i + 1) * batchSize]
@@ -488,28 +527,22 @@ def train(trainParam, rnnContainer, valContainer, n_epochs=1, trainReportFrequen
     it = 0
     n = trainParam.getDataCount()    # number of examples
 
+    if trainParam.batchSize == 0:
+        trainParam.batchSize = n
     nTrainBatches = int(numpy.ceil(n / trainParam.batchSize))
-    if trainParam.validBatchSize == 0:
-        trainParam.validBatchSize = trainParam.getValidationDataCount()
-    nValidBatches = int(numpy.ceil(trainParam.getValidationDataCount() / trainParam.validBatchSize))
 
     modelEvaluator = ModelEvaluator(rnnContainer, trainParam)
 
-    updates = trainParam.learner.getUpdates(rnnContainer.getParams(), modelEvaluator.cost())
-    updateKeys = [k for k in updates.keys()]  # updateKeys are needed for updating learning
-
-    outputs = [modelEvaluator.accuracy(), modelEvaluator.cost()] + [updates[k] for k in updateKeys]
-
-    train = theano.function(inputs=[rnnContainer.x, rnnContainer.y],
-                            outputs=outputs)
+    rnnContainer.addTrainUpdates(trainParam, modelEvaluator, extraOutputs=[modelEvaluator.accuracy(), modelEvaluator.cost()])
 
     performanceMeasurer = FlatPerformanceMeasurer(epoch)
     print("calculating validation score")
     # valModel = rnnContainer.clone(isDropoutEnabled=False)  # copy model
     rnnContainer.updateClone(valContainer)
     valModelEvaluator = ModelEvaluator(valContainer, trainParam)
+
     (valX, valY) = trainParam.getValidationData()
-    performanceMeasurer = measure(valX, valY, nValidBatches, valModelEvaluator, epoch)
+    performanceMeasurer = measure(valX, valY, trainParam.validBatchSize, valModelEvaluator, epoch)
     performanceMeasurer.report(msg="{} Epoch {}. On validation set: (this is new best): ".format(
         datetime.now().strftime('%d%m%y %H:%M'), epoch))
     performanceMeasurerBest = performanceMeasurer
@@ -532,16 +565,14 @@ def train(trainParam, rnnContainer, valContainer, n_epochs=1, trainReportFrequen
                 continue
             # z_in = rng.binomial(n=1, size=(current_size, rep_size), p=retain_probability)
             # z_in = z_in.astype(dtype=theano.config.floatX)
-            values = train(xIn, yIn)
+            values = rnnContainer.doTrain(xIn, yIn)
             trainAcc += values[0] * currentSize
             trainCost += values[1] * currentSize
             trainCount += currentSize
-            for index, param in enumerate(updateKeys):
-                param.set_value(values[index + 2])
             # Timers.calltheanotimer.end()
             it += 1
             if it % trainReportFrequency == 0:
-                minibatchZeros = (yIn.shape[0] - numpy.sum(yIn[:, 0])) / yIn.shape[0]
+                minibatchZeros = numpy.sum(yIn[:, 0]) / yIn.shape[0]
                 minibatchAcc = values[0]  # validate_model(x_val, y_val, z_val)
                 print("{} Epoch {}. On train set : Node count {}, avg cost {:.6f}, avg acc {:.4f}%".format(
                     datetime.now().strftime('%d%m%y %H:%M'), epoch, trainCount, trainCost / trainCount, trainAcc / trainCount * 100.))
@@ -553,7 +584,7 @@ def train(trainParam, rnnContainer, valContainer, n_epochs=1, trainReportFrequen
                 rnnContainer.updateClone(valContainer)
                 # valModelEvaluator = ModelEvaluator(valModel, trainParam)
                 (valX, valY) = trainParam.getValidationData()
-                performanceMeasurer = measure(valX, valY, nValidBatches, valModelEvaluator, epoch)
+                performanceMeasurer = measure(valX, valY, trainParam.validBatchSize, valModelEvaluator, epoch)
                 performanceMeasurer.report(msg="{} Epoch {}. On validation set: Best ({}, {:.6f}, {:.4f}%). Current: ".format(
                     datetime.now().strftime('%d%m%y %H:%M'), epoch, performanceMeasurerBest.epoch, performanceMeasurerBest.cost * 1.0, performanceMeasurerBest.accuracy * 100.))
                 cm = performanceMeasurer.confusionMatrix
