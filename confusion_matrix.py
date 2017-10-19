@@ -6,6 +6,10 @@ Created on August 16 2017
 """
 
 import io
+import os
+if os.getenv('DISPLAY') == None:
+    import matplotlib
+    matplotlib.use('Agg')  # https://stackoverflow.com/questions/4931376/generating-matplotlib-graphs-without-a-running-x-server
 
 import pylab
 import scipy
