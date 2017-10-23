@@ -229,7 +229,7 @@ class TrainTest(unittest.TestCase):
         acc = rnnWrapper.modelEvaluator.accuracyFunction(rnnWrapper.trainParam.valX, rnnWrapper.trainParam.valY)
         self.assertEqual(expAcc, numpy.around(acc, 4))
         cost = rnnWrapper.modelEvaluator.costFunction(rnnWrapper.trainParam.valX, rnnWrapper.trainParam.valY)
-        self.assertEqual(int(expCost * 10000), int(numpy.around(cost, 3) * 10000))
+        self.assertAlmostEqual(expCost, cost, places=3)
 
     def test_train_single(self):
         rnnWrapper = RNNWrapper2()
