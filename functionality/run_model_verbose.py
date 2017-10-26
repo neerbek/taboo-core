@@ -201,9 +201,9 @@ class VerboseValidationLogger:
         if max_count == -1:
             max_count = len(self.log)
         max_count = min(max_count, len(self.log))
-        header = "Index\tTruth\tIs_Accurate\tProbSen\tSize\tSentence\tTree"
+        header = confusion_matrix.EMBEDDING_FILE_HEADER_BASE
         if output_embeddings:
-            header += "\tRootEmbedding"
+            header = confusion_matrix.EMBEDDING_FILE_HEADER_FULL
         print(header)
         for i in range(max_count):
             entry = self.log[i]

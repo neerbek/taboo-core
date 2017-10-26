@@ -25,6 +25,23 @@ class Line:
         self.is_correct = is_correct
         self.sen_score = sen_score
 
+    def equals(self, other):
+        if self.ground_truth != other.ground_truth:
+            return False
+        if self.is_correct != other.is_correct:
+            return False
+        if self.sen_score != other.sen_score:
+            return False
+        if len(self.emb) != len(other.emb):
+            return False
+        for i in range(len(self.emb)):
+            if self.emb[i] != other.emb[i]:
+                return False
+        t1 = load_trees.output(self.tree)
+        t2 = load_trees.output(other.tree)
+        return (t1 == t2)
+
+
 class ConfusionMatrix:
     TYPE_TP = 0
     TYPE_FP = 1
@@ -444,6 +461,40 @@ def is_all_elements_nan(numbers):
             return False
     return True
 
+
+EMBEDDING_FILE_HEADER_BASE = "Index\tTruth\tIs_Accurate\tProbSen\tSize\tSentence\tTree"
+EMBEDDING_FILE_HEADER_FULL = EMBEDDING_FILE_HEADER_BASE + "\tRootEmbedding"
+
+def write_embeddings(outputfile, lines, max_line_count=-1):
+    count = 0
+    with io.open(outputfile, 'w', encoding='utf8') as f:
+        f.write(EMBEDDING_FILE_HEADER_FULL)
+        f.write("\n")
+        count += 1
+        for l in lines:
+            if count == max_line_count:
+                break
+            e = ["", "", "", "", "", "", "", ""]
+            #    0   1   2   3   4   5   6   7
+            # entry = [truth_val[i], is_accurate[i], p_sensitive[i], node_count, text, tree_str, reluLayer_output[i]]
+            e[0] = count
+            e[1] = l.ground_truth
+            e[2] = l.is_correct
+            e[3] = l.sen_score
+            e[4] = load_trees.count_nodes(l.tree)
+            e[5] = load_trees.output_sentence(l.tree)
+            e[6] = load_trees.output(l.tree)
+            e[7] = l.emb
+            msg = "{}\t{}\t{}\t{}\t{}\t{}\t{}".format(e[0], e[1], e[2], e[3], e[4], e[5], e[6])
+            arr = "["
+            for component in e[7]:
+                arr += str(component) + ","
+            arr = arr[:-1] + "]"
+            msg += "\t" + arr
+            f.write(msg)
+            f.write("\n")
+
+
 def read_embeddings(inputfile, max_line_count=-1):
     count = 0
     lines = []
@@ -454,8 +505,8 @@ def read_embeddings(inputfile, max_line_count=-1):
             if max_line_count > -1 and count > max_line_count:
                 break
             line = line[:-1]  # strips newline. But consider: http://stackoverflow.com/questions/509446/python-reading-lines-w-o-n
-            if line.startswith("Index\tTruth\tIs_Accurate\tProbSen\tSize\tSentence\tTree"):
-                if not line.endswith("\tRootEmbedding"):
+            if line.startswith(EMBEDDING_FILE_HEADER_BASE):
+                if line != EMBEDDING_FILE_HEADER_FULL:
                     print("WARNING: No embeddings in file. Aborting")
                     break
                 continue
