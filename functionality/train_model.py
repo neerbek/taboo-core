@@ -113,9 +113,9 @@ while i < argn:
     elif setting == '-start_epoch':
         start_epoch = int(arg)
     elif setting == '-validation_frequency':
-        validation_frequency = int(arg)
+        validation_frequency = ai_util.eval_expr(arg)
     elif setting == '-train_report_frequency':
-        train_report_frequency = int(arg)
+        train_report_frequency = ai_util.eval_expr(arg)
     elif setting == '-balance_data':
         balance_data = (arg.lower() in ("yes", "true", "t", "1"))
         print("balance_data=", balance_data)
