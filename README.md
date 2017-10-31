@@ -10,15 +10,15 @@ git clone https://bitbucket.alexandra.dk/scm/tab/taboo-core.git
 
 Runs python3(!)
 
-Dependencies: numpy, theano, nltk, click and flask
+Dependencies: numpy, theano, nltk, click, flask, matplotlib
 
-pip3 (or conda or apt-get or ...) install numpy, theano, nltk, click, flask
+pip3 (or conda or apt-get or ...) install <dependencies>
 
 Ex:
 ```
 sudo apt-get install python3-pip
 
-pip3 install theano nltk flask
+pip3 install theano nltk flask matplotlib
 ```
 
 ## Glove
