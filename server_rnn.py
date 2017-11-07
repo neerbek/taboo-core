@@ -151,6 +151,7 @@ class Trainer:
     def __init__(self, trainer=None):
         if trainer != None:
             self.learning_rate = trainer.learning_rate
+            self.mc = trainer.learning_rate
             self.L1_reg = trainer.L1_reg
             self.L2_reg = trainer.L2_reg
             self.n_epochs = trainer.n_epochs
@@ -164,6 +165,7 @@ class Trainer:
             self.learn = trainer.learn
         else:
             self.learning_rate = 0.01
+            self.mc = 0
             self.L1_reg = 0.0
             self.L2_reg = 0.0001
             self.n_epochs = 1000
