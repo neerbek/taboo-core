@@ -12,6 +12,7 @@ import theano
 # import theano.function as function
 import theano.tensor as T
 from six.moves import cPickle
+import zipfile
 
 class Regression(object):
     """ Inspired by logistic_sgd.py: http://deeplearning.net/tutorial/code/logistic_sgd.py
@@ -225,22 +226,31 @@ def layeredSave(model, filename='model.save', epoch=0, acc=0):
             cPickle.dump(param.get_value(), f, protocol=cPickle.HIGHEST_PROTOCOL)  # value
 
 def layeredLoad(model, filename='model.save'):
-    epoch = 0
-    acc = 0
-    with open(filename, 'rb') as f:
+    index = filename.find("$")
+    if index != -1:  # assume zipfile
+        zipfilename = filename[:index]
+        modelfilename = filename[index + 1:]
+        with zipfile.ZipFile(zipfilename) as myzip:
+            with myzip.open(modelfilename, 'r') as f:
+                return layeredLoadImpl(model, f)
+    else:
+        with open(filename, 'rb') as f:
+            return layeredLoadImpl(model, f)
+
+def layeredLoadImpl(model, f):
+    value = cPickle.load(f)
+    if value != VERSION_LAYERED:
+        raise Exception("Version mismatch in rnn.layeredLoad, expected: " + VERSION + " got: " + value)
+    epoch = int(cPickle.load(f))
+    acc = float(cPickle.load(f))
+    params = model.getParams()
+    for param in params:
+        name = cPickle.load(f)
+        if name != str(param.name):
+            raise Exception("param name mismatch, expected: " + str(param.name) + " got: " + name)
         value = cPickle.load(f)
-        if value != VERSION_LAYERED:
-            raise Exception("Version mismatch in rnn.layeredLoad, expected: " + VERSION + " got: " + value)
-        epoch = int(cPickle.load(f))
-        acc = float(cPickle.load(f))
-        params = model.getParams()
-        for param in params:
-            name = cPickle.load(f)
-            if name != str(param.name):
-                raise Exception("param name mismatch, expected: " + str(param.name) + " got: " + name)
-            value = cPickle.load(f)
-            # need to cast with astype if it was saved with different bit width (32 vs 64)
-            param.set_value(numpy.array(value).astype(dtype=theano.config.floatX))
+        # need to cast with astype if it was saved with different bit width (32 vs 64)
+        param.set_value(numpy.array(value).astype(dtype=theano.config.floatX))
     return (epoch, acc)
 
 def save(rnn, filename='model.save', epoch=0, acc=0):
