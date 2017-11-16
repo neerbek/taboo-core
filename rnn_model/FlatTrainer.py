@@ -391,7 +391,9 @@ class RNNContainer:
         l2 = 0
         for l in self.layers:
             for p in l.regularizedParams:
-                l2 += (p ** 2).sum()
+                tmp = (p ** 2)
+                l2 += tmp.mean()
+                # l2 += (p ** 2).sum()
         return l2
 
     def load(self, filename):
