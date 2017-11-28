@@ -37,7 +37,7 @@ def syntax():
 
 arglist = sys.argv
 argn = len(arglist)
-
+# argn = "../taboo-jan/functionality/run_inference.py -counttrees ../taboo-core/functionality/201/train_custom250_random.txt -inputtrees ../taboo-jan/functionality/201/test_custom250_random.txt -cutoffs 0.8".split()
 i = 1
 if argn == 1:
     syntax()
@@ -57,8 +57,8 @@ while i < argn:
     elif setting == '-cutoff':
         cutoffs = [float(arg)]
     elif setting == '-cutoffs':
-        l = arg.split(',')
-        cutoffs = [float(e) for e in l]
+        splits = arg.split(',')
+        cutoffs = [float(e) for e in splits]
     elif setting == '-max_tree_count':
         max_tree_count = int(arg)
     else:
@@ -89,6 +89,9 @@ rng = RandomState(random_seed)
 
 traintimer.begin()
 word_counts = inference_enron.get_word_counts(count_trees)
+# run with different cutoff
+# (yes_weights,
+#  no_weights) = inference_enron.get_weights(word_counts, supportCutoff=2)
 (yes_weights,
  no_weights) = inference_enron.get_weights(word_counts)
 only_sensitive = [t for t in input_trees if t.syntax == "4"]

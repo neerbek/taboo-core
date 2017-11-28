@@ -85,13 +85,13 @@ def get_word_counts(trees):
     return word_counts
 
 
-def get_weights(word_counts):
+def get_weights(word_counts, supportCutoff=9):
     yes_weights = defaultdict(list)
     no_weights = defaultdict(list)
     for w in word_counts.keys():
         yc = word_counts[w]["4"]
         nc = word_counts[w]["0"]
-        if (yc + nc) < 9:
+        if (yc + nc) < supportCutoff:
             continue
         if (yc > nc):
             yes_weights[yc / (yc + nc)].append(w)
