@@ -16,7 +16,7 @@ import ai_util
 import rnn_enron
 import server_rnn
 import similarity.load_trees as load_trees
-
+import confusion_matrix
 
 inputmodel = None
 inputtrees = None
@@ -151,7 +151,7 @@ if inputmodel != None:
 cost = trainer.get_cost(rnnWrapper)
 cost_model = trainer.get_cost_model(rnnWrapper, cost)
 validation_model = trainer.get_validation_model(rnnWrapper)
-confusion_matrix = trainer.get_confusion_matrix(rnnWrapper)
+# confusion_matrix = trainer.get_confusion_matrix(rnnWrapper)
 
 class VerboseValidationLogger:
     def __init__(self, rnnWrapper):
