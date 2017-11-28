@@ -562,6 +562,9 @@ def read_embeddings(inputfile, max_line_count=-1):
 def get_embedding_matrix(lines, normalize=False):
     first_emb = None
     embeddings = []
+    if len(lines) == 0:
+        a = numpy.zeros((0, 0))
+        return a
     for l in lines:
         if first_emb == None:
             first_emb = l.emb
