@@ -9,8 +9,8 @@ import os
 # import psutil
 import numpy
 from numpy.random import RandomState
-import theano
-import theano.tensor as T
+import theano  # type: ignore
+import theano.tensor as T  # type: ignore
 from datetime import datetime
 import math
 # import gc

@@ -56,7 +56,7 @@ class Timers:  # for parsing text
 
 
 class RNNTimers:  # timers for evaluating RNN
-    def init():  # resetting timers
+    def init(dummy=0):  # resetting timers
         RNNTimers.evaltimer2 = Timer("eval timer inner")
         RNNTimers.evaltimer = Timer("eval timer")
         RNNTimers.appendtimer = Timer("append timer")

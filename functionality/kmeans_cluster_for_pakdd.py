@@ -173,7 +173,7 @@ def string2Index(sent, lines):
 # index = 16878
 # index = 17101
 # index = 17855
-index = 1018  # nice
+# index = 1018  # nice
 index = findIndex("sincerely", lines, max_count=1)
 goodbye_sent = getCloseNeighborSentences(index, lines, a, max_count=50)
 goodbye_sent = [' Yours sincerely, En', ' Yours sincerely, En', ' IRREVOCABLE STANDBY', ' IRREVOCABLE STANDBY', ' Sorry for the delay', ' Signature of Compan', ' DESCRIPTION OF THE ', ' Subject: shipper im', ' Shall mean the amou', ' OK for me.', ' Please let me know ', ' Please send me a no', ' Sincerely, George R', ' ASSIGNMENT OF THE A', ' Notices shall be in', ' Kind regards, Melan', ': -LRB- 212 -RRB- 34', ' Regards, Andy *****', ' Purpose of Confiden', ' GBP Fixed Rate Day.', ' Enron Wholesale Ser', ' Holmes and Garrison', ' Enron Industrial Ma', ' EXECUTED effective ', ' EXECUTED effective ', ' EXECUTED effective ', ' EXECUTED effective ', ' EXECUTED effective ', ' EXECUTED effective ', ' EXECUTED effective ', ' EXECUTED effective ', ' EXECUTED effective ', ' EXECUTED effective ', ' EXECUTED effective ', ' EXECUTED effective ', ' Please respond to <', ' Yes, Gloal agrees.', ' PURPOSE AND PROCEDU', ' Please see example ', ' Termination of Agre', ' VP -AMP- AGC.', ' VP -AMP- AGC.', ' Shall have the mean', ' Please do not respo', ' Please do not respo', ' MASTER POWER PURCHA', ' Extensions of the G', ' How is my SDI direc', ' Limitation of Remed', ' Limitation of Remed']

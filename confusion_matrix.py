@@ -8,12 +8,12 @@ Created on August 16 2017
 import io
 import os
 if os.getenv('DISPLAY') == None:
-    import matplotlib
+    import matplotlib  # type: ignore
     matplotlib.use('Agg')  # https://stackoverflow.com/questions/4931376/generating-matplotlib-graphs-without-a-running-x-server
 
-import pylab
-import scipy
-import numpy
+import pylab  # type: ignore
+import scipy  # type: ignore
+import numpy  # type: ignore
 
 import similarity.load_trees as load_trees
 

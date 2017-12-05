@@ -3,7 +3,7 @@ from numpy.random import RandomState
 import theano
 # from theano.ifelse import ifelse
 import theano.tensor as T
-from theano.tensor.shared_randomstreams import RandomStreams
+from theano.tensor.shared_randomstreams import RandomStreams  # type: ignore
 from datetime import datetime
 
 import rnn_model.rnn
@@ -24,6 +24,7 @@ class TrainParam:
         self.L1param = 0
         self.L2param = 0
         self.cost = TrainParam.COST_RMS
+        self.retain_probability = 1
 
     def getDataCount(self):
         return self.X.shape[0]
