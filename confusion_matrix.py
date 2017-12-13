@@ -495,11 +495,18 @@ def write_embeddings(outputfile, lines, max_line_count=-1):
             f.write("\n")
 
 
-def read_embeddings(inputfile, max_line_count=-1):
+def read_embeddings(inputfile, max_line_count=-1, originalLines=None):
     count = 0
     lines = []
     nan_indexes = []
     len_embedding = None
+    originalLinesMap = {}   # sentences (str) to index in originalLines
+    if originalLines != None:
+        for index in range(len(originalLines)):
+            line = originalLines[index]
+            sentence = load_trees.output_sentence(line.tree) + "{}".format(line.ground_truth)
+            originalLinesMap[sentence] = index
+            lines.append(line)
     with io.open(inputfile, 'r', encoding='utf8') as f:
         for line in f:
             if max_line_count > -1 and count > max_line_count:
@@ -526,12 +533,20 @@ def read_embeddings(inputfile, max_line_count=-1):
             emb = emb[1:-1]  # remove "[" + "]"
             emb = emb.split(",")
             line_element = Line()
-            tree = load_trees.get_tree(t)
-            line_element.tree = tree
-            line_element.emb = []
             line_element.ground_truth = int(e[1])
             line_element.is_correct = int(e[2])
             line_element.sen_score = numpy.float32(e[3])
+            if originalLines is None:
+                tree = load_trees.get_tree(t)
+                line_element.tree = tree
+            else:
+                sentence = t = e[-3] + "{}".format(line_element.ground_truth)
+                if sentence in originalLinesMap:
+                    line_element.tree = originalLines[originalLinesMap[sentence]].tree  # preserve memory
+                else:
+                    count += 1
+                    continue  # not adding to lines
+            line_element.emb = []
             do_continue = False
             for em in emb:
                 if len(em) == 0:
@@ -539,7 +554,7 @@ def read_embeddings(inputfile, max_line_count=-1):
                 f = numpy.float32(em)  # float(em)
                 if numpy.isnan(f):
                     if not is_all_elements_nan(emb):
-                        raise Exception("Not all elements in line {} is nan!".format(count))
+                        print("Not all elements in line {} is nan!".format(count))  # this might be the case for intermediate nodes in the tree
                     nan_indexes.append(count)
                     do_continue = True
                     break
