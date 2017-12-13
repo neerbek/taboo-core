@@ -127,8 +127,9 @@ class PerformanceMeasurer:
         self.root_confusion_matrix = val_root_confusion_matrix
         # Timers.totaltimer.end()
 
-    def measure_roots(self, input_trees, batch_size, retain_probability, rnn, measure_wrapper):
+    def measure_roots(self, input_trees, batch_size, retain_probability, rnn, measure_wrapper, measureRoots=True):
         "Measure wrapper/function here receives x, y and z values and also the list of trees. This allow the wrapper of doing corpus specific measures"
+        print("measure_roots: ", measureRoots)
         evaluator = rnn_enron.Evaluator(rnn)
         n_batches = int(math.ceil(len(input_trees) / batch_size))
         for i in range(n_batches):
@@ -136,9 +137,35 @@ class PerformanceMeasurer:
             (roots, x_val, y_val) = rnn_enron.getInputArrays(rnn, trees, evaluator)
             x_roots = []
             y_roots = []
-            for r in roots:
-                x_roots.append(x_val[r, :])
-                y_roots.append(y_val[r, :])
+            if measureRoots:
+                for r in roots:
+                    x_roots.append(x_val[r, :])
+                    y_roots.append(y_val[r, :])
+            else:  # do all
+                prevRootIndex = 0
+                newTrees = []
+                rootIndex = 0
+                # print("measure_roots: ", rootIndex, roots[rootIndex], 0, roots[rootIndex] - 0 + 1)
+                addCount = roots[rootIndex] - 0 + 1
+                tmp = [trees[0] for add in range(addCount)]
+                newTrees.extend(tmp)
+
+                for rootIndex in range(1, len(roots)):
+                    # print("measure_roots: ", rootIndex, roots[rootIndex], roots[prevRootIndex], roots[rootIndex] - roots[prevRootIndex])
+                    addCount = roots[rootIndex] - roots[prevRootIndex]
+                    tmp = [trees[rootIndex] for add in range(addCount)]
+                    newTrees.extend(tmp)
+                    prevRootIndex = rootIndex
+                # print("measure_roots: ", rootIndex, len(x_val), roots[prevRootIndex], len(x_val) - roots[prevRootIndex])
+                # addCount = len(x_val) - roots[prevRootIndex]
+                # tmp = [trees[prevRootIndex] for add in range(addCount)]
+                # newTrees.extend(tmp)
+
+                # print("measure_roots: ", len(trees))
+                trees = newTrees
+                x_roots = x_val
+                y_roots = y_val
+                # print("measure_roots: ", len(x_roots), len(trees))
             z_roots = retain_probability * numpy.ones(shape=(len(x_roots), rnn.n_hidden), dtype=theano.config.floatX)
             measure_wrapper(x_roots, y_roots, z_roots, trees)
 
