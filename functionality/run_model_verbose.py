@@ -40,6 +40,7 @@ totaltimer = ai_util.Timer("Total time: ")
 traintimer = ai_util.Timer("Eval time: ")
 totaltimer.begin()
 output_embeddings = False
+runOnAllNodes = False
 
 def syntax():
     print("""syntax: run_model_verbose.py [-inputtrees <trees>] [-inputmodel <model>]
@@ -47,7 +48,7 @@ def syntax():
     [-retain_probability <float>][-glove_path <glove_path>][-start_epoch <epoch>]
     [-random_seed <int>][-max_embedding_count <int>][-max_tree_count <int>]
     [-sensitive_weight <number>][-non-sensitive_weight <number>]
-    [-max_count <int>][-output_embeddings]
+    [-max_count <int>][-output_embeddings][-runOnAllNodes]
     [-h | --help | -?]
 """)
     sys.exit()
@@ -108,6 +109,8 @@ while i < argn:
             syntax()
         elif setting == '-output_embeddings':
             output_embeddings = True
+        elif setting == '-runOnAllNodes':
+            runOnAllNodes = True
         else:
             msg = "unknown option: " + setting
             print(msg)
@@ -234,7 +237,7 @@ performanceMeasurer.measure_roots(
     input_trees=input_trees, batch_size=trainer.valid_batch_size,
     retain_probability=retain_probability,
     rnn=rnnWrapper.rnn,
-    measure_wrapper=verboseValidationModel)
+    measure_wrapper=verboseValidationModel, measureRoots=(not runOnAllNodes))
 
 logger.report(max_count)
 
