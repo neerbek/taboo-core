@@ -293,13 +293,13 @@ def get_trees(file, max_count=-1):
     return trees
 
 
-def put_trees(file, trees):
+def put_trees(filename, trees):
     count = 0
     fn = "put_trees "  # function name
-    with io.open(file, 'w', encoding='utf8') as f:
+    with io.open(filename, 'w', encoding='utf8') as f:
         for t in trees:
-            l = output(t)
-            f.write(l + "\n")
+            treeString = output(t)
+            f.write(treeString + "\n")
             count += 1
     print(fn + "done. Count={}".format(count))
 
