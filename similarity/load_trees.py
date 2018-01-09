@@ -5,6 +5,7 @@ Created on Thu Sep  1 12:36:32 2016
 @author: neerbek
 """
 import io
+import zipfile
 
 DEBUG_PRINT = False
 
@@ -272,26 +273,38 @@ def get_tree(line, fn="get_tree"):
         raise Exception(fn + " tree is not properly normalized")
     return tree
 
-def get_trees(file, max_count=-1):
+def get_trees_impl(f, max_count):
     count = 0
     trees = []
-    fn = "parser"  # function name
-    with io.open(file, 'r', encoding='utf8') as f:
-        for line in f:
-            if max_count > -1 and count > max_count:
-                break
-            line = line[:-1]  # strips newline. But consider: http://stackoverflow.com/questions/509446/python-reading-lines-w-o-n
-            tree = get_tree(line, fn)
-            if tree.is_leaf():
-                print("tree is one word. Ignoring")
-                continue
-            trees.append(tree)
-            count += 1
-            if count % 2000 == 0:
-                print("Extracted: ", count)
+    fn = "get_trees_impl"  # function name
+    for line in f:  # does this work for binary?
+        line = str(line, encoding="utf8")
+        if max_count > -1 and count > max_count:
+            break
+        line = line[:-1]  # strips newline. But consider: http://stackoverflow.com/questions/509446/python-reading-lines-w-o-n
+        tree = get_tree(line, fn)
+        if tree.is_leaf():
+            print("tree is one word. Ignoring")
+            continue
+        trees.append(tree)
+        count += 1
+        if count % 2000 == 0:
+            print("Extracted: ", count)
     print(fn + " done. Count={}".format(count))
     return trees
 
+def get_trees(file, max_count=-1):
+    filename = file
+    index = filename.find("$")
+    if index != -1:  # assume zipfile
+        zipfilename = filename[:index]
+        internalfilename = filename[index + 1:]
+        with zipfile.ZipFile(zipfilename) as myzip:
+            with myzip.open(internalfilename, mode='r') as f:  # always binary, even with mode='r' [sic]
+                return get_trees_impl(f, max_count)
+    else:
+        with io.open(filename, 'b') as f:
+            return get_trees_impl(f, max_count)
 
 def put_trees(filename, trees):
     count = 0
@@ -339,6 +352,15 @@ def unescape_sentence(l2):
     l2 = l2.replace('-AMP-', '&')
     return l2
 
+
+def count_leaf_nodes(node, count=0):
+    if node == None:
+        return count
+    if node.is_leaf():
+        return count + 1
+    count = count_leaf_nodes(node.left, count)
+    count = count_leaf_nodes(node.right, count)
+    return count
 
 def count_non_leaf_nodes(node, count=0):
     if node == None:
