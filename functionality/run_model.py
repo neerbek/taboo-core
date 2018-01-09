@@ -6,6 +6,7 @@ Created on Fri Apr  7 10:48:34 2017
 """
 
 import numpy
+# os.chdir("..")
 import sys
 from numpy.random import RandomState
 
@@ -56,7 +57,7 @@ def syntax():
 
 arglist = sys.argv
 # arglist = "run_model -inputtrees ../taboo-jan/functionality/201/train_custom250_random.txt -nx 100 -nh 100 -L1_reg 0 -L2_reg 0 -retain_probabilities 0.8 -batch_size 80 -glove_path ../code/glove/ -inputmodel save_exp56_running.txt -min_sentence_len 5 -max_embedding_count -1".split(" ")
-# arglist = "run_model -inputtrees ../taboo-jan/functionality/201/dev_custom250_random.txt -nx 100 -nh 100 -L1_reg 0 -L2_reg 0 -retain_probabilities 0.8 -batch_size 80 -glove_path ../code/glove/ -inputmodel save_exp56_running.txt -min_sentence_len 5 -max_embedding_count -1".split(" ")
+# arglist = "run_model -inputtrees ../taboo-jan/functionality/201/train_full_random.txt -nx 100 -nh 100 -L1_reg 0 -L2_reg 0 -retain_probabilities 0.8 -batch_size 80 -glove_path ../code/glove/ -inputmodel save_exp56_running.txt -min_sentence_len 5 -max_embedding_count -1".split(" ")
 # here you can insert manual arglist if needed
 argn = len(arglist)
 
