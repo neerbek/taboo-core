@@ -259,31 +259,20 @@ def load(rnn, filename='model.save'):
     epoch = 0
     acc = 0
     obj_list = get_object_list(rnn, epoch, acc)
-    index = filename.find("$")
-    myzip = None
-    if index != -1:  # assume zipfile
-        zipfilename = filename[:index]
-        modelfilename = filename[index + 1:]
-        myzip = zipfile.ZipFile(zipfilename)
-        f = myzip.open(modelfilename, 'r')
-    else:
-        f = open(filename, 'rb')
-    for i in range(len(obj_list)):
-        v = cPickle.load(f)
-        obj_list[i] = v
-    if obj_list[0] != VERSION:
-        raise Exception("Version mismatch in rnn4.load")
-    epoch = int(obj_list[1])
-    acc = float(obj_list[2])
-    # need to cast with astype if it was saved with different bit width (32 vs 64)
-    rnn.reluLayer.W.set_value(numpy.array(obj_list[3]).astype(dtype=theano.config.floatX))
-    rnn.reluLayer.b.set_value(numpy.array(obj_list[4]).astype(dtype=theano.config.floatX))
-    rnn.regressionLayer.W.set_value(numpy.array(obj_list[5]).astype(dtype=theano.config.floatX))
-    rnn.regressionLayer.b.set_value(numpy.array(obj_list[6]).astype(dtype=theano.config.floatX))
-    # print("W[5,10] ", reg.reluLayer.W.get_value()[5,10])
-    f.close()
-    if myzip != None:
-        myzip.close()
+    with ai_util.AIFileWrapper(filename) as aifileWrapper:
+        for i in range(len(obj_list)):
+            v = cPickle.load(aifileWrapper.fd)
+            obj_list[i] = v
+        if obj_list[0] != VERSION:
+            raise Exception("Version mismatch in rnn4.load")
+        epoch = int(obj_list[1])
+        acc = float(obj_list[2])
+        # need to cast with astype if it was saved with different bit width (32 vs 64)
+        rnn.reluLayer.W.set_value(numpy.array(obj_list[3]).astype(dtype=theano.config.floatX))
+        rnn.reluLayer.b.set_value(numpy.array(obj_list[4]).astype(dtype=theano.config.floatX))
+        rnn.regressionLayer.W.set_value(numpy.array(obj_list[5]).astype(dtype=theano.config.floatX))
+        rnn.regressionLayer.b.set_value(numpy.array(obj_list[6]).astype(dtype=theano.config.floatX))
+        # print("W[5,10] ", reg.reluLayer.W.get_value()[5,10])
     return (epoch, acc)
 
 def load_v1(rnn, filename='model.save'):
