@@ -277,11 +277,18 @@ def get_trees_impl(f, max_count):
     count = 0
     trees = []
     fn = "get_trees_impl"  # function name
+    # lines = [l for l in f]
+    # line = lines[0]
     for line in f:  # does this work for binary?
         line = str(line, encoding="utf8")
         if max_count > -1 and count > max_count:
             break
-        line = line[:-1]  # strips newline. But consider: http://stackoverflow.com/questions/509446/python-reading-lines-w-o-n
+        if line.endswith("\r\n"):
+            line = line[:-2]
+        if line.endswith("\n"):
+            line = line[:-1]
+        # Strips newline. Consider:
+        # http://stackoverflow.com/questions/509446/python-reading-lines-w-o-n
         tree = get_tree(line, fn)
         if tree.is_leaf():
             print("tree is one word. Ignoring")
@@ -293,6 +300,8 @@ def get_trees_impl(f, max_count):
     print(fn + " done. Count={}".format(count))
     return trees
 
+# filename = "trees/train.txt"
+# max_count = -1
 def get_trees(file, max_count=-1):
     filename = file
     index = filename.find("$")
@@ -303,7 +312,8 @@ def get_trees(file, max_count=-1):
             with myzip.open(internalfilename, mode='r') as f:  # always binary, even with mode='r' [sic]
                 return get_trees_impl(f, max_count)
     else:
-        with io.open(filename, 'b') as f:
+        # f = open(filename, 'rb')
+        with open(filename, 'rb') as f:   # io.open does not support binary it seems
             return get_trees_impl(f, max_count)
 
 def put_trees(filename, trees):
