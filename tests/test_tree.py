@@ -11,13 +11,14 @@ import similarity.load_trees as load_trees
 
 import tests.RunTimer
 
+
 class TreeTest(unittest.TestCase):
     def setUp(self):
         self.timer = tests.RunTimer.Timer()
 
     def tearDown(self):
         self.timer.report(self, __file__)
-        
+
     def test_constructing(self):
         n = load_trees.Node()
         n2 = n.add_child()
@@ -58,7 +59,7 @@ class TreeTest(unittest.TestCase):
         n.add_child()
         c = load_trees.count_non_leaf_nodes(n)
         self.assertEqual(4, c, "count was wrong")
-        
+
     def test_clone(self):
         n = load_trees.Node()
         n.syntax = "2"
@@ -70,21 +71,19 @@ class TreeTest(unittest.TestCase):
         n211.syntax = "n211"
         n22 = n2.add_child()
         n22.syntax = "n22"
-        n221= n22.add_child()
+        n221 = n22.add_child()
         n221.syntax = "n221"
         n222 = n22.add_child()
         n222.syntax = "n222"
         n1 = n.add_child()
         n1.syntax = "n1"
-        
+
         n_clone = load_trees.clone_tree(n)
         a1 = load_trees.as_array(n)
         a2 = load_trees.as_array(n_clone)
         for i in range(len(a1)):
-            self.assertEqual(a1[i].syntax, a2[i].syntax, "expected nodes to share values")
-            
-        
-
+            self.assertEqual(a1[i].syntax, a2[i].syntax,
+                             "expected nodes to share values")
 
 
 if __name__ == "__main__":
