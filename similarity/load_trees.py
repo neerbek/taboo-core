@@ -5,7 +5,7 @@ Created on Thu Sep  1 12:36:32 2016
 @author: neerbek
 """
 import io
-import zipfile
+import ai_util
 
 DEBUG_PRINT = False
 
@@ -273,48 +273,28 @@ def get_tree(line, fn="get_tree"):
         raise Exception(fn + " tree is not properly normalized")
     return tree
 
-def get_trees_impl(f, max_count):
-    count = 0
-    trees = []
-    fn = "get_trees_impl"  # function name
-    # lines = [l for l in f]
-    # line = lines[0]
-    for line in f:  # does this work for binary?
-        line = str(line, encoding="utf8")
-        if max_count > -1 and count > max_count:
-            break
-        if line.endswith("\r\n"):
-            line = line[:-2]
-        if line.endswith("\n"):
-            line = line[:-1]
-        # Strips newline. Consider:
-        # http://stackoverflow.com/questions/509446/python-reading-lines-w-o-n
-        tree = get_tree(line, fn)
-        if tree.is_leaf():
-            print("tree is one word. Ignoring")
-            continue
-        trees.append(tree)
-        count += 1
-        if count % 2000 == 0:
-            print("Extracted: ", count)
-    print(fn + " done. Count={}".format(count))
-    return trees
-
 # filename = "trees/train.txt"
 # max_count = -1
 def get_trees(file, max_count=-1):
     filename = file
-    index = filename.find("$")
-    if index != -1:  # assume zipfile
-        zipfilename = filename[:index]
-        internalfilename = filename[index + 1:]
-        with zipfile.ZipFile(zipfilename) as myzip:
-            with myzip.open(internalfilename, mode='r') as f:  # always binary, even with mode='r' [sic]
-                return get_trees_impl(f, max_count)
-    else:
-        # f = open(filename, 'rb')
-        with open(filename, 'rb') as f:   # io.open does not support binary it seems
-            return get_trees_impl(f, max_count)
+    count = 0
+    trees = []
+    fn = "get_trees"  # function name
+    with ai_util.AIFileWrapper(filename) as aifileWrapper:
+        for line in aifileWrapper.fd:
+            line = aifileWrapper.toStrippedString(line)
+            if max_count > -1 and count > max_count:
+                break
+            tree = get_tree(line, fn)
+            if tree.is_leaf():
+                print("tree is one word. Ignoring")
+                continue
+            trees.append(tree)
+            count += 1
+            if count % 2000 == 0:
+                print("Extracted: ", count)
+    print(fn + " done. Count={}".format(count))
+    return trees
 
 def put_trees(filename, trees):
     count = 0

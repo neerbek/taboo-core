@@ -15,6 +15,7 @@ import pylab  # type: ignore
 import scipy  # type: ignore
 import numpy  # type: ignore
 
+import ai_util
 import similarity.load_trees as load_trees
 
 class Line:
@@ -507,11 +508,11 @@ def read_embeddings(inputfile, max_line_count=-1, originalLines=None):
             sentence = load_trees.output_sentence(line.tree) + "{}".format(line.ground_truth)
             originalLinesMap[sentence] = index
             lines.append(line)
-    with io.open(inputfile, 'r', encoding='utf8') as f:
-        for line in f:
+    with ai_util.AIFileWrapper(inputfile) as aifileWrapper:
+        for line in aifileWrapper.fd:
             if max_line_count > -1 and count > max_line_count:
                 break
-            line = line[:-1]  # strips newline. But consider: http://stackoverflow.com/questions/509446/python-reading-lines-w-o-n
+            line = aifileWrapper.toStrippedString(line)
             if line.startswith(EMBEDDING_FILE_HEADER_BASE):
                 if line != EMBEDDING_FILE_HEADER_FULL:
                     print("WARNING: No embeddings in file. Aborting")

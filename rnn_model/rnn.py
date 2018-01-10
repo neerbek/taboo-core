@@ -12,7 +12,7 @@ import theano
 # import theano.function as function
 import theano.tensor as T
 from six.moves import cPickle
-import zipfile
+import ai_util
 
 class Regression(object):
     """ Inspired by logistic_sgd.py: http://deeplearning.net/tutorial/code/logistic_sgd.py
@@ -226,16 +226,8 @@ def layeredSave(model, filename='model.save', epoch=0, acc=0):
             cPickle.dump(param.get_value(), f, protocol=cPickle.HIGHEST_PROTOCOL)  # value
 
 def layeredLoad(model, filename='model.save'):
-    index = filename.find("$")
-    if index != -1:  # assume zipfile
-        zipfilename = filename[:index]
-        modelfilename = filename[index + 1:]
-        with zipfile.ZipFile(zipfilename) as myzip:
-            with myzip.open(modelfilename, 'r') as f:
-                return layeredLoadImpl(model, f)
-    else:
-        with open(filename, 'rb') as f:
-            return layeredLoadImpl(model, f)
+    with ai_util.AIFileWrapper(filename) as aifileWrapper:
+        return layeredLoadImpl(model, aifileWrapper.fd)
 
 def layeredLoadImpl(model, f):
     value = cPickle.load(f)

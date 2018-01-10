@@ -7,6 +7,7 @@ Created on Sat Jan  7 08:16:27 2017
 import time
 import ast
 import operator as op
+import zipfile
 
 class Timer:
     def __init__(self, name="Timer"):
@@ -108,3 +109,37 @@ def eval_(node):
         return operators[type(node.op)](eval_(node.operand))
     else:
         raise TypeError(node)
+
+class AIFileWrapper():
+    def __init__(self, filename):
+        self.filename = filename
+        self.myzip = None
+        self.fd = None
+
+    def __enter__(self):
+        index = self.filename.find("$")
+        if index != -1:  # assume zipfile
+            zipfilename = self.filename[:index]
+            internalfilename = self.filename[index + 1:]
+            self.myzip = zipfile.ZipFile(zipfilename)
+            self.fd = self.myzip.open(internalfilename, mode='r')  # always binary, even with mode='r' [sic]
+        else:
+            self.fd = open(self.filename, 'rb')  # io.open does not support binary it seems
+        return self
+
+    def __exit__(self, type, value, traceback):
+        # Exception handling here
+        if self.fd != None:
+            self.fd.close()
+        if self.myzip != None:
+            self.myzip.close()
+
+    def toStrippedString(self, line):
+        line = str(line, encoding="utf8")
+        if line.endswith("\r\n"):
+            line = line[:-2]
+        if line.endswith("\n"):
+            line = line[:-1]
+        # Strips newline. Consider:
+        # http://stackoverflow.com/questions/509446/python-reading-lines-w-o-n
+        return line
