@@ -271,9 +271,11 @@ def load_text(enronTexts):
     for i, d in enumerate(enronTexts):
         d.load_text()
         d.text = re.sub(r'[^\x09-\x7f]', r'', d.text)  # remove non-ascii
+        d.text = d.text.replace('\x0b', '')            # remove non-ascii
+        d.text = re.sub(r'[\x0e-\x1f]', r'', d.text)   # remove non-ascii
+        # keeping \x0a (newline), \x0c (form-feed), \x0d (carriage return)
+        # next ascii after \x1f is \x20 (space)
         d.text = d.text.replace('#', '')
-        d.text = d.text.replace('\x0b', '')
-        d.text = re.sub(r'[\x0e-\x1f]', r'', d.text)  #remove non-ascii
 
         if i % 200 == 0:
             print(i, "time elapsed is: {}".format(time.time() - start))
