@@ -7,11 +7,12 @@ Created on August 16 2017
 
 import io
 import os
+import matplotlib  # type: ignore
+import matplotlib.pyplot as plt
 if os.getenv('DISPLAY') == None:
-    import matplotlib  # type: ignore
     matplotlib.use('Agg')  # https://stackoverflow.com/questions/4931376/generating-matplotlib-graphs-without-a-running-x-server
 
-import pylab  # type: ignore
+# import pylab  # type: ignore
 import scipy  # type: ignore
 import numpy  # type: ignore
 
@@ -269,7 +270,7 @@ distributions or just show max
               'ytick.labelsize': 8,
               'text.usetex': True,
               'figure.figsize': fig_size}
-    pylab.rcParams.update(params)
+    plt.rcParams.update(params)
     x = numpy.arange(0, 1.01, 0.01)
     y = [[] for i in x]
     colors = ['g', 'm', 'k', 'r']
@@ -305,21 +306,21 @@ distributions or just show max
             l.append(e)
 
     # Plot data
-    pylab.figure(1)
-    pylab.clf()
-    # pylab.axes([0.125, 0.2, 0.95 - 0.125, 0.95 - 0.2])
+    plt.figure(1)
+    plt.clf()
+    # plt.axes([0.125, 0.2, 0.95 - 0.125, 0.95 - 0.2])
     count = 0
     points = {"og": None, "+m": None, "ok": None, "+r": None}
     for l in y:
         for e in l:
             if e[2] == 'o':
-                points[e[2] + e[3]] = pylab.scatter(e[0], e[1], marker=e[2], c=e[3], s=7, lw=0)  # save a point for legend
+                points[e[2] + e[3]] = plt.scatter(e[0], e[1], marker=e[2], c=e[3], s=7, lw=0)  # save a point for legend
             else:
-                points[e[2] + e[3]] = pylab.scatter(e[0], e[1], marker=e[2], c=e[3], s=7)
+                points[e[2] + e[3]] = plt.scatter(e[0], e[1], marker=e[2], c=e[3], s=7)
             count += 1
     print("added {}".format(count))
-    pylab.xlabel('Sensitive Score')
-    pylab.ylabel('Counts')
+    plt.xlabel('Sensitive Score')
+    plt.ylabel('Counts')
     # print(points)
     if show_normal != None:
         y1 = [0 for i in x]
@@ -336,15 +337,15 @@ distributions or just show max
                 else:
                     y1[j] = max(y1[j], vals[j])
         print("MaxY {:.4f}".format(max(y1)))
-        # pylab.plot(x, vals, colors[i] + ':', label='Normal Dist.')
-        pylab.plot(x, y1, 'k:', label='Normal Dist.')
-    pylab.legend((points["og"], points["+m"], points["ok"], points["+r"]),
+        # plt.plot(x, vals, colors[i] + ':', label='Normal Dist.')
+        plt.plot(x, y1, 'k:', label='Normal Dist.')
+    plt.legend((points["og"], points["+m"], points["ok"], points["+r"]),
                  ('$\emph{tp}$', '$\emph{fp}$', '$\emph{tn}$', '$\emph{fn}$'),
                  scatterpoints=1)  # loc='lower left', ncol=3, fontsize=8
     if save:
-        pylab.savefig("fig_probs_s{}.eps".format(index))
+        plt.savefig("fig_probs_s{}.eps".format(index))
     if show:
-        pylab.show()
+        plt.show()
 
 def new_graph(xlabel, ylabel):
     fig_width_pt = 246.0  # Get this from LaTeX using \showthe\columnwidth
@@ -362,29 +363,29 @@ def new_graph(xlabel, ylabel):
               'ytick.labelsize': 8,
               'text.usetex': True,
               'figure.figsize': fig_size}
-    pylab.rcParams.update(params)
+    plt.rcParams.update(params)
     # Plot data
-    pylab.figure(1)
-    pylab.clf()
-    pylab.xlabel(xlabel)
-    pylab.ylabel(ylabel)
-    # pylab.plot(x, tp, 'g:', label='\emph{tp}')
-    # pylab.legend()
-    # pylab.show()
+    plt.figure(1)
+    plt.clf()
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    # plt.plot(x, tp, 'g:', label='\emph{tp}')
+    # plt.legend()
+    # plt.show()
 
 def plot_graphs(x, tp, fp, tn, fn, name, show=False):
     new_graph(xlabel='Sensitivity Score', ylabel='Accumelated Counts')
-    pylab.plot(x, tp, 'g:', label='\emph{tp}')
-    pylab.plot(x, fp, '-m', label='\emph{fp}')
-    pylab.plot(x, tn, 'k:', label='\emph{tn}')
-    pylab.plot(x, fn, '-r', label='\emph{fn}')
-    # pylab.axvline(x=0.38)
-    # pylab.axvline(x=0.98)
-    pylab.legend()
+    plt.plot(x, tp, 'g:', label='\emph{tp}')
+    plt.plot(x, fp, '-m', label='\emph{fp}')
+    plt.plot(x, tn, 'k:', label='\emph{tn}')
+    plt.plot(x, fn, '-r', label='\emph{fn}')
+    # plt.axvline(x=0.38)
+    # plt.axvline(x=0.98)
+    plt.legend()
     if name != None:
-        pylab.savefig(name + '.eps')
+        plt.savefig(name + '.eps')
     if show:
-        pylab.show()
+        plt.show()
 
 
 def finding_cm(dist, indices, index, lines, closest_count=100):
@@ -594,13 +595,23 @@ def get_embedding_matrix(lines, normalize=False):
             print("{}: {} and {} are different".format(i, a[i, 0], first_emb[i]))
     # ## normalize vectors
     if normalize is True:
+        # bad = numpy.sum(numpy.isinf(a)) + numpy.sum(numpy.isnan(a))
+        # if bad != 0:
+        #     print("replacing {} pos inf".format(numpy.sum(numpy.isposinf(a))))
+        #     a[a == numpy.inf] = 1000000
+        #     print("replacing {} neg inf".format(numpy.sum(numpy.isneginf(a))))
+        #     a[a == -numpy.inf] = -1000000
+        #     print("replacing {} nan values".format(numpy.sum(numpy.isnan(a))))
+        #     a[a == numpy.nan] = 0
         mag = numpy.max(a, axis=1)
+        mag[mag == 0] = 1  # never devide by 0...
         a = a / mag.reshape(len(mag), 1)  # first divide by max. max*max might be inf
         mag = numpy.sum(a * a, axis=1)
         for i in range(len(mag)):
             if numpy.isinf(mag[i]):
                 raise Exception("magitude is inf for: {}".format(i))
         mag = numpy.sqrt(mag)
+        mag[mag == 0] = 1  # never devide by 0...
         a = a / mag.reshape(len(mag), 1)  # unit vectors
     return a  # a is expected to contain rows of embeddings
 
