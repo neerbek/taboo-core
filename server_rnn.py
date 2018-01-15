@@ -256,7 +256,7 @@ class Trainer:
                                           cost_model=cost_model)
         return performanceMeasurer
 
-    def train(self, state, rnnWrapper, file_prefix="save", n_epochs=1, rng=RandomState(1234), epoch=0, validation_frequency=1, train_report_frequency=1, balance_trees=False):
+    def train(self, state, rnnWrapper, file_prefix="save", n_epochs=1, rng=RandomState(1234), epoch=0, validation_frequency=1, train_report_frequency=1, output_running_model=-1, balance_trees=False):
         it = 0
         batch_size = self.batch_size
         reg = rnnWrapper.rnn
@@ -359,6 +359,9 @@ class Trainer:
                             filename = "{}_running.txt".format(file_prefix)
                             self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
                             performanceMeasurerBest.running_epoch = epoch
+                if output_running_model != -1 and it % output_running_model == 0:
+                    filename = "{}_running_{}.txt".format(file_prefix, it)
+                    self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
 #                    while gc.collect() > 0:
 #                        pass
         filename = "{}_running.txt".format(file_prefix)

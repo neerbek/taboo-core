@@ -30,6 +30,7 @@ train_report_frequency = 1
 balance_data = False
 max_embedding_count = -1
 max_tree_count = -1
+output_running_model = -1
 random_seed = 1234
 cost_weight = numpy.array([1, 0, 0, 0, 1])
 # trainer.learning_rate=0.001
@@ -53,6 +54,7 @@ def syntax():
     [-random_seed <int>][-max_embedding_count <int>][-max_tree_count <int>]
     [-sensitive_weight <number>][-non-sensitive_weight <number>][-use_RMS_cost]
     [-momentum <float>][-learn <gd|gdm|adagrad>
+    [-output_running_model <int>]    # counts between output of the running model (save_<prefix>_running_<count>.txt,  -1 = no output
     [-h | --help | -?]
 """)
     sys.exit()
@@ -133,6 +135,8 @@ while i < argn:
         trainer.mc = float(arg)
     elif setting == '-learn':
         trainer.learn = arg
+    elif setting == '-output_running_model':
+        output_running_model = int(arg)
     else:
         if setting == '-help':
             syntax()
@@ -193,6 +197,7 @@ trainer.train(
     epoch=start_epoch,
     validation_frequency=validation_frequency,
     train_report_frequency=train_report_frequency,
+    output_running_model=output_running_model,
     balance_trees=balance_data)
 traintimer.end()
 
