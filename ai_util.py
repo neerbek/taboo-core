@@ -8,6 +8,7 @@ import time
 import ast
 import operator as op
 import zipfile
+from typing import List
 
 class Timer:
     def __init__(self, name="Timer"):
@@ -46,8 +47,11 @@ class Timer:
 
 class TimerList:
     def __init__(self):
-        self.timers = []
+        self.timers: List[Timer]; self.timers = []  
         self.lastReport = time.time()
+        self.totalTimer = None  # type:Timer
+        self.forwardTimer = None  # type:Timer
+        self.backwardTimer = None  # type:Timer
 
     def addTimer(self, timer):
         self.timers.append(timer)
@@ -76,8 +80,8 @@ class TimerList:
         if update_timers:
             self.update()
         self.lastReport = t
-        for t in self.timers:
-            t.report()
+        for timer in self.timers:
+            timer.report()
         return True
 
 
@@ -104,9 +108,9 @@ def eval_(node):
     if isinstance(node, ast.Num):  # <number>
         return node.n
     elif isinstance(node, ast.BinOp):  # <left> <operator> <right>
-        return operators[type(node.op)](eval_(node.left), eval_(node.right))
+        return operators[type(node.op)](eval_(node.left), eval_(node.right))   # type: ignore
     elif isinstance(node, ast.UnaryOp):  # <operator> <operand> e.g., -1
-        return operators[type(node.op)](eval_(node.operand))
+        return operators[type(node.op)](eval_(node.operand))    # type: ignore
     else:
         raise TypeError(node)
 
@@ -135,6 +139,7 @@ class AIFileWrapper():
             self.myzip.close()
 
     def toStrippedString(self, line):
+        # print(line)
         line = str(line, encoding="utf8")
         if line.endswith("\r\n"):
             line = line[:-2]

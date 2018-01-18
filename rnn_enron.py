@@ -14,6 +14,7 @@ import time
 import numpy
 import theano
 # import theano.tensor as T
+from typing import List
 
 import similarity.load_trees as load_trees
 from ai_util import Timer
@@ -56,6 +57,12 @@ class Timers:  # for parsing text
 
 
 class RNNTimers:  # timers for evaluating RNN
+    evaltimer2 = Timer("eval timer inner")
+    evaltimer = Timer("eval timer")
+    appendtimer = Timer("append timer")
+    getinputarraytimer = Timer("getInputArrays")
+    looptimer = Timer("loop")
+
     def init(dummy=0):  # resetting timers
         RNNTimers.evaltimer2 = Timer("eval timer inner")
         RNNTimers.evaltimer = Timer("eval timer")
@@ -568,8 +575,8 @@ def getInputArrays(reg, trees, evaluator):
     """Generates input representations for use with the rnn in training and in evaluation. I.e.
     formats the input which encoded as trees into x_val and y_val flat list"""
     # RNNTimers.getinputarraytimer.begin()
-    list_x = []
-    list_y = []
+    list_x: List[List[float]]; list_x = []
+    list_y: List[List[float]]; list_y = []
     list_root_indexes = []
     # RNNTimers.looptimer.begin()
     for t in trees:

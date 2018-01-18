@@ -12,6 +12,8 @@ import theano
 # import theano.function as function
 import theano.tensor as T
 from six.moves import cPickle
+from typing import List, Tuple
+
 import ai_util
 
 class Regression(object):
@@ -198,7 +200,7 @@ class RNN(object):
 
         # the parameters of the model are the parameters of the two layer it is
         # made out of
-        self.params = []
+        self.params: List[theano.shared]; self.params = []
         self.params.extend(self.reluLayer.params)
         self.params.extend(self.regressionLayer.params)
 
@@ -211,8 +213,9 @@ class RNN(object):
 VERSION_1 = "RNN_SERIALIZED_VERSION_1"
 VERSION = "RNN_SERIALIZED_VERSION_2"
 VERSION_LAYERED = "RNN_SERIALIZED_LAYERED_VERSION_1"
-def get_object_list(reg, epoch, acc):
-    obj_list = [VERSION, "{}".format(epoch), "{:.4f}".format(acc), reg.reluLayer.W, reg.reluLayer.b, reg.regressionLayer.W, reg.regressionLayer.b]
+def get_object_list(reg: RNN, epoch: int, acc: float) -> Tuple[str, str, str, theano.shared, theano.shared, theano.shared, theano.shared]:
+    obj_list: Tuple[str, str, str, theano.shared, theano.shared, theano.shared, theano.shared]
+    obj_list = (VERSION, "{}".format(epoch), "{:.4f}".format(acc), reg.reluLayer.W, reg.reluLayer.b, reg.regressionLayer.W, reg.regressionLayer.b)
     return obj_list
 
 def layeredSave(model, filename='model.save', epoch=0, acc=0):
@@ -252,45 +255,47 @@ def save(rnn, filename='model.save', epoch=0, acc=0):
         cPickle.dump(obj, f, protocol=cPickle.HIGHEST_PROTOCOL)
 
     for obj in obj_list[3:]:  # theano tensor variables
-        cPickle.dump(obj.get_value(), f, protocol=cPickle.HIGHEST_PROTOCOL)
+        cPickle.dump(obj.get_value(), f, protocol=cPickle.HIGHEST_PROTOCOL)  # type: ignore
     f.close()
 
 def load(rnn, filename='model.save'):
     epoch = 0
-    acc = 0
+    acc = 0.0
     obj_list = get_object_list(rnn, epoch, acc)
+    value_list = [None for o in obj_list]
     with ai_util.AIFileWrapper(filename) as aifileWrapper:
         for i in range(len(obj_list)):
             v = cPickle.load(aifileWrapper.fd)
-            obj_list[i] = v
-        if obj_list[0] != VERSION:
+            value_list[i] = v
+        if value_list[0] != VERSION:
             raise Exception("Version mismatch in rnn4.load")
-        epoch = int(obj_list[1])
-        acc = float(obj_list[2])
+        epoch = int(value_list[1])
+        acc = float(value_list[2])
         # need to cast with astype if it was saved with different bit width (32 vs 64)
-        rnn.reluLayer.W.set_value(numpy.array(obj_list[3]).astype(dtype=theano.config.floatX))
-        rnn.reluLayer.b.set_value(numpy.array(obj_list[4]).astype(dtype=theano.config.floatX))
-        rnn.regressionLayer.W.set_value(numpy.array(obj_list[5]).astype(dtype=theano.config.floatX))
-        rnn.regressionLayer.b.set_value(numpy.array(obj_list[6]).astype(dtype=theano.config.floatX))
+        rnn.reluLayer.W.set_value(numpy.array(value_list[3]).astype(dtype=theano.config.floatX))
+        rnn.reluLayer.b.set_value(numpy.array(value_list[4]).astype(dtype=theano.config.floatX))
+        rnn.regressionLayer.W.set_value(numpy.array(value_list[5]).astype(dtype=theano.config.floatX))
+        rnn.regressionLayer.b.set_value(numpy.array(value_list[6]).astype(dtype=theano.config.floatX))
         # print("W[5,10] ", reg.reluLayer.W.get_value()[5,10])
     return (epoch, acc)
 
 def load_v1(rnn, filename='model.save'):
     epoch = 0
-    acc = 0
+    acc = 0.0
     obj_list = get_object_list(rnn, epoch, acc)
+    value_list = [None for o in obj_list]
     f = open(filename, 'rb')
     for i in range(len(obj_list)):
         v = cPickle.load(f)
-        obj_list[i] = v
-    if obj_list[0] != VERSION_1:
+        value_list[i] = v
+    if value_list[0] != VERSION_1:
         raise Exception("Version mismatch in rnn4.load")
-    epoch = obj_list[1]
-    acc = obj_list[2]
-    rnn.reluLayer.W.set_value(obj_list[3])
-    rnn.reluLayer.b.set_value(obj_list[4])
-    rnn.regressionLayer.W.set_value(obj_list[5])
-    rnn.regressionLayer.b.set_value(obj_list[6])
+    epoch = int(value_list[1])
+    acc = float(value_list[2])
+    rnn.reluLayer.W.set_value(value_list[3])
+    rnn.reluLayer.b.set_value(value_list[4])
+    rnn.regressionLayer.W.set_value(value_list[5])
+    rnn.regressionLayer.b.set_value(value_list[6])
     # print("W[5,10] ", reg.reluLayer.W.get_value()[5,10])
     f.close()
     return (epoch, acc)
@@ -299,15 +304,15 @@ def load_v0(reg, name='model.save'):
     epoch = 0
     acc = 0
     obj_list = get_object_list(reg, epoch, acc)
-    obj_list = obj_list[3:]
+    value_list = [None for o in obj_list[3:]]
     f = open(name, 'rb')
-    for i in range(len(obj_list)):
+    for i in range(len(value_list)):
         v = cPickle.load(f)
-        obj_list[i] = v
-    reg.reluLayer.W.set_value(obj_list[0])
-    reg.reluLayer.b.set_value(obj_list[1])
-    reg.regressionLayer.W.set_value(obj_list[2])
-    reg.regressionLayer.b.set_value(obj_list[3])
+        value_list[i] = v
+    reg.reluLayer.W.set_value(value_list[0])
+    reg.reluLayer.b.set_value(value_list[1])
+    reg.regressionLayer.W.set_value(value_list[2])
+    reg.regressionLayer.b.set_value(value_list[3])
     # print("W[5,10] ", reg.reluLayer.W.get_value()[5,10])
     f.close()
     return (epoch, acc)

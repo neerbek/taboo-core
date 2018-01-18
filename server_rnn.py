@@ -7,10 +7,10 @@ Created on Thu Feb 23 15:11:21 2017
 
 import os
 # import psutil
-import numpy
-from numpy.random import RandomState
-import theano  # type: ignore
-import theano.tensor as T  # type: ignore
+import numpy                          # type: ignore
+from numpy.random import RandomState  # type: ignore
+import theano                         # type: ignore
+import theano.tensor as T             # type: ignore
 from datetime import datetime
 import math
 # import gc
@@ -21,10 +21,11 @@ import rnn_model.rnn as nn_model
 import rnn_model.learn
 import rnn_enron
 import ai_util
+import LogFileReader
 
 DEBUG_PRINT = True
 class State:
-    def __init__(self, max_embedding_count=-1, nx=50, nh=300, rng=RandomState(1234), glove_path="../code/glove/"):
+    def __init__(self, max_embedding_count=-1, nx=50, nh=300, rng=RandomState(1234), glove_path="../code/glove/") -> None:
         self.nx = None
         self.LT = None
         self.train_trees = None
@@ -66,12 +67,16 @@ class PerformanceMeasurer:
             self.total_zeros = 0
             self.root_zeros = 0
             self.cost = 0
+            self.epoch = -1
+            self.running_epoch = -1
         else:
             self.total_acc = performanceMeasurer.total_acc
             self.root_acc = performanceMeasurer.root_acc
             self.total_zeros = performanceMeasurer.total_zeros
             self.root_zeros = performanceMeasurer.root_zeros
             self.cost = performanceMeasurer.cost
+            self.epoch = performanceMeasurer.epoch
+            self.running_epoch = performanceMeasurer.running_epoch
 
     def measure(self, state, trainer, rnn, validate_model, cost_model, confusion_matrix=empty_confusion_matrix):
         self.measure_trees(input_trees=state.valid_trees, batch_size=trainer.valid_batch_size,
@@ -168,11 +173,6 @@ class PerformanceMeasurer:
                 # print("measure_roots: ", len(x_roots), len(trees))
             z_roots = retain_probability * numpy.ones(shape=(len(x_roots), rnn.n_hidden), dtype=theano.config.floatX)
             measure_wrapper(x_roots, y_roots, z_roots, trees)
-
-    def report(self, msg=""):
-        print(msg + " total accuracy {:.4f} % ({:.4f} %) cost {:.6f}, root acc {:.4f} % ({:.4f} %)".format(self.total_acc * 100.,
-              self.total_zeros * 100., self.cost * 1.0,
-              self.root_acc * 100., self.root_zeros * 100.))
 
 class Trainer:
     def __init__(self, trainer=None):
@@ -328,16 +328,16 @@ class Trainer:
                         minibatch_zeros = 1 - rnn_enron.get_zeros(y_val)
                         minibatch_acc = 1 - values[0]  # validate_model(x_val, y_val, z_val)
                         print("epoch {}. time is {}, minibatch {}/{}, On train set: batch acc {:.4f} %  ({:.4f} %)".format(epoch, datetime.now().strftime('%d-%m %H:%M'), minibatch_index + 1, self.n_train_batches, minibatch_acc * 100.0, minibatch_zeros * 100.0))
-                        print("{} Epoch {}. On train set : Node count {}, avg cost {:.6f}, avg acc {:.4f}%".format(
-                            datetime.now().strftime('%d%m%y %H:%M'), epoch, train_count, train_cost / train_count, train_acc / train_count * 100.))
-
+                        LogFileReader.logTrain(LogFileReader.Train(cost=train_cost / train_count, nodeAccuracy=train_acc / train_count, nodeCount=train_count), epoch=epoch)
                 if it % validation_frequency == 0:
                     performanceMeasurer = PerformanceMeasurer()
                     performanceMeasurer.epoch = epoch
                     performanceMeasurer.measure(state=state, trainer=self, rnn=reg, validate_model=validate_model, cost_model=cost_model, confusion_matrix=confusion_matrix)
                     if DEBUG_PRINT:
-                        performanceMeasurer.report(msg="{} Epoch {}. On validation set: Best ({}, {:.6f}, {:.4f}%). Current: ".format(
-                            datetime.now().strftime('%d%m%y %H:%M'), epoch, performanceMeasurerBest.epoch, performanceMeasurerBest.cost * 1.0, performanceMeasurerBest.root_acc * 100.))
+                        LogFileReader.logValidation(
+                            LogFileReader.Validation(cost=performanceMeasurer.cost, nodeAccuracy=performanceMeasurer.total_acc, nodeZeros=performanceMeasurer.total_zeros, rootAccuracy=performanceMeasurer.root_acc, rootZeros=performanceMeasurer.root_zeros),
+                            LogFileReader.ValidationBest(cost=performanceMeasurerBest.cost, rootAccuracy=performanceMeasurerBest.root_acc, epoch=performanceMeasurerBest.epoch),
+                            epoch=epoch)
                         cm = performanceMeasurer.total_confusion_matrix
                         if performanceMeasurer.total_nodes != cm[0] + cm[1] + cm[2] + cm[3]:
                             raise Exception("Expected total_node_count to be equal to sum", performanceMeasurer.total_nodes, cm[0] + cm[1] + cm[2] + cm[3])

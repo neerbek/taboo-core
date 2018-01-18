@@ -4,11 +4,13 @@ Created on Sat Mar  4 07:32:29 2017
 
 @author: neerbek
 """
-import nltk
+import nltk  # type: ignore
+from typing import List
 
 import rnn_enron
 from StatisticTextParser import StatisticTextParser
 from ai_util import Timer
+from similarity import load_trees
 
 DEBUG_PRINT = True
 
@@ -78,7 +80,7 @@ def get_nltk_trees(doc_number,
 
 
 def get_trees(enronTexts, lookupTable, parserStatistics):
-    trees = []
+    trees: List[List[load_trees.Node]]; trees = []
     timer = Timer("****Parsed document")
     timer.begin()
     for i, d in enumerate(enronTexts):

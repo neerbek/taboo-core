@@ -4,7 +4,7 @@
 # Author: Edward Loper <edloper@gradient.cis.upenn.edu>
 #         Michael Heilman <mheilman@cmu.edu> (re-port from http://www.cis.upenn.edu/~treebank/tokenizer.sed)
 import re
-
+from typing import List, Tuple, Union
 
 SYM_MAP = {
     '(': '-LRB-',
@@ -89,7 +89,7 @@ class PennTreebankTokenizer:
         # for regexp in self.CONTRACTIONS4:
         #     text = regexp.sub(r' \1 \2 \3 ', text)
         
-        words = []
+        words: List[Union[str, Tuple[str, str]]]; words = []  
         tokens = text.split()
         skip = False
         start_quotes = False
@@ -106,8 +106,12 @@ class PennTreebankTokenizer:
                 if  i+1<len(tokens):
                     words.append('#' + tokens[i+1])
                 skip = True
-            elif t == "'s" and words[-1].isdigit():
-                words[-1] += t
+            elif t == "'s":
+                if isinstance(words[-1], str):
+                    if words[-1].isdigit():
+                        words[-1] += t
+                else:
+                    raise Exception("expected string here")
             
             # Special Penn symbols: keep track of original in tuple
             elif t in SYM_MAP:

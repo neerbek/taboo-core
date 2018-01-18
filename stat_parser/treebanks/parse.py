@@ -1,3 +1,5 @@
+from typing import List
+
 # http://bulba.sdsu.edu/jeanette/thesis/PennTags.html
 TAGS = set((
     'S',      # simple declarative clause, i.e. one that is not introduced by a (possible empty) subordinating conjunction or a wh-word and that does not exhibit subject-verb inversion.
@@ -95,14 +97,14 @@ def normalize_word(word):
 
 TAG, SEPARATOR, WORD = 1, 2, 3
 def parse_node(f, node, text):
-    tag = []
+    tag: List[str]; tag = []
     state = TAG
     while True:
-        c = f.read(1) # default system buffering
+        c = f.read(1)  # default system buffering
         text.append(c)
         if c == '':
             raise Exception("Unexpected end of file")
-        
+
         if state == TAG:
             if c.isspace():
                 state = SEPARATOR
@@ -114,12 +116,12 @@ def parse_node(f, node, text):
                 # Handle starting ((
                 state = SEPARATOR
                 node.append('')
-                branch = []
+                branch = []  # type: List[str]
                 node.append(branch)
                 parse_node(f, branch, text)
             else:
                 tag.append(c)
-        
+
         elif state == SEPARATOR:
             if c.isspace():
                 pass
@@ -146,16 +148,17 @@ def parse_treebank(file_path):
     text = None
     while True:
         try:
-            c = f.read(1) # default system buffering
-            if c == '': break
-            
+            c = f.read(1)  # default system buffering
+            if c == '':
+                break
+
             if c == '(':
-                tree = []
+                tree = []  # type: List[str]
                 text = [c]
                 parse_node(f, tree, text)
                 if tree[0] == '':
                     # Remove initial empty node from penn treebank
-                    tree = tree[1]
+                    tree = tree[1:]
                 yield tree
         except Exception as e:
             print(''.join(text))
