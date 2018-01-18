@@ -41,6 +41,7 @@ class ValidationBest:
 class LogLine:
     def __init__(self, epoch=-1):
         self.epoch = epoch
+        self.count = 0  # for count of number of processed minibatches
         self.train = None  # type: Train
         self.validation = None  # type: Validation
         self.validationBest = None  # type: ValidationBest
@@ -65,11 +66,18 @@ class LogLines:
 
     def addValidation(self, validation: Validation, validationBest: ValidationBest, epoch: int) -> None:
         if len(self.loglines) == 0 or self.loglines[-1].isComplete():
-            raise Exception("We trying to add validation, but no corresponding train logline was found. Epoch={}, validation={}".format(epoch, validation))
+            raise Exception("We are trying to add validation, but no corresponding train logline was found. Epoch={}, validation={}".format(epoch, validation))
         if self.loglines[-1].epoch != epoch:
-            raise Exception("We trying to add validation, but corresponding train logline has wrong epoch. Epoch={}, validation={}".format(epoch, validation))
+            raise Exception("We are trying to add validation, but corresponding train logline has wrong epoch. Epoch={}, validation={}".format(epoch, validation))
         self.loglines[-1].validation = validation
         self.loglines[-1].validationBest = validationBest
+
+    def addCount(self, count):
+        if len(self.loglines) == 0:
+            raise Exception("We trying to it count, but loglines are empty")
+        if not self.loglines[-1].isComplete():
+            raise Exception("We trying to it count, but current logline as no validation. Epoch={}, train={}".format(self.loglines[-1].epoch, self.loglines[-1].train))
+        self.loglines[-1].count = count
 
     def checkLast(self):
         if len(self.loglines) > 0 and not self.loglines[-1].isComplete():
@@ -80,20 +88,39 @@ class LogLines:
 def readLogFile(inputfile: str) -> LogLines:
     count = 0
     epochs = LogLines()
+    # inputfile="logs/exp150.zip$exp150.log"
+    # log = ai_util.AIFileWrapper(inputfile).__enter__()
+    #
+    # lines = log.fd.readlines()
+    # lines = [log.toStrippedString(line) for line in lines]
+    # len(lines)
+    # log.__exit__(None, None, None)
+    # line = lines[100]
+    # print(line)
     with ai_util.AIFileWrapper(inputfile) as log:
         for line in log.fd:
             line = log.toStrippedString(line)
-            if count % 10000 == 0:
+            if count % 30000 == 0:
                 print("read: {}".format(count))
             count += 1
             if len(line) == 0:
                 continue
             e = line.split(' ')
-            if len(e) < 17:
+            if len(e) < 17 and len(e) != 3:
                 continue
             # print("line", line)
             # DDMMYY HH:MM Epoch <e>. On <dataset> set ...
-            if len(e[0]) == 6 and len(e[1]) == 5 and e[2] == "Epoch" and e[4] == "On":
+            if len(e) == 3:
+                if e[0] == "Saving" and e[1] == "as" and e[2].endswith(".txt"):
+                    index = e[2].rfind("_")
+                    if index == -1:
+                        continue
+                    substr = e[2][index + 1:-4]
+                    if substr == "best" or substr == "running":
+                        continue
+                    count = int(substr)
+                    epochs.addCount(count)
+            elif len(e[0]) == 6 and len(e[1]) == 5 and e[2] == "Epoch" and e[4] == "On":
                 # assume this is an interesting line
                 if e[5] == "train":
                     epoch = int(e[3][:-1])  # remove last .
@@ -138,7 +165,7 @@ def logValidation(validation: Validation, validationBest: ValidationBest, epoch:
 
 if __name__ == "__main__":
     # epochs = readLogFile(inputfile="logs/exp151.zip$exp151.log")
-    epochs = readLogFile(inputfile="logs/exp150.zip$exp150.log")
+    epochs = readLogFile(inputfile="tests/resources/exp150.zip$exp150.log")
     print("read: ", len(epochs.loglines))
     for logline in epochs.loglines:
-        print(logline.epoch)
+        print(logline.epoch, logline.count)

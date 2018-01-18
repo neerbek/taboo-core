@@ -24,6 +24,8 @@ class LogReaderTest(unittest.TestCase):
         self.assertEqual(1, epochs.loglines[0].epoch)
         self.assertEqual(96, epochs.loglines[-1].epoch)
         self.assertEqual(11, epochs.loglines[20].epoch)
+        for i in range(len(epochs.loglines)):
+            self.assertEqual((i + 1) * 1000, epochs.loglines[i].count)
 
     def test_two(self):
         epochs = LogFileReader.readLogFile(inputfile="tests/resources/testlog_001.zip$testlog_001.log")
