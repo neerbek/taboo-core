@@ -149,9 +149,9 @@ def readLogFile(inputfile: str) -> LogLines:
     return epochs
 
 
-def logTrain(train: Train, epoch: int) -> None:
-    msg = "{} Epoch {}. On train set : Node count {}, avg cost {:.6f}, avg acc {:.4f}%"
-    print(msg.format(datetime.now().strftime('%d%m%y %H:%M'), epoch, train.nodeCount, train.cost, train.nodeAccuracy * 100.))
+def logTrain(train: Train, epoch: int, dataSetName="train") -> None:
+    msg = "{} Epoch {}. On {} set : Node count {}, avg cost {:.6f}, avg acc {:.4f}%"
+    print(msg.format(datetime.now().strftime('%d%m%y %H:%M'), epoch, dataSetName, train.nodeCount, train.cost, train.nodeAccuracy * 100.))
 
 def logValidation(validation: Validation, validationBest: ValidationBest, epoch: int) -> None:
     msg = "{} Epoch {}. On validation set: Best ({}, {:.6f}, {:.4f}%). Current: "

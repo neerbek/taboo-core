@@ -17,7 +17,7 @@ import ai_util
 import rnn_enron
 import server_rnn
 import similarity.load_trees as load_trees
-
+import LogFileReader
 
 inputmodel = None
 inputtrees = None
@@ -227,7 +227,9 @@ for retain_probability in retain_probabilities:
             rnn=rnnWrapper.rnn,
             validate_model=func,
             cost_model=cost_model, confusion_matrix=confusion_matrix)
-        performanceMeasurer.report(msg="retain_prop: {:.4f}. Threshold {:.4f},  On data set: ".format(retain_probability, t))
+        print("retain_prop: {:.4f}. Threshold {:.4f},  On data set: ".format(retain_probability, t))
+        # performanceMeasurer.report(msg=)
+        LogFileReader.logTrain(LogFileReader.Train(cost=performanceMeasurer.cost, nodeAccuracy=performanceMeasurer.root_acc, nodeCount=performanceMeasurer.total_root_nodes), epoch=-1, dataSetName="inputtrees (root)")
         cm = performanceMeasurer.total_confusion_matrix
         print("Confusion Matrix (tp,fp,tn,fn)", cm[0], cm[1], cm[2], cm[3])
 
