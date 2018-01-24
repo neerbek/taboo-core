@@ -105,10 +105,10 @@ def readLogFile(inputfile: str) -> LogLines:
             count += 1
             if len(line) == 0:
                 continue
+            # print("line", line)
             e = line.split(' ')
             if len(e) < 17 and len(e) != 3:
                 continue
-            # print("line", line)
             # DDMMYY HH:MM Epoch <e>. On <dataset> set ...
             if len(e) == 3:
                 if e[0] == "Saving" and e[1] == "as" and e[2].endswith(".txt"):
@@ -120,7 +120,8 @@ def readLogFile(inputfile: str) -> LogLines:
                         continue
                     count = int(substr)
                     epochs.addCount(count)
-            elif len(e[0]) == 6 and len(e[1]) == 5 and e[2] == "Epoch" and e[4] == "On":
+            elif len(e[0]) >= 6 and len(e[1]) == 5 and e[2] == "Epoch" and e[4] == "On":
+                # e[0] may have garbage in front
                 # assume this is an interesting line
                 if e[5] == "train":
                     epoch = int(e[3][:-1])  # remove last .
