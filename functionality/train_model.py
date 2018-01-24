@@ -157,9 +157,9 @@ while i < argn:
 if traintrees == None or validtrees == None:
     raise Exception("Need a set of trees on which to train!")
 
-train_trees = load_trees.get_trees(file=traintrees)
-valid_trees = load_trees.get_trees(file=validtrees)
-test_trees = load_trees.get_trees(file=testtrees)
+train_trees = load_trees.get_trees(file=traintrees, max_count=max_tree_count)
+valid_trees = load_trees.get_trees(file=validtrees, max_count=max_tree_count)
+test_trees = load_trees.get_trees(file=testtrees, max_count=max_tree_count)
 
 rnn_enron.DEBUG_PRINT = False
 

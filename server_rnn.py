@@ -121,6 +121,7 @@ class PerformanceMeasurer:
             for i in range(len(val_root_confusion_matrix)):
                 val_root_confusion_matrix[i] += a[i]  # a is list of arrays (theano is weird)
             total_root_nodes += n_root_nodes
+            rnn_enron.clearRepresentations(trees)
         self.total_acc = 1 - validation_losses / total_nodes
         self.root_acc = 1 - val_root_losses / total_root_nodes
         self.total_zeros = 1 - validation_zeros / total_nodes
@@ -173,6 +174,7 @@ class PerformanceMeasurer:
                 # print("measure_roots: ", len(x_roots), len(trees))
             z_roots = retain_probability * numpy.ones(shape=(len(x_roots), rnn.n_hidden), dtype=theano.config.floatX)
             measure_wrapper(x_roots, y_roots, z_roots, trees)
+            rnn_enron.clearRepresentations(trees)
 
 class Trainer:
     def __init__(self, trainer=None):
@@ -294,6 +296,8 @@ class Trainer:
         performanceMeasurer = PerformanceMeasurer()
         performanceMeasurer.epoch = -1
 
+        nanCount = 0
+
         while (n_epochs == -1 or epoch < n_epochs):
             # Timers.randomtimer.begin()
             perm = rng.permutation(len(state.train_trees))
@@ -322,7 +326,14 @@ class Trainer:
                 for index, param in enumerate(update_keys):
                     param.set_value(values[index + 2])
                 # Timers.calltheanotimer.end()
+                rnn_enron.clearRepresentations(trees)
                 it += 1
+                if numpy.isnan(train_cost):
+                    print("got nan in train_cost, reloading")
+                    nanCount += 1
+                    filename = "{}_best.txt".format(file_prefix)
+                    self.load(rnnWrapper, filename)
+
                 if it % train_report_frequency == 0:
                     if DEBUG_PRINT:
                         minibatch_zeros = 1 - rnn_enron.get_zeros(y_val)
@@ -349,6 +360,8 @@ class Trainer:
                         # performanceMeasurerTrain = self.evaluate_model(train_trees, rnnWrapper, validate_model, cost_model)
                         # performanceMeasurerTrain.report(msg="{} Epoch {}. On train set: Current:".format(
                         #     datetime.now().strftime('%d%m%y %H:%M'), epoch))
+                    if nanCount > 0:
+                        print("nanCount is {}".format(nanCount))
                     if performanceMeasurerBest.root_acc < performanceMeasurer.root_acc:
                         filename = "{}_best.txt".format(file_prefix)
                         self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
@@ -371,6 +384,10 @@ class Trainer:
         print("Saving rnnWrapper. Previous {};{:.4f}. New {};{:.4f}".format(performanceMeasurerBest.epoch, performanceMeasurerBest.root_acc, performanceMeasurer.epoch, performanceMeasurer.root_acc))
         print("Saving as " + filename)
         rnnWrapper.save(filename, epoch, performanceMeasurer.root_acc)
+
+    def load(self, rnnWrapper, filename):
+        print("Loading rnnWrapper. {}".format(filename))
+        rnnWrapper.load(filename)
 
 class RNNWrapper:
     def __init__(self, rng=RandomState(1234), cost_weight=0):

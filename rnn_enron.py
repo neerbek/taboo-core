@@ -603,6 +603,17 @@ def getInputArrays(reg, trees, evaluator):
     # RNNTimers.getinputarraytimer.end()
     return (list_root_indexes, x_val, y_val)
 
+def clearRepresentationsImpl(node):
+    if node.is_leaf():
+        return
+    node.representation = None
+    clearRepresentationsImpl(node.left)
+    clearRepresentationsImpl(node.right)
+
+def clearRepresentations(trees):
+    """removed node.representation to conserve space"""
+    for t in trees:
+        clearRepresentationsImpl(t)
 
 #
 # numeric gradient
