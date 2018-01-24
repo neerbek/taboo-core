@@ -390,11 +390,6 @@ def initializeTrees(trees, LT):
         else:
             raise Exception("tree does not have correct syntax label")
         setTreeLabel(tree, label)
-    if DEBUG_PRINT:
-        print(
-            "Done with tree. Saw {} nodes, {} words and {} unknowns. Unknown ratio is {}".
-            format(totalCounter.node_count, totalCounter.word_count,
-                   totalCounter.unknown_count, totalCounter.getRatio()))
     print(
         "Done with tree. Saw {} nodes, {} words and {} unknowns. Unknown ratio is {}".
         format(totalCounter.node_count, totalCounter.word_count,
