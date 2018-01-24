@@ -8,6 +8,7 @@ import time
 import ast
 import operator as op
 import zipfile
+from numpy.random import RandomState  # type: ignore
 from typing import List
 
 class Timer:
@@ -148,3 +149,9 @@ class AIFileWrapper():
         # Strips newline. Consider:
         # http://stackoverflow.com/questions/509446/python-reading-lines-w-o-n
         return line
+
+def shuffleList(a, rng=RandomState(1234)):
+    perm = rng.permutation(len(a))  # we have seen issues using the built-in shuffle
+    aNew = [a[i] for i in perm]
+    return aNew
+
