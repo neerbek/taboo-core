@@ -6,6 +6,7 @@ Created on August 16 2017
 """
 
 import unittest
+import os
 
 from numpy.random import RandomState
 
@@ -71,7 +72,8 @@ class ThresholdTest(unittest.TestCase):
         y2 = [p[1] if p[1] < 100 else 100 for p in pos]
         y3 = [p[0] if p[0] < 100 else 100 for p in neg]
         y4 = [p[1] if p[1] < 100 else 100 for p in neg]
-        confusion_matrix.plot_graphs(x, y1, y2, y3, y4, "acc_random_test")
+        if os.getenv('DISPLAY') != None:
+            confusion_matrix.plot_graphs(x, y1, y2, y3, y4, "acc_random_test")
 
 
 if __name__ == "__main__":

@@ -8,10 +8,9 @@ Created on August 16 2017
 import io
 import os
 import matplotlib  # type: ignore
-import matplotlib.pyplot as plt
 if os.getenv('DISPLAY') == None:
     matplotlib.use('Agg')  # https://stackoverflow.com/questions/4931376/generating-matplotlib-graphs-without-a-running-x-server
-
+import matplotlib.pyplot as plt
 # import pylab  # type: ignore
 import scipy  # type: ignore
 import numpy  # type: ignore
