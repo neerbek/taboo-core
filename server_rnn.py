@@ -297,6 +297,7 @@ class Trainer:
         performanceMeasurer.epoch = -1
 
         nanCount = 0
+        rnnWrapperBest = RNNWrapper()
 
         while (n_epochs == -1 or epoch < n_epochs):
             # Timers.randomtimer.begin()
@@ -367,6 +368,7 @@ class Trainer:
                         self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
                         performanceMeasurerBest = performanceMeasurer
                         performanceMeasurerBest.running_epoch = epoch
+                        self.load(rnnWrapperBest, filename)  # update copy
                     else:
                         if performanceMeasurerBest.running_epoch + 1 < epoch:
                             filename = "{}_running.txt".format(file_prefix)
@@ -375,6 +377,8 @@ class Trainer:
                 if output_running_model != -1 and it % output_running_model == 0:
                     filename = "{}_running_{}.txt".format(file_prefix, it)
                     self.save(rnnWrapper=rnnWrapper, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurer, performanceMeasurerBest=performanceMeasurerBest)
+                    filename = "{}_best_{}.txt".format(file_prefix, it)
+                    self.save(rnnWrapper=rnnWrapperBest, filename=filename, epoch=epoch, performanceMeasurer=performanceMeasurerBest, performanceMeasurerBest=performanceMeasurerBest)
 #                    while gc.collect() > 0:
 #                        pass
         filename = "{}_running.txt".format(file_prefix)
