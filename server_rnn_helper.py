@@ -22,6 +22,8 @@ class IndexSentence:
         self.sentence = sentence
         self.pred = None
 
+    def __str__(self):
+        return "<index: {}, sentence: {} >".format(self.beginIndex, self.sentence)
 
 def get_first_word(s):
     index = s.find(" ")
@@ -31,6 +33,7 @@ def get_first_word(s):
 
 
 def get_indexed_sentences(text):
+    # requires nltk.download("punkt")  # tokenizers/punkt/PY3/english.pickle
     sentences = nltk.tokenize.sent_tokenize(text)
     res = []
     index = 0

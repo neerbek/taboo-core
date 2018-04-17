@@ -151,6 +151,7 @@ class AIFileWrapper():
         return line
 
 def shuffleList(a, rng=RandomState(1234)):
+    """Expects a to be a list type. Shuffles all elements and return new list"""
     perm = rng.permutation(len(a))  # we have seen issues using the built-in shuffle
     aNew = [a[i] for i in perm]
     return aNew
