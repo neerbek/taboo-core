@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [ "$1" = "" ]; then
-    echo "store_experiment.sh <name> [<y>] [ignore_missing]"
+    echo "store_experiment.sh <name> [<y>] [ignore_missing] [remove_intermediates]"
     echo "if second argument is set to 'y', then log files and such are goind to be deleted after this script completes"
     echo "if third argument is 'ignore_missing' then script continues even if some files are missing"
     echo "if third argument is 'remove_intermediates' then script removes all files on form save_<name>_<best|running>_*.txt"

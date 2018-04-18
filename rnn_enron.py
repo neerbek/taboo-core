@@ -101,7 +101,11 @@ def get_nltk_parsed_tree_from_sentence(l2, parser, timers, parserStatistics):
     fn = "get_nltk_parsed_tree_from_sentence"  # function name
     parserStatistics.sentences += 1
     l2 = load_trees.escape_sentence(l2)
-    w = parser.tokenizer.tokenize(l2)
+    try:
+        w = parser.tokenizer.tokenize(l2)
+    except Exception:
+        print("Error: failed to tokenize: " + l2)
+        raise
     # we generate a copy of l2 to test the final string from the parser (they should be the same)
     l2_copy = ""
     i = 0

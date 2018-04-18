@@ -147,7 +147,11 @@ def output(node):
     """ outputs a string with the textual representation of the node and it's children"""
     if (node == None):
         return ""
-    o = " (" + node.syntax
+    if node.syntax is None:
+        o = " (" + "TabooNone"
+        print("Warning: outputting TabooNone")
+    else:
+        o = " (" + node.syntax
     if (node.word != None):
         o += " " + node.word
     return o + output(node.left) + output(node.right) + ")"
