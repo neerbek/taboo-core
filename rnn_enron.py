@@ -389,6 +389,8 @@ def initializeTrees(trees, LT):
         label = numpy.zeros(5)  # TODO: remove hardcoded constant
         if tree.syntax == "4":
             label[4] = 1
+        elif tree.syntax == "1":
+            label[4] = 1
         elif tree.syntax == "0":
             label[0] = 1
         else:

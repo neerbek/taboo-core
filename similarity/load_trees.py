@@ -9,6 +9,9 @@ import ai_util
 
 DEBUG_PRINT = False
 
+class Warnings:
+    warnRootNodeWord = 0
+
 
 class Node:
     def __init__(self, parent=None):
@@ -93,7 +96,8 @@ class Node:
                 self.word != None
             )  # a self.word==None for leaf nodes is also a reason for reporting false
         if self.word != None:
-            return False
+            if self.parent != None:  # workaround for "hack" for monsanto
+                return False
         return (self.left.has_only_words_at_leafs() and
                 self.right.has_only_words_at_leafs())
 
@@ -242,8 +246,15 @@ def parse_line(l, index, node):
             break
         elif c == ' ':
             if len(word) != 0:
-                raise Exception(
-                    "Found space while parsing word {}:\"{}\"".format(i, word))
+                if node.parent == None:
+                    if Warnings.warnRootNodeWord < 1:
+                        print("WARN: found root node with word encoded. We allow as a workaround")
+                    Warnings.warnRootNodeWord += 1
+                    node.word = word
+                    word = ""
+                else:
+                    raise Exception(
+                        "Found space while parsing word {}:\"{}\"".format(i, word))
             continue
         elif c == '[':
             if len(word) != 0:
@@ -284,6 +295,7 @@ def get_trees(file, max_count=-1):
     count = 0
     trees = []
     fn = "get_trees"  # function name
+    Warnings.warnRootNodeWord = 0
     with ai_util.AIFileWrapper(filename) as aifileWrapper:
         for line in aifileWrapper.fd:
             line = aifileWrapper.toStrippedString(line)
@@ -297,7 +309,7 @@ def get_trees(file, max_count=-1):
             count += 1
             if count % 2000 == 0:
                 print("Extracted: ", count)
-    print(fn + " done. Count={}".format(count))
+    print(fn + " done. Count={}. Roots with words count {}".format(count, Warnings.warnRootNodeWord))
     return trees
 
 def put_trees(filename, trees):
@@ -374,8 +386,88 @@ def count_nodes(node, count=0):
     count = count_non_leaf_nodes(node.right, count)
     return count
 
+# cleaners
+def cleanTreesByLength(trees, sentenceCutoffLow=5, sentenceCutoffHigh=200):
+    res = []
+    removedLong = 0
+    removedShort = 0
+    for t in trees:
+        length = count_leaf_nodes(t)
+        high = length
+        if sentenceCutoffHigh != -1:
+            high = sentenceCutoffHigh
+        if length > sentenceCutoffLow and length <= high:
+            res.append(t)
+        elif length <= sentenceCutoffLow:
+            removedShort += 1
+        else:
+            removedLong += 1
 
-# trees = get_trees("/Users/neerbek/jan/phd/DLP/paraphrase/code/deep-recursive/jan.txt")
+    print("cleanTreesByLength: removed short {}, removed long {}. Previous {} New length {}".format(removedShort, removedLong, len(trees), len(res)))
+    return res
 
-# len(trees)
-# print(output_lenrep(trees[0]))
+def cleanTreesByBadChars(trees):
+    res = []
+    ignoredSentenceCount = 0
+    for t in trees:
+        sentence = output_sentence(t)
+        for c in sentence:
+            if c < '\x1f':
+                if c != '\n' and c != '\r' and c != '\f':
+                    ignoredSentenceCount += 1
+                    continue  # ignore this sentence
+        res.append(t)
+    print("cleanTreesByBadChars Cleaned: {}".format(ignoredSentenceCount))
+    return res
+
+class SentenceCounter:
+    def __init__(self, trees, labelList):
+        # count number of occurences of each sentence (mostly relevant for repeating sentences)
+        self.labelList = labelList
+        self.labelMap = {}
+        for i, label in enumerate(labelList):
+            self.labelMap[label] = i
+        self.sentences = {}
+        for t in trees:
+            sentence = output_sentence(t)
+            if sentence not in self.sentences:
+                self.sentences[sentence] = [0 for label in labelList]
+            self.sentences[sentence][self.labelMap[t.syntax]] += 1
+        self.ambigousCount = 0
+        self.ignoredSentenceCount = 0
+        self.callCount = 0
+        print("SentenceCounter initialized")
+
+    def isSentenceAmbigous(self, sentence, sentenceLabel):
+        self.callCount += 1
+        countValues = 0
+        for labelIndex in range(len(self.labelList)):
+            if self.sentences[sentence][labelIndex] > 0:
+                countValues += 1
+        if countValues == 1:
+            # unambigous
+            return False
+        else:
+            # ambigous
+            self.ambigousCount += 1
+            maxLabelIndex = 0
+            for labelIndex in range(len(self.labelList)):
+                if self.sentences[sentence][labelIndex] > self.sentences[sentence][maxLabelIndex]:
+                    maxLabelIndex = labelIndex
+            if self.labelMap[sentenceLabel] == maxLabelIndex:
+                return False
+            self.ignoredSentenceCount += 1
+            return True
+
+    def cleanAmbigous(self, trees):
+        res = []
+        for t in trees:
+            sentence = output_sentence(t)
+            if not self.isSentenceAmbigous(sentence, t.syntax):
+                res.append(t)
+        self.reportFindings()
+        return res
+
+    def reportFindings(self):
+        print("contented {} ignored {}. New size {}".format(self.ambigousCount, self.ignoredSentenceCount, self.callCount - self.ignoredSentenceCount))
+
