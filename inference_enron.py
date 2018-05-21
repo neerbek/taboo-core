@@ -81,7 +81,10 @@ def get_word_counts(trees):
                 word_counts[w] = {}
                 word_counts[w]["0"] = 0
                 word_counts[w]["4"] = 0
-            word_counts[w][t.syntax] += 1
+            if t.syntax == "1":
+                word_counts[w]["4"] += 1
+            else:
+                word_counts[w][t.syntax] += 1
     return word_counts
 
 
@@ -101,6 +104,7 @@ def get_weights(word_counts, supportCutoff=9):
 
 
 def get_indicators(confidence, weights):
+    """Takes a confidence number and a map from weights (confidences) to words with that weight. Returns a set of all words which have a confidence higher that <confidence>"""
     sorted_weights = weights.keys()
     sorted_weights = sorted(sorted_weights, reverse=True)
     indicators = set()
@@ -119,7 +123,8 @@ def get_accuracy(ttrees, indicators):
         res = "{}".format(count) + "\t"
         is_sensitive = tree_contains_words(t, indicators)
         count += 1
-        if (t.syntax == "4") == is_sensitive:  # e.g. is label equal to prediction
+        tree_is_sensitive = (t.syntax == "4" or t.syntax == "1")
+        if tree_is_sensitive == is_sensitive:  # e.g. is label equal to prediction
             res += "1\t"
             acc += 1
         else:
@@ -143,7 +148,7 @@ def get_confusion_numbers(ttrees, indicators):
     for t in ttrees:
         is_sensitive = tree_contains_words(t, indicators)
         count += 1
-        if (t.syntax == "4"):
+        if (t.syntax == "4" or t.syntax == "1"):
             if is_sensitive:
                 tp += 1
             else:
