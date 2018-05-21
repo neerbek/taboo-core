@@ -274,7 +274,7 @@ def get_nltk_parsed_trees_from_file(file, start_from=-1, max_count=-1):
 def get_word_embeddings(file, rng, max_count=-1):
     count = 0
     fn = "EmbeddingReader "  # function name
-    res = {}
+    res = {}  # map[word] -> array[int]
     with io.open(file, 'r', encoding='utf8') as f:
         splitcount = -1
         for line in f:
