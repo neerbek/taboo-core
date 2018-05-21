@@ -17,6 +17,7 @@ import similarity.load_trees as load_trees
 
 counttrees = None
 inputtrees = None
+supportCutoff = 9
 cutoffs = [0]
 max_tree_count = -1
 random_seed = 1234
@@ -29,7 +30,7 @@ totaltimer.begin()
 def syntax():
     print(
         """syntax: run_inference.py [-counttrees <trees>][-inputtrees <trees>]
-    [-cutoff <float>][-max_tree_count <int>]
+        [-cutoff <float>][-max_tree_count <int>][-supportCutoff <int>]
     [-h | --help | -?]
 """)
     sys.exit()
@@ -56,6 +57,8 @@ while i < argn:
         counttrees = arg
     elif setting == '-cutoff':
         cutoffs = [float(arg)]
+    elif setting == '-supportCutoff':
+        supportCutoff = int(arg)
     elif setting == '-cutoffs':
         splits = arg.split(',')
         cutoffs = [float(e) for e in splits]
@@ -93,10 +96,12 @@ word_counts = inference_enron.get_word_counts(count_trees)
 # (yes_weights,
 #  no_weights) = inference_enron.get_weights(word_counts, supportCutoff=2)
 (yes_weights,
- no_weights) = inference_enron.get_weights(word_counts)
-only_sensitive = [t for t in input_trees if t.syntax == "4"]
+ no_weights) = inference_enron.get_weights(word_counts, supportCutoff=supportCutoff)
+only_sensitive = [t for t in input_trees if t.syntax == "4" or t.syntax == "1"]
 sen_fraction = float(len(only_sensitive)) / len(input_trees)
 
+bestOutput = None
+bestAcc = None
 for cutoff in cutoffs:
     indicators = inference_enron.get_indicators(cutoff, yes_weights)
 
@@ -105,10 +110,20 @@ for cutoff in cutoffs:
         input_trees, indicators)
     (tp, fp, tn, fn) = inference_enron.get_confusion_numbers(
         input_trees, indicators)
+    output = "Cutoff: {:.3f}. On input data: acc {:.4f} % ({:.4f} %)".format(cutoff, acc, 1 - sen_fraction)
+    output += "\nConfusion Matrix (tp,fp,tn,fn) {} {} {} {}".format(tp, fp, tn, fn)
+    print(output)
 
-    print("Cutoff: {:.2f}. On input data: acc {:.4f} % ({:.4f} %)".format(cutoff, acc, 1 - sen_fraction))
-    print("Confusion Matrix (tp,fp,tn,fn)", tp, fp, tn, fn)
+    if bestAcc is None or acc > bestAcc:
+        bestOutput = output
+        bestAcc = acc
+
 traintimer.end()
+
+if bestOutput is not None:
+    print()
+    print("Best: ", bestOutput)
+
 
 # Done
 traintimer.report()
