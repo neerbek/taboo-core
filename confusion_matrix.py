@@ -356,7 +356,7 @@ def new_graph(xlabel, ylabel):
     fig_size = [fig_width, fig_height]
     params = {'backend': 'ps',
               'axes.labelsize': 10,
-              'text.fontsize': 10,
+              # 'text.fontsize': 10,
               'legend.fontsize': 10,
               'xtick.labelsize': 8,
               'ytick.labelsize': 8,
