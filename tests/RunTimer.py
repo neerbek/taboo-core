@@ -14,4 +14,4 @@ class Timer:
     def report(self, testInstance, testFilename):
         self.tock = datetime.datetime.now()
         diff = self.tock - self.tick
-        print("Time used in test ("+ os.path.basename(testFilename)+")", testInstance.id().split('.')[-1], (diff.total_seconds()), "sec")
+        print("Time used in test (" + os.path.basename(testFilename) + ")", testInstance.id().split('.')[-1], (diff.total_seconds()), "sec")
