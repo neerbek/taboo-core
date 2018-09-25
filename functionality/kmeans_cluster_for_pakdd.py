@@ -47,6 +47,8 @@ def syntax():
 
 
 arglist = sys.argv
+/media/neerbek/446A4CA06A4C911A/Users/neerbek/jan/AIProjectsData/taboo-core/output/output_embeddings.txt
+# arglist = "kmeans_cluster_for_pakdd.py -inputfile /media/neerbek/446A4CA06A4C911A/Users/neerbek/jan/AIProjectsData/taboo-core/output/output_embeddings.txt".split(" ")
 # arglist = "kmeans_cluster_for_pakdd.py -inputfile ../../taboo-core/output/output_embeddings.txt".split(" ")
 # arglist = "kmeans_cluster_for_pakdd.py -inputfile ../output_embeddings.txt".split(" ")
 # arglist = "kmeans_cluster_for_pakdd.py -inputfile ../output_embeddingsEpoch0.txt".split(" ")
@@ -132,7 +134,7 @@ def getCloseNeighbors(index=2, lines=lines, a=a, max_count=100):
         res.append(sortIndex[i])
     return res
 
-def getCloseNeighborSentences(index=2, lines=lines, a=a, max_count=100):
+def getCloseNeighborSentences(index=2, lines=lines, a=a, max_count=100, sentencePrefix=20):
     v = a[index, :]
     dist = euclid_distance_numpy_matrix_vector(a, v)
     sortIndex = numpy.argsort(dist)
@@ -141,7 +143,7 @@ def getCloseNeighborSentences(index=2, lines=lines, a=a, max_count=100):
     for i in range(min(max_count, len(lines))):
         line = lines[sortIndex[i]]
         sentence = load_trees.output_sentence(line.tree)
-        res.append(sentence[:20])
+        res.append(sentence[:sentencePrefix])
     return res
 
 def findIndex(searchTerm, lines=lines, max_count=100):
@@ -175,26 +177,35 @@ def string2Index(sent, lines):
 # index = 17855
 # index = 1018  # nice
 index = findIndex("sincerely", lines, max_count=1)
-goodbye_sent = getCloseNeighborSentences(index, lines, a, max_count=50)
+goodbye_sent = getCloseNeighborSentences(index, lines, a, max_count=50, sentencePrefix=20)
+goodbye_sent = getCloseNeighborSentences(index, lines, a, max_count=50, sentencePrefix=-1)
 goodbye_sent = [' Yours sincerely, En', ' Yours sincerely, En', ' IRREVOCABLE STANDBY', ' IRREVOCABLE STANDBY', ' Sorry for the delay', ' Signature of Compan', ' DESCRIPTION OF THE ', ' Subject: shipper im', ' Shall mean the amou', ' OK for me.', ' Please let me know ', ' Please send me a no', ' Sincerely, George R', ' ASSIGNMENT OF THE A', ' Notices shall be in', ' Kind regards, Melan', ': -LRB- 212 -RRB- 34', ' Regards, Andy *****', ' Purpose of Confiden', ' GBP Fixed Rate Day.', ' Enron Wholesale Ser', ' Holmes and Garrison', ' Enron Industrial Ma', ' EXECUTED effective ', ' EXECUTED effective ', ' EXECUTED effective ', ' EXECUTED effective ', ' EXECUTED effective ', ' EXECUTED effective ', ' EXECUTED effective ', ' EXECUTED effective ', ' EXECUTED effective ', ' EXECUTED effective ', ' EXECUTED effective ', ' EXECUTED effective ', ' Please respond to <', ' Yes, Gloal agrees.', ' PURPOSE AND PROCEDU', ' Please see example ', ' Termination of Agre', ' VP -AMP- AGC.', ' VP -AMP- AGC.', ' Shall have the mean', ' Please do not respo', ' Please do not respo', ' MASTER POWER PURCHA', ' Extensions of the G', ' How is my SDI direc', ' Limitation of Remed', ' Limitation of Remed']
 # goodbye_indexes = getCloseNeighbors(index, lines, a, max_count=200)
 goodbye_indexes = string2Index(goodbye_sent, lines)
-
+for i, s in enumerate(goodbye_sent):
+    print(i, s)
 # dates
 # index = 6819
 index = findIndex("May-02", lines, max_count=1)
 # date_indexes = getCloseNeighbors(index, lines, a, max_count=200)
 date_sent = getCloseNeighborSentences(index, lines, a, max_count=50)
+date_sent = getCloseNeighborSentences(index, lines, a, max_count=50, sentencePrefix=-1)
 date_sent = [' Feb-02.', ' Oct-03.', ' Apr-01.', ' Voith-Eckerle.', ' Jun-99.', ' Aerovent.', ' Aug-04.', ' Jul-02.', ' Dec-99.', ' CGV10-34.', ' Magnalloy.', ' Aug-03.', ' Dec-00.', ' Jul-01.', ' EnronEntityName.', ' Feb-04.', ' Setoff.', ' OOrangUtan.', ' P-AMP-I.', ' Ladish.', ' Jul-01.', ' Sep-01.', ' 8.3.1.', ' Oct-00.', ' BOFMCAM2.', ' P-AMP-I.', ' Nov-04.', ' MPPA.', ' EcOutlook.', ' Letterhead/Logo.', ' Bank/Enron.', ' Enron/Alberta.', ' Jul-01.', ' ARTICLE2.', ' Dec-02.', ' Mar-02.', ' 58986.', ' ARTICLE3.', ' MPPA.', ' Feb-01.', ' BOFMCAM2.', ' Chromalox.', ' MPPA.', ' Feb-02.', ' May-02.', ' Jerryco.', ' MPPA.', ' MPPA.', ' Aug-04.', ' Mar-01.']
 date_indexes = string2Index(date_sent, lines)
+for i, s in enumerate(date_sent):
+    print(i, s)
 
 # names
 # index = 5516
 index = findIndex("Stacy", lines, max_count=1)
 # name_indexes = getCloseNeighbors(index, lines, a, max_count=200)
 name_sent = getCloseNeighborSentences(index, lines, a, max_count=50)
+name_sent = getCloseNeighborSentences(index, lines, a, max_count=50, sentencePrefix=-1)
 name_sent = [' Stacy Dickson.', ' Martha Braddy.', ' James Westgate.', ' Floating Amount Det', ' GEA Rainey.', ' Citibank ISDA.', ' Michelle Blaine.', ' Katherine Corbally.', ' Gerald Nemec.', ' Sara Shackleton.', ' Sara Shackleton.', ' Frank Grabowski.', ' Call 4,429.', ' Co. ENA.', ' Co. ENA.', ' Co. ENA.', ' Co. ENA.', ' Co. ENA.', ' Co. ENA.', ' Co. ENA.', ' Co. ENA.', ' Co. ENA.', ' Allen Bradly.', ' Harry Collins.', ' Market Disruption.', ' 12.02 Notices.', ' TW received $ 125,4', ' -LRB- p -RRB- Illeg', ' Senior Counsel, ENA', ' EXHIBIT A. ENRON CO', ' EXHIBIT A. ENRON CO', ' EXHIBIT A. ENRON CO', ' EXHIBIT A. ENRON CO', ' EXHIBIT A. ENRON CO', ' EXHIBIT A. ENRON CO', ' EXHIBIT A. ENRON CO', ' EXHIBIT A. ENRON CO', ' EXHIBIT A. ENRON CO', ' EXHIBIT A. ENRON CO', ' EXHIBIT A. ENRON CO', ' FW: Vince Kaminskis', ' Laurie Mayer.', ' CIBC means Canadian', ' -LRB- f -RRB- Set-o', ' -LRB- iv -RRB- Thre', ' -LRB- iv -RRB- Thre', ' -LRB- iv -RRB- Thre', ' -LRB- iv -RRB- Thre', ' -LRB- iv -RRB- Thre', ' -LRB- iv -RRB- Thre']
 name_indexes = string2Index(name_sent, lines)
+
+for i, s in enumerate(name_sent):
+    print(i, s)
 # sensitive - ok
 # print_cluster(label=6, lines=lines, kmeans=kmeans, max_count=40, rng=rng)
 
@@ -205,11 +216,16 @@ name_indexes = string2Index(name_sent, lines)
 index = findIndex("cools", lines, max_count=1)
 # oilngas_indexes = getCloseNeighbors(index, lines, a, max_count=200)
 oilngas_sent = getCloseNeighborSentences(index, lines, a, max_count=50)
+oilngas_sent = getCloseNeighborSentences(index, lines, a, max_count=50, sentencePrefix=-1)
 oilngas_sent = [' The oil flows throu', ' Where this Transact', ' Where this Transact', " `` Taxes '' means a", ' In addition, by sup', ' The chargers will b', ' Probability 20 99.4', ' The LPC and HPC sec', ' Project Cost Projec', ' A schedule of drawi', ' Hours worked by Sel', ' No Performance Liqu', ' The Company request', ' Historically, El Ni', ' In the absence of F', ' question the correc', ' Develop debt and eq', ' Series - Series Dan', ' -LSB- NOTE: THE REM', ' Put means an Option', ' Put means an Option', ' Put means an Option', ' Put means an Option', ' a release of the Di', ' 15.10 Notwithstandi', ' First Union Securit', ' Additions and delet', ' In the event of a c', ' WHEREAS, -LSB- Sell', ' The weather and the', ' Additional $ 50 mai', " `` Liens '' means a", ' The inner wall pane', ' Actual weather patt', ' Prior to emission t', ' Any deficiencies in', ' The probe also incl', ' NOx water cleanline', ' The cost of constru', ' If Buyer and Seller', ' In accordance with ', ' ** 1 -LRB- G -RRB -', ' Each Option Compone', ' If such period is a', ' The outer wall pane', ' -LRB- c -RRB- The G', ' Also shown on these', ' > > I have combined', ' The maximum per occ', ' By: Name: Title: EX']
 oilngas_indexes = string2Index(oilngas_sent, lines)
 # sensitive - not so good
 # index = 8670
 # getCloseNeighbors(index, lines, a, max_count=80)
+
+for i, s in enumerate(oilngas_sent):
+    print(i, s)
+
 
 # index = 11282
 # getCloseNeighbors(index, lines, a, max_count=30)
@@ -218,9 +234,13 @@ oilngas_indexes = string2Index(oilngas_sent, lines)
 # index = 15155
 index = findIndex("1998 was", lines, max_count=1)
 sensitive_sent = getCloseNeighborSentences(index, lines, a, max_count=50)
+sensitive_sent = getCloseNeighborSentences(index, lines, a, max_count=50, sentencePrefix=-1)
 sensitive_sent = [' 1998 was chosen as ', ' For tax purposes, E', ' It is a several hun', ' It is our understan', ' One thing that need', ' At the time, we did', ' For example, crude ', ' We wanted to know i', ' Third, once the dea', ' The scheme is as fo', ' In the event there ', ' We have archived qu', ' When a deal is ente', ' When a deal is ente', ' As before, we chose', ' Although there is a', ' It is possible to t', ' It is possible to t', ' I believe that, as ', ' The asset may be an', ' He was able to not ', ' He was able to not ', ' As with the case of', ' Since there are sev', ' Third, we wanted to', ' It is our understan', ' Asset cash flows, i', ' Asset cash flows, i', ' We started out by d', ' We started out by d', ' The team was able t', ' The team was able t', ' Although we did not', ' Furthermore, there ', ' We focused our effo', ' We focused our effo', ' Based upon this inf', ' We have produced a ', ' There were many dif', ' `` Acceptable Suret', ' The confirmations a', ' EVENTS OF CHANGE AN', ' Merrideth Eggleston', ' There is a chance t', ' However, there is n', ' Most deals are mode', ' Most deals are mode', ' The terms `` this A', ' In late 1999, they ', ' In late 1999, they ']
 sensitive_indexes = string2Index(sensitive_sent, lines)
 # sensitive_indexes = getCloseNeighbors(index, lines, a, max_count=200)
+
+for i, s in enumerate(sensitive_sent):
+    print(i, s)
 
 # for i in range(35):
 #     print("==", i, "===============")
