@@ -3,7 +3,7 @@
 To clone:
 
 ```
-git clone https://bitbucket.alexandra.dk/scm/tab/taboo-core.git
+git clone https://github.com/neerbek/taboo-core.git
 ```
 
 ## Notes:
