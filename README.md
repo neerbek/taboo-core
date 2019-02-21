@@ -18,7 +18,7 @@ Ex:
 ```
 sudo apt-get install python3-pip
 
-pip3 install theano nltk flask matplotlib
+sudo -H pip3 install -r requirements.txt
 ```
 
 ## Glove
@@ -30,16 +30,12 @@ Download glove word embeddings: (not necessary for running tests)
 This installs glove word embedding files in `../code/glove/`
 
 ## NLTK
-run: `nltk.download()`, load package pickle
+run: `nltk.download()`, load package punkt
 
 ex:
 ```
-python3 -c "import nltk; nltk.download()"
+python3 -m nltk.downloader punkt
 ```
-
-select pickle
-
-select Download
 
 ## Testing installation
 To run tests: from taboo-core, say:

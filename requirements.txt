@@ -1,0 +1,8 @@
+# sudo -H pip3 install -r requirements.txt
+numpy
+theano
+nltk
+click
+flask
+matplotlib
+# python3 -m nltk.downloader punkt
