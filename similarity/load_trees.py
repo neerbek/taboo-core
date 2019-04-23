@@ -9,6 +9,7 @@ import ai_util
 
 DEBUG_PRINT = False
 
+
 class Warnings:
     warnRootNodeWord = 0
 
@@ -100,6 +101,9 @@ class Node:
                 return False
         return (self.left.has_only_words_at_leafs() and
                 self.right.has_only_words_at_leafs())
+
+    def __str__(self):
+        return "Node(word: {} syntax: {} label:{} repr: {})".format(self.word, self.syntax, self.label, self.representation)
 
 
 def clone_tree(node, parent=None):
