@@ -10,19 +10,20 @@ git clone https://github.com/neerbek/taboo-core.git
 
 Runs python3(!)
 
-Dependencies: numpy, theano, nltk, click, flask, matplotlib
+Dependencies: numpy, theano, nltk, click, flask, matplotlib, tkinter
 
 pip3 (or conda or apt-get or ...) install <dependencies>
 
 Ex:
 ```
 sudo apt-get install python3-pip
+sudo apt-get install python3-tk  # needed for tkinter
 
 sudo -H pip3 install -r requirements.txt
 ```
 
 ## Glove
-Download glove word embeddings: (not necessary for running tests)
+Download glove word embeddings: (not necessary for running tests) (requires curl to be installed)
 ```
 ./download_glove.sh
 ```
