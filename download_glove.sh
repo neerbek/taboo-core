@@ -2,7 +2,7 @@
 cd ..
 mkdir code
 mkdir code/glove
-cd core/glove/
+cd code/glove/
 curl -O https://nlp.stanford.edu/data/glove.6B.zip
 unzip glove.6B.zip
 cd ../..
