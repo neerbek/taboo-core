@@ -6,9 +6,10 @@ Created on Fri Apr  7 10:48:34 2017
 """
 
 import sys
-# sys.path.append("/home/neerbek/jan/phd/DLP/paraphrase/taboo-core")
 import numpy
 from numpy.random import RandomState
+import sh
+import datetime
 
 import rnn_enron
 import server_rnn
@@ -45,6 +46,7 @@ totaltimer = ai_util.Timer("Total time: ")
 traintimer = ai_util.Timer("Train time: ")
 totaltimer.begin()
 
+
 def syntax():
     print(
         """syntax: train_model.py [-traintrees <trees>][-validtrees <trees>][-testtrees <trees>] [-inputmodel <model>] [-outputmodel <model>]
@@ -62,7 +64,9 @@ def syntax():
 
 arglist = sys.argv
 
-# arglist = "train -inputtrees ../taboo-jan/functionality/201/trees_201_100_custom_0000_0250.txt -nx 100 -nh 100 -lr 0.01 -L1_reg 0.0001 -L2_reg 0 -n_epochs -1 -retain_probability 0.95 -batch_size 50 -glove_path ../code/glove/ -file_prefix save_screen1 -validation_frequency 300 -train_report_frequency 120".split()
+# arglist = "train -inputtrees ../taboo-jan/functionality/201/trees_201_100_custom_0000_0250.txt -nx 100 -nh 100 -lr 0.01 -L1_reg 0.0001 -L2_reg 0 -n_epochs -1 -retain_probability 0.95 -batch_size 50 -glove_path ../code/glove/ -file_prefix save_screen1 -validation_frequency 300 -train_report_frequency 120"
+# arglist = functionality.tmp.arglist
+# arglist = arglist.split()
 argn = len(arglist)
 
 i = 1
@@ -77,6 +81,7 @@ while i < argn:
         arg = arglist[i + 1]
 
     next_i = i + 2
+    # print(setting, next_i)
     if setting == '-nx':
         nx = int(arg)
     elif setting == '-nh':
@@ -156,6 +161,19 @@ while i < argn:
 
 if traintrees == None or validtrees == None:
     raise Exception("Need a set of trees on which to train!")
+
+git = sh.git.bake(_cwd=".")
+print("############################################################")
+print("############################################################")
+print(git.status('--short'))
+
+current = datetime.datetime.now()
+print("{}-{:02d}-{:02d} {:02d}:{:02d}".format(current.year, current.month, current.day, current.hour, current.minute))
+
+h = "{}".format(git('rev-parse', '--short', 'HEAD'))
+# h = "{}".format(git('log', '-1', '--pretty=format:%h', '--', 'DeepTorch.py'))  # does not work git needs full terminal
+print("HASH:", h[:-1])  # do not print final newline
+print("EXP: {} - Setting random_seed: {}".format(file_prefix, random_seed))
 
 train_trees = load_trees.get_trees(file=traintrees, max_count=max_tree_count)
 valid_trees = load_trees.get_trees(file=validtrees, max_count=max_tree_count)
