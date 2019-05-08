@@ -284,13 +284,13 @@ def get_tree(line, fn="get_tree"):
             format(i))
     l2 = output(tree)
     if l2 != line:  # Lines differ
-        raise Exception(fn + " marshall and unmarshalling differs" +
-                        "\n" + line + "\n" + l2)
+        raise Exception(fn + " marshall and unmarshalling differs" + "\n" + line + "\n" + l2)
     if not tree.is_binary():
         raise Exception(fn + " tree is not binary")
     if not tree.has_only_words_at_leafs():
         raise Exception(fn + " tree is not properly normalized")
     return tree
+
 
 # filename = "trees/train.txt"
 # max_count = -1
@@ -300,6 +300,8 @@ def get_trees(file, max_count=-1):
     trees = []
     fn = "get_trees"  # function name
     Warnings.warnRootNodeWord = 0
+    # aifileWrapper = ai_util.AIFileWrapper(filename)
+    # aifileWrapper.__enter__()
     with ai_util.AIFileWrapper(filename) as aifileWrapper:
         for line in aifileWrapper.fd:
             line = aifileWrapper.toStrippedString(line)
