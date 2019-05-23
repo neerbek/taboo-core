@@ -102,6 +102,7 @@ sen_fraction = float(len(only_sensitive)) / len(input_trees)
 
 bestOutput = None
 bestAcc = None
+bestIndicators = None
 for cutoff in cutoffs:
     indicators = inference_enron.get_indicators(cutoff, yes_weights)
 
@@ -117,12 +118,14 @@ for cutoff in cutoffs:
     if bestAcc is None or acc > bestAcc:
         bestOutput = output
         bestAcc = acc
+        bestIndicators = indicators
 
 traintimer.end()
 
 if bestOutput is not None:
     print()
     print("Best: ", bestOutput)
+    print("sensitive keywords: {}".format(bestIndicators))
 
 
 # Done
