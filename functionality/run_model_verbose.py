@@ -110,6 +110,8 @@ while i < argn:
         elif setting == '-output_embeddings':
             output_embeddings = True
         elif setting == '-runOnAllNodes':
+            # -runOnAllNodes if we want measure perf on internal nodes also
+            # this also outputs embeddings for these if (output_embeddings)
             runOnAllNodes = True
         else:
             msg = "unknown option: " + setting
