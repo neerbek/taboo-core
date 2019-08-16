@@ -394,7 +394,7 @@ def initializeTrees(trees, LT):
         elif tree.syntax == "0":
             label[0] = 1
         else:
-            raise Exception("tree does not have correct syntax label")
+            raise Exception("tree does not have correct syntax label got '{}'".format(tree.syntax))
         setTreeLabel(tree, label)
     print(
         "Done with tree. Saw {} nodes, {} words and {} unknowns. Unknown ratio is {}".
