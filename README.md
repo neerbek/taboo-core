@@ -76,3 +76,27 @@ OMP_NUM_THREADS=2 ipython3 functionality/train_model.py -- -traintrees 201/train
 `-glove_path ../code/glove/` path to location of word embeddings
 
 There are many more options, run `train_model.py` without arguments to get the list
+
+## Other Commands
+
+### run_model
+
+```
+export TREES=path-to-zip-file-with-data/trees0.zip\$test.txt
+export MODEL=path-to-trained-model
+export GLOVEPATH=path-to-glove
+
+OMP_NUM_THREADS=2 ipython3 functionality/run_model.py -- -inputtrees $TREES -inputmodel $MODEL -nx 100 -nh 100 -L1_reg 0 -L2_reg 0.0001 -retain_probabilities 0.9 -batch_size 1000 -glove_path $GLOVEPATH -random_seed 1234
+```
+
+### Get Embeddings
+
+To get a list of all embeddings generated in the final layer of a particular model
+
+```
+export TREES=path-to-zip-file-with-data/trees0.zip\$test.txt
+export MODEL=path-to-trained-model
+export GLOVEPATH=path-to-glove
+
+OMP_NUM_THREADS=2 ipython3 functionality/run_model_verbose.py -- -inputtrees $TREES -inputmodel $MODEL -nx 100 -nh 100 -L1_reg 0 -L2_reg 0.0001 -retain_probability 0.9 -batch_size 1000 -glove_path $GLOVEPATH -random_seed 1234 -output_embeddings > output.txt
+```
