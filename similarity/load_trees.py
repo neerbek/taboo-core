@@ -99,8 +99,7 @@ class Node:
         if self.word != None:
             if self.parent != None:  # workaround for "hack" for monsanto
                 return False
-        return (self.left.has_only_words_at_leafs() and
-                self.right.has_only_words_at_leafs())
+        return (self.left.has_only_words_at_leafs() and self.right.has_only_words_at_leafs())
 
     def __str__(self):
         return "Node(word: {} syntax: {} label:{} repr: {})".format(self.word, self.syntax, self.label, self.representation)
@@ -271,6 +270,7 @@ def parse_line(l, index, node):
             word += c
     return i
 
+
 def get_tree(line, fn="get_tree"):
     if not line.startswith(" ("):
         raise Exception(fn + " line does not start with \" (\"")
@@ -279,8 +279,7 @@ def get_tree(line, fn="get_tree"):
     i = parse_line(line, 2, tree)
     if i < len(line) - 1:  # Not all of line parsed
         raise Exception(
-            fn +
-            " parsing line failed. There was more than one tree in the line. {}".
+            fn + " parsing line failed. There was more than one tree in the line. {}".
             format(i))
     l2 = output(tree)
     if l2 != line:  # Lines differ
@@ -317,6 +316,7 @@ def get_trees(file, max_count=-1):
                 print("Extracted: ", count)
     print(fn + " done. Count={}. Roots with words count {}".format(count, Warnings.warnRootNodeWord))
     return trees
+
 
 def put_trees(filename, trees):
     count = 0
@@ -374,6 +374,7 @@ def count_leaf_nodes(node, count=0):
     count = count_leaf_nodes(node.right, count)
     return count
 
+
 def count_non_leaf_nodes(node, count=0):
     if node == None:
         return count
@@ -384,6 +385,7 @@ def count_non_leaf_nodes(node, count=0):
     count = count_non_leaf_nodes(node.right, count)
     return count
 
+
 def count_nodes(node, count=0):
     if node == None:
         return count
@@ -391,6 +393,7 @@ def count_nodes(node, count=0):
     count = count_non_leaf_nodes(node.left, count)
     count = count_non_leaf_nodes(node.right, count)
     return count
+
 
 # cleaners
 def cleanTreesByLength(trees, sentenceCutoffLow=5, sentenceCutoffHigh=200):
@@ -412,6 +415,7 @@ def cleanTreesByLength(trees, sentenceCutoffLow=5, sentenceCutoffHigh=200):
     print("cleanTreesByLength: removed short {}, removed long {}. Previous {} New length {}".format(removedShort, removedLong, len(trees), len(res)))
     return res
 
+
 def cleanTreesByBadChars(trees):
     res = []
     ignoredSentenceCount = 0
@@ -425,6 +429,7 @@ def cleanTreesByBadChars(trees):
         res.append(t)
     print("cleanTreesByBadChars Cleaned: {}".format(ignoredSentenceCount))
     return res
+
 
 class SentenceCounter:
     def __init__(self, trees, labelList):
