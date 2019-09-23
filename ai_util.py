@@ -4,6 +4,7 @@ Created on Sat Jan  7 08:16:27 2017
 
 @author: neerbek
 """
+import os
 import time
 import ast
 import operator as op
@@ -122,10 +123,8 @@ class AIFileWrapper():
         self.fd = None
 
     def __enter__(self):
-        index = self.filename.find("$")
-        if index != -1:  # assume zipfile
-            zipfilename = self.filename[:index]
-            internalfilename = self.filename[index + 1:]
+        zipfilename, internalfilename = self.getFilename()
+        if zipfilename is not None:
             self.myzip = zipfile.ZipFile(zipfilename)
             self.fd = self.myzip.open(internalfilename, mode='r')  # always binary, even with mode='r' [sic]
         else:
@@ -139,9 +138,9 @@ class AIFileWrapper():
         if self.myzip != None:
             self.myzip.close()
 
-    def toStrippedString(self, line):
+    def toStrippedString(self, line, encoding="utf8"):
         # print(line)
-        line = str(line, encoding="utf8")
+        line = str(line, encoding=encoding)
         if line.endswith("\r\n"):
             line = line[:-2]
         if line.endswith("\n"):
@@ -149,6 +148,23 @@ class AIFileWrapper():
         # Strips newline. Consider:
         # http://stackoverflow.com/questions/509446/python-reading-lines-w-o-n
         return line
+
+    def getFilename(self):
+        index = self.filename.find("$")
+        zipfilename = None
+        internalfilename = self.filename
+        if index != -1:  # assume zipfile
+            zipfilename = self.filename[:index]
+            internalfilename = self.filename[index + 1:]
+        return (zipfilename, internalfilename)
+    
+    def exists(self):
+        if self.myzip != None:
+            return True
+        zipfilename, internalfilename = self.getFilename()
+        if zipfilename is None:
+            return os.path.exists(internalfilename)
+        return os.path.exists(zipfilename)
 
 def shuffleList(a, rng=RandomState(1234)):
     """Expects a to be a list type. Shuffles all elements and return new list"""

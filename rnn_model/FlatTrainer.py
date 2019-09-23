@@ -536,7 +536,7 @@ def measure(X, Y, batchSize, modelEvaluator, epoch=-1):
     perf.cost = perf.cost / n
     return perf
 
-def train(trainParam, rnnContainer, valContainer, n_epochs=1, trainReportFrequency=1, validationFrequency=1, file_prefix="save", rng=RandomState(1234), epoch=0):
+def train(trainParam, rnnContainer, valContainer, n_epochs=1, trainReportFrequency=1, validationFrequency=1, file_prefix="save", rng=RandomState(1234), epoch=0, runOnly=False):
     it = 0
     n = trainParam.getDataCount()    # number of examples
 
@@ -558,6 +558,8 @@ def train(trainParam, rnnContainer, valContainer, n_epochs=1, trainReportFrequen
     performanceMeasurer = measure(valX, valY, trainParam.validBatchSize, valModelEvaluator, epoch)
     performanceMeasurer.report(msg="{} Epoch {}. On validation set: (this is new best): ".format(
         datetime.now().strftime('%d%m%y %H:%M'), epoch))
+    if runOnly:
+        return
     performanceMeasurerBest = performanceMeasurer
     performanceMeasurerBest.epoch = epoch  # TODO: I think this is redundant
     performanceMeasurerBest.runningEpoch = epoch
