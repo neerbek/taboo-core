@@ -32,7 +32,7 @@ balance_data = False
 max_embedding_count = -1
 max_tree_count = -1
 output_running_model = -1
-random_seed = 1234
+random_seed = None
 cost_weight = numpy.array([1, 0, 0, 0, 1])
 # trainer.learning_rate=0.001
 # trainer.L1_reg=0.00
@@ -195,6 +195,11 @@ state.test_trees = test_trees
 
 state.init_trees(trainer)
 
+if random_seed == None:
+    print("NOTE: random_seed not set in advance. Getting one now")
+    rng = RandomState(random_seed)
+    random_seed = rng.randint(10000000)
+    print("NOTE: got random_seed {}".format(random_seed))
 rng = RandomState(random_seed)
 
 rnnWrapper = server_rnn.RNNWrapper(rng=rng, cost_weight=cost_weight)
