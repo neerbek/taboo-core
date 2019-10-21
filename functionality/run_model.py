@@ -232,6 +232,8 @@ for retain_probability in retain_probabilities:
         LogFileReader.logTrain(LogFileReader.Train(cost=performanceMeasurer.cost, nodeAccuracy=performanceMeasurer.root_acc, nodeCount=performanceMeasurer.total_root_nodes), epoch=-1, dataSetName="inputtrees (root)")
         cm = performanceMeasurer.total_confusion_matrix
         print("Confusion Matrix (tp,fp,tn,fn)", cm[0], cm[1], cm[2], cm[3])
+        cm = performanceMeasurer.root_confusion_matrix
+        print("Root Confusion Matrix (tp,fp,tn,fn)", cm[0], cm[1], cm[2], cm[3])
 
 traintimer.end()
 
