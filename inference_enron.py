@@ -11,6 +11,7 @@ from collections import defaultdict
 import similarity.load_trees as load_trees
 from server_rnn_helper import IndexSentence
 
+
 def normalize_word(w):
     w = w.lower()
     #     if w=="as":
@@ -119,6 +120,8 @@ def get_accuracy(ttrees, indicators):
     acc = 0
     count = 0
     output = []
+    # = ttrees[0]
+    # indicators
     for t in ttrees:
         res = "{}".format(count) + "\t"
         is_sensitive = tree_contains_words(t, indicators)
@@ -135,7 +138,9 @@ def get_accuracy(ttrees, indicators):
         else:
             res += "0\t"
         res += load_trees.output_sentence(t)
-        output.append(res)
+        output.append(res + "\n")
+    # for o in output:
+    #     print(o)
     return acc / count
 
 
