@@ -6,8 +6,9 @@ Created on Jun 28 2017
 """
 
 import sys
+# import os
+# os.chdir("/home/jneerbek/jan/taboo/taboo-core")
 from numpy.random import RandomState
-
 
 import ai_util
 import rnn_enron
@@ -17,7 +18,7 @@ import similarity.load_trees as load_trees
 
 counttrees = None
 inputtrees = None
-supportCutoff = 9
+supportCutoffs = [9]
 cutoffs = [0]
 max_tree_count = -1
 random_seed = 1234
@@ -37,8 +38,11 @@ def syntax():
 
 
 arglist = sys.argv
+# print("WARN: using debug input!")
+# arglist = "../taboo-jan/functionality/run_inference.py -counttrees ../taboo-core/functionality/201/train_custom250_random.txt -inputtrees ../taboo-jan/functionality/201/test_custom250_random.txt -cutoffs 0.8".split()
+# arglist = "run_inference.py -counttrees /home/jneerbek/jan/ProjectsData/phd/DLP/Monsanto/data/trees/20191015c/trees0.zip$train_manual_sensitive.txt -inputtrees /home/jneerbek/jan/ProjectsData/phd/DLP/Monsanto/data/trees/20191015c/trees0.zip$dev_manual_sensitive.txt -cutoffs 0.1,0.6,0.65,0.7,0.75,0.78,0.79,0.795,0.8,0.805,0.81,0.82,0.83,0.835,0.84,0.8425,0.845,0.8475,0.85,0.855,0.86,0.9,1.0 -supportCutoff 0".split()
 argn = len(arglist)
-# argn = "../taboo-jan/functionality/run_inference.py -counttrees ../taboo-core/functionality/201/train_custom250_random.txt -inputtrees ../taboo-jan/functionality/201/test_custom250_random.txt -cutoffs 0.8".split()
+
 i = 1
 if argn == 1:
     syntax()
@@ -50,6 +54,7 @@ while i < argn:
     if i < argn - 1:
         arg = arglist[i + 1]
 
+    setting
     next_i = i + 2
     if setting == '-inputtrees':
         inputtrees = arg
@@ -58,7 +63,10 @@ while i < argn:
     elif setting == '-cutoff':
         cutoffs = [float(arg)]
     elif setting == '-supportCutoff':
-        supportCutoff = int(arg)
+        supportCutoffs = [int(arg)]
+    elif setting == '-supportCutoffs':
+        splits = arg.split(',')
+        supportCutoffs = [int(e) for e in splits]
     elif setting == '-cutoffs':
         splits = arg.split(',')
         cutoffs = [float(e) for e in splits]
@@ -87,38 +95,39 @@ input_trees = load_trees.get_trees(file=inputtrees, max_count=max_tree_count)
 
 rnn_enron.DEBUG_PRINT = False
 
-rng = RandomState(1234)
 rng = RandomState(random_seed)
 
 traintimer.begin()
 word_counts = inference_enron.get_word_counts(count_trees)
-# run with different cutoff
-# (yes_weights,
-#  no_weights) = inference_enron.get_weights(word_counts, supportCutoff=2)
-(yes_weights,
- no_weights) = inference_enron.get_weights(word_counts, supportCutoff=supportCutoff)
 only_sensitive = [t for t in input_trees if t.syntax == "4" or t.syntax == "1"]
 sen_fraction = float(len(only_sensitive)) / len(input_trees)
 
 bestOutput = None
 bestAcc = None
 bestIndicators = None
-for cutoff in cutoffs:
-    indicators = inference_enron.get_indicators(cutoff, yes_weights)
+cutoff = cutoffs[0]
+for supportCutoff in supportCutoffs:
+    (yes_weights,
+     no_weights) = inference_enron.get_weights(word_counts, supportCutoff=supportCutoff)
+    for cutoff in cutoffs:
+        confidence = cutoff
+        weights = yes_weights
+        indicators = inference_enron.get_indicators(cutoff, yes_weights)
 
-    # Run on trees
-    acc = inference_enron.get_accuracy(
-        input_trees, indicators)
-    (tp, fp, tn, fn) = inference_enron.get_confusion_numbers(
-        input_trees, indicators)
-    output = "Cutoff: {:.3f}. On input data: acc {:.4f} % ({:.4f} %)".format(cutoff, acc, 1 - sen_fraction)
-    output += "\nConfusion Matrix (tp,fp,tn,fn) {} {} {} {}".format(tp, fp, tn, fn)
-    print(output)
+        # Run on trees
+        ttrees = input_trees
+        acc = inference_enron.get_accuracy(
+            input_trees, indicators)
+        (tp, fp, tn, fn) = inference_enron.get_confusion_numbers(
+            input_trees, indicators)
+        output = "SupportCutoff: {} Cutoff: {:.3f}. On input data: acc {:.4f} % ({:.4f} %)".format(supportCutoff, cutoff, acc, 1 - sen_fraction)
+        output += "\nConfusion Matrix (tp,fp,tn,fn) {} {} {} {}".format(tp, fp, tn, fn)
+        print(output)
 
-    if bestAcc is None or acc > bestAcc:
-        bestOutput = output
-        bestAcc = acc
-        bestIndicators = indicators
+        if bestAcc is None or acc > bestAcc:
+            bestOutput = output
+            bestAcc = acc
+            bestIndicators = indicators
 
 traintimer.end()
 
