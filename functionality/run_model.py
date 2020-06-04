@@ -45,7 +45,7 @@ min_sentence_len = -1
 
 def syntax():
     print("""syntax: run_model.py [-inputtrees <trees>] [-inputmodel <model>]
-    [-nx <nx>] [-nh <nh>][-L1_reg <float>][-L2_reg <float>][-n_epochs <int>][-batch_size <int>]
+    [-nx <nx>] [-nh <nh>][-L1_reg <float>][-L2_reg <float>][-batch_size <int>]
     [-retain_probabilities <float>[,<float>,...][-glove_path <glove_path>][-start_epoch <epoch>]
     [-threshold <float>[,<float>...]] [-min_sentence_len <int>]
     [-random_seed <int>][-max_embedding_count <int>][-max_tree_count <int>]
