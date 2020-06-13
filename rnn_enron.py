@@ -251,13 +251,13 @@ def get_nltk_parsed_trees_from_list(lines):
     return (parserStatistics, trees)
 
 
-file = "trees/train.txt"
+filename = "trees/train.txt"
 
 
-def get_nltk_parsed_trees_from_file(file, start_from=-1, max_count=-1):
+def get_nltk_parsed_trees_from_file(filename, start_from=-1, max_count=-1):
     lines = []
     # f = io.open(file,'r',encoding='utf8')
-    with io.open(file, 'r', encoding='utf8') as f:
+    with io.open(filename, 'r', encoding='utf8') as f:
         for line in f:
             lines.append(line)
         # line = lines[3]
@@ -271,13 +271,17 @@ def get_nltk_parsed_trees_from_file(file, start_from=-1, max_count=-1):
     return trees
 
 
-def get_word_embeddings(file, rng, max_count=-1):
+# filename = os.path.join(glovePath, "glove.6B.{}d.txt".format(nx))
+# max_count = nWords - 1
+def get_word_embeddings(filename, rng, max_count=-1):
     count = 0
     fn = "EmbeddingReader "  # function name
     res = {}  # map[word] -> array[int]
-    with io.open(file, 'r', encoding='utf8') as f:
+    # f = io.open(filename, 'r', encoding='utf8')
+    with io.open(filename, 'r', encoding='utf8') as f:
         splitcount = -1
-        for line in f:
+        # line = f.readline()
+        for cnt, line in enumerate(f):
             # line ="the 0.418 0.24968 -0.41242 0.1217 0.34527 -0.044457"
             if count == max_count:
                 break
@@ -286,11 +290,10 @@ def get_word_embeddings(file, rng, max_count=-1):
                 splitcount = len(e)
             if splitcount != len(e):
                 raise Exception(
-                    fn + "Wrong number of splits was: {}, expected: {}".format(
-                        len(e), splitcount))
+                    fn + "Wrong number of splits was: {}, expected: {} line: {} file: {}".format(
+                        len(e), splitcount, cnt, filename))
             if e[0].lower() != e[0]:  # islower fails for ","
-                raise Exception("word embedding was expected to lower case: " +
-                                e[0])
+                raise Exception("word embedding was expected to lower case: {} line: {}".format(e[0], cnt))
             w = e[0]
             arr = numpy.array([float(it) for it in e[1:]])  # .reshape(1,50)
             res[w] = arr
