@@ -12,6 +12,7 @@ import zipfile
 from numpy.random import RandomState  # type: ignore
 from typing import List
 
+
 class Timer:
     def __init__(self, name="Timer"):
         self.elapsed = 0
@@ -49,7 +50,8 @@ class Timer:
 
 class TimerList:
     def __init__(self):
-        self.timers: List[Timer]; self.timers = []  
+        self.timers  # type: List[Timer]
+        self.timers = []
         self.lastReport = time.time()
         self.totalTimer = None  # type:Timer
         self.forwardTimer = None  # type:Timer
@@ -95,6 +97,7 @@ operators = {ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul,
              ast.Div: op.truediv, ast.Pow: op.pow, ast.BitXor: op.xor,
              ast.USub: op.neg}
 
+
 def eval_expr(expr):
     """
     >>> eval_expr('2^6')
@@ -106,29 +109,37 @@ def eval_expr(expr):
     """
     return eval_(ast.parse(expr, mode='eval').body)
 
+
 def eval_(node):
     if isinstance(node, ast.Num):  # <number>
         return node.n
     elif isinstance(node, ast.BinOp):  # <left> <operator> <right>
-        return operators[type(node.op)](eval_(node.left), eval_(node.right))   # type: ignore
+        # type: ignore
+        return operators[type(node.op)](eval_(node.left), eval_(node.right))
     elif isinstance(node, ast.UnaryOp):  # <operator> <operand> e.g., -1
         return operators[type(node.op)](eval_(node.operand))    # type: ignore
     else:
         raise TypeError(node)
+
 
 class AIFileWrapper():
     def __init__(self, filename):
         self.filename = filename
         self.myzip = None
         self.fd = None
+        self.is_zip = None
 
     def __enter__(self):
         zipfilename, internalfilename = self.getFilename()
         if zipfilename is not None:
+            self.is_zip = True
             self.myzip = zipfile.ZipFile(zipfilename)
-            self.fd = self.myzip.open(internalfilename, mode='r')  # always binary, even with mode='r' [sic]
+            # always binary, even with mode='r' [sic]
+            self.fd = self.myzip.open(internalfilename, mode='r')
         else:
-            self.fd = open(self.filename, 'rb')  # io.open does not support binary it seems
+            self.is_zip = False
+            # io.open does not support binary it seems
+            self.fd = open(self.filename, 'rb')
         return self
 
     def __exit__(self, type, value, traceback):
@@ -157,7 +168,7 @@ class AIFileWrapper():
             zipfilename = self.filename[:index]
             internalfilename = self.filename[index + 1:]
         return (zipfilename, internalfilename)
-    
+
     def exists(self):
         if self.myzip != None:
             return True
@@ -166,9 +177,10 @@ class AIFileWrapper():
             return os.path.exists(internalfilename)
         return os.path.exists(zipfilename)
 
+
 def shuffleList(a, rng=RandomState(1234)):
     """Expects a to be a list type. Shuffles all elements and return new list"""
-    perm = rng.permutation(len(a))  # we have seen issues using the built-in shuffle
+    perm = rng.permutation(
+        len(a))  # we have seen issues using the built-in shuffle
     aNew = [a[i] for i in perm]
     return aNew
-
