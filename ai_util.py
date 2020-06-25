@@ -128,16 +128,15 @@ class AIFileWrapper():
         self.myzip = None
         self.fd = None
         self.is_zip = None
+        _ = self.getFilename()  # initialize is_zip
 
     def __enter__(self):
         zipfilename, internalfilename = self.getFilename()
         if zipfilename is not None:
-            self.is_zip = True
             self.myzip = zipfile.ZipFile(zipfilename)
             # always binary, even with mode='r' [sic]
             self.fd = self.myzip.open(internalfilename, mode='r')
         else:
-            self.is_zip = False
             # io.open does not support binary it seems
             self.fd = open(self.filename, 'rb')
         return self
@@ -161,10 +160,12 @@ class AIFileWrapper():
         return line
 
     def getFilename(self):
+        self.is_zip = False
         index = self.filename.find("$")
         zipfilename = None
         internalfilename = self.filename
         if index != -1:  # assume zipfile
+            self.is_zip = True
             zipfilename = self.filename[:index]
             internalfilename = self.filename[index + 1:]
         return (zipfilename, internalfilename)
@@ -176,6 +177,9 @@ class AIFileWrapper():
         if zipfilename is None:
             return os.path.exists(internalfilename)
         return os.path.exists(zipfilename)
+
+    def readAll(self):
+        return self.fd.read()
 
 
 def shuffleList(a, rng=RandomState(1234)):
