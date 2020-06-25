@@ -22,6 +22,7 @@ supportCutoffs = [9]
 cutoffs = [0]
 max_tree_count = -1
 random_seed = 1234
+print_best_keywords = False
 
 traintimer = ai_util.Timer("Model time: ")
 totaltimer = ai_util.Timer("Total time: ")
@@ -79,6 +80,8 @@ while i < argn:
             syntax()
         elif setting == '-h':
             syntax()
+        elif setting == 'print_best_keywords':
+            print_best_keywords = True
         else:
             msg = "unknown option: " + setting
             print(msg)
@@ -134,7 +137,8 @@ traintimer.end()
 if bestOutput is not None:
     print()
     print("Best: ", bestOutput)
-    print("sensitive keywords: {}".format(bestIndicators))
+    if print_best_keywords:
+        print("sensitive keywords: {}".format(bestIndicators))
 
 
 # Done
