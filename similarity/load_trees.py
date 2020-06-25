@@ -314,7 +314,7 @@ def get_trees(file, max_count=-1):
             count += 1
             if count % 2000 == 0:
                 print("Extracted: ", count)
-    print(fn + " done. Count={}. Roots with words count {}".format(count, Warnings.warnRootNodeWord))
+    print(fn + " done reading {}. Count={}. Roots with words count {}".format(filename, count, Warnings.warnRootNodeWord))
     return trees
 
 
