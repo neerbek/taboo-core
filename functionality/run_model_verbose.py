@@ -42,6 +42,7 @@ totaltimer.begin()
 output_embeddings = False
 runOnAllNodes = False
 
+
 def syntax():
     print("""syntax: run_model_verbose.py [-inputtrees <trees>] [-inputmodel <model>]
     [-nx <nx>] [-nh <nh>][-L1_reg <float>][-L2_reg <float>][-n_epochs <int>][-batch_size <int>]
@@ -158,12 +159,14 @@ cost_model = trainer.get_cost_model(rnnWrapper, cost)
 validation_model = trainer.get_validation_model(rnnWrapper)
 # confusion_matrix = trainer.get_confusion_matrix(rnnWrapper)
 
+
 class VerboseValidationLogger:
     def __init__(self, rnnWrapper):
         self.log = []
         self.validation_model = theano.function(
             inputs=[rnnWrapper.x, rnnWrapper.y, rnnWrapper.z],
-            outputs=self.calc_threshold_error(rnnWrapper.y, rnnWrapper.rnn.p_y_given_x, rnnWrapper.rnn.reluLayer.output)
+            outputs=self.calc_threshold_error(
+                rnnWrapper.y, rnnWrapper.rnn.p_y_given_x, rnnWrapper.rnn.reluLayer.output)
         )
         self.count = 0
 
@@ -181,25 +184,31 @@ class VerboseValidationLogger:
             # represents a mistake in prediction
             y_pred = T.argmax(p_y_given_x, axis=1)
             is_accurate = 1 - T.neq(y_pred, y_simple)
-            return [y_simple, is_accurate, p_sensitive, reluLayer_output]  # list of arrays
+            # list of arrays
+            return [y_simple, is_accurate, p_sensitive, reluLayer_output]
         else:
             raise NotImplementedError()
 
     def wrapper(self, x_roots, y_roots, z_roots, trees):
-        (truth_val, is_accurate, p_sensitive, reluLayer_output) = self.validation_model(x_roots, y_roots, z_roots)
+        (truth_val, is_accurate, p_sensitive,
+         reluLayer_output) = self.validation_model(x_roots, y_roots, z_roots)
         if len(x_roots) != len(trees):
-            raise Exception("Count of trees are not equal {}, {}".format(len(x_roots), len(trees)))
+            raise Exception("Count of trees are not equal {}, {}".format(
+                len(x_roots), len(trees)))
         if len(x_roots) != len(is_accurate):
-            raise Exception("Lengths of is_accurate are not equal {}, {}".format(len(x_roots), len(is_accurate)))
+            raise Exception("Lengths of is_accurate are not equal {}, {}".format(
+                len(x_roots), len(is_accurate)))
         if len(x_roots) != len(reluLayer_output):  # 2-dim array
-            raise Exception("Lengths of reluLayer_output are not equal {}, {}".format(len(x_roots), len(reluLayer_output)))
+            raise Exception("Lengths of reluLayer_output are not equal {}, {}".format(
+                len(x_roots), len(reluLayer_output)))
         for i in range(len(trees)):
             node_count = load_trees.count_nodes(trees[i])
             text = load_trees.output_sentence(trees[i])
             tree_str = load_trees.output(trees[i])
             # (setenv "PYTHONPATH" "/home/neerbek/jan/phd/DLP/paraphrase/taboo-core/;/home/neerbek/jan/phd/DLP/paraphrase/taboo-jan/functionality")
             # (getenv "PYTHONPATH")
-            entry = [truth_val[i], is_accurate[i], p_sensitive[i], node_count, text, tree_str, reluLayer_output[i]]
+            entry = [truth_val[i], is_accurate[i], p_sensitive[i],
+                     node_count, text, tree_str, reluLayer_output[i]]
             self.log.append(entry)
 
     def report(self, max_count=100):
@@ -212,7 +221,8 @@ class VerboseValidationLogger:
         print(header)
         for i in range(max_count):
             entry = self.log[i]
-            msg = "{}\t{}\t{}\t{}\t{}\t{}\t{}".format(i, entry[0], entry[1], entry[2], entry[3], entry[4], entry[5])
+            msg = "{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
+                i, entry[0], entry[1], entry[2], entry[3], entry[4], entry[5])
             if output_embeddings:
                 arr = "["
                 for e in entry[6]:
