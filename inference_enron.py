@@ -116,31 +116,23 @@ def get_indicators(confidence, weights):
     return indicators
 
 
-def get_accuracy(ttrees, indicators):
+def get_accuracy(ttrees, indicators, logInstanceDetails=False):
     acc = 0
     count = 0
-    output = []
     # = ttrees[0]
     # indicators
     for t in ttrees:
-        res = "{}".format(count) + "\t"
         is_sensitive = tree_contains_words(t, indicators)
         count += 1
         tree_is_sensitive = (t.syntax == "4" or t.syntax == "1")
         if tree_is_sensitive == is_sensitive:  # e.g. is label equal to prediction
-            res += "1\t"
             acc += 1
-        else:
-            res += "0\t"
-        res += t.syntax + "\t"
-        if is_sensitive:
-            res += "4\t"
-        else:
-            res += "0\t"
-        res += load_trees.output_sentence(t)
-        output.append(res + "\n")
-    # for o in output:
-    #     print(o)
+        if logInstanceDetails:
+            node_count = load_trees.count_nodes(t)
+            text = load_trees.output_sentence(t)
+            tree_str = load_trees.output(t)
+            print(count, tree_is_sensitive, (tree_is_sensitive == is_sensitive), "N/A", node_count, text, tree_str)
+
     return acc / count
 
 
