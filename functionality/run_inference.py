@@ -23,6 +23,7 @@ cutoffs = [0]
 max_tree_count = -1
 random_seed = 1234
 print_best_keywords = False
+fullLogTestSet = False
 
 traintimer = ai_util.Timer("Model time: ")
 totaltimer = ai_util.Timer("Total time: ")
@@ -80,14 +81,18 @@ while i < argn:
             syntax()
         elif setting == '-h':
             syntax()
-        elif setting == 'print_best_keywords':
+        elif setting == '-print_best_keywords' or setting == '--print_best_keywords':
             print_best_keywords = True
+        elif setting == '-full_log_test_set' or setting == '-full_log_test_set':
+            fullLogTestSet = True
         else:
             msg = "unknown option: " + setting
             print(msg)
             syntax()
             raise Exception(msg)
+
         next_i = i + 1
+
     i = next_i
 
 if inputtrees == None:
@@ -120,7 +125,7 @@ for supportCutoff in supportCutoffs:
         # Run on trees
         ttrees = input_trees
         acc = inference_enron.get_accuracy(
-            input_trees, indicators)
+            input_trees, indicators, logInstanceDetails=fullLogTestSet)
         (tp, fp, tn, fn) = inference_enron.get_confusion_numbers(
             input_trees, indicators)
         output = "SupportCutoff: {} Cutoff: {:.3f}. On input data: acc {:.4f} % ({:.4f} %)".format(supportCutoff, cutoff, acc, 1 - sen_fraction)
