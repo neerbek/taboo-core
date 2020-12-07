@@ -50,8 +50,7 @@ class Timer:
 
 class TimerList:
     def __init__(self):
-        self.timers  # type: List[Timer]
-        self.timers = []
+        self.timers = []  # type: List[Timer]
         self.lastReport = time.time()
         self.totalTimer = None  # type:Timer
         self.forwardTimer = None  # type:Timer
